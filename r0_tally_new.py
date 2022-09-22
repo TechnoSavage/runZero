@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    tally_new.py, version 1.1 by Derek Burke
+    tally_new.py, version 1.2 by Derek Burke
     Script to retrieve last 'n' completed tasks and tally new asset counts. """
 
 import json
@@ -64,16 +64,19 @@ def parseTasks(data, taskNo=1000):
         parsed = []
         for item in data:
             count += 1
-            if count == int(taskNo):
+            if count == int(taskNo) + 1:
                 break
-            task = {}   
+            task = {} 
             task["taskID"] = item["id"]
             task["siteID"] = item["site_id"]
             task["taskName"] = item["name"]
             task["taskDescription"] = item["description"]
-            task["newAssets"] = item["stats"]["change.new"]
+            try:
+                task["newAssets"] = item["stats"]["change.new"]
+            except KeyError as error:
+                task["newAssets"] = 0
             parsed.append(task)
-        totalTasks = len(parsed) + 1  
+        totalTasks = len(parsed) 
         totalNew = 0
         for item in parsed:        
             totalNew = totalNew + int(item["newAssets"])
