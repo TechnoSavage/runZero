@@ -36,7 +36,7 @@ def getTasks(uri, token):
     """ Retrieve Tasks from Organization corresponding to supplied token.
 
            :param token: A string, Account API Key.
-           :returns: A string, JSON-formatted.
+           :returns: A JSON object, runZero task data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
 
     payload = ""
