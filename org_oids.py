@@ -29,7 +29,7 @@ def getOIDs(uri, token):
     """ Retrieve Organizational IDs from Console.
 
            :param token: A string, Account API Key.
-           :returns: A string, JSON-formatted.
+           :returns: A JSON object, runZero Org data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
 
     payload = ""
