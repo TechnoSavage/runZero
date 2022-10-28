@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    tally_new.py, version 1.2 by Derek Burke
+    tally_new.py, version 1.3 by Derek Burke
     Script to retrieve last 'n' completed tasks and tally new asset counts. """
 
 import json
@@ -10,6 +10,7 @@ import sys
 from getpass import getpass
 from requests.exceptions import ConnectionError
 
+#Update usage to incorporate new read from config
 def usage():
     """ Display usage and switches. """
     print(""" Usage:
@@ -112,18 +113,32 @@ if __name__ == "__main__":
     fileName = ""
     
     if "-u" in sys.argv:
-        uri = sys.argv[sys.argv.index("-u") + 1] + "/api/v1.0/org/tasks"
+        try:
+            uri = sys.argv[sys.argv.index("-u") + 1] + "/api/v1.0/org/tasks"
+        except IndexError as error:
+            print("URI switch used but URI not provided!\n")
+            usage()
+            exit()
     if "-t" in sys.argv:
         try:
             taskNo = sys.argv[sys.argv.index("-t") + 1]
             int(taskNo)
         except ValueError as error:
             raise error
+        except IndexError as error:
+            print("Task switch used but task number not provided!\n")
+            usage()
+            exit()
     if "-j" in sys.argv:
         formatJSON = True
     if "-f" in sys.argv:
         saveFile = True
-        fileName = sys.argv[sys.argv.index("-f") + 1] 
+        try:
+            fileName = sys.argv[sys.argv.index("-f") + 1]
+        except IndexError as error:
+            print("File save switch used but file name not provided!\n")
+            usage()
+            exit()
 
     data = getTasks(uri, token)
     results = parseTasks(data, taskNo)
