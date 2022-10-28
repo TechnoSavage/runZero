@@ -11,11 +11,14 @@ Asset Queries:
     EOL Windows operating systems
         os:windows AND os_eol:<now
 
+    Assets discovered within the past two weeks
+        first_seen:"<2weeks"
+
     Windows assets offering SMB services
         os:windows AND protocol:smb1 OR protocol:smb2
 
     Assets created as a result of arbitrary responses (e.g. Firewall)
-        has_mac:f AND has_name:f AND os:= AND hardware:= AND NOT detected_by:icmp
+        has_mac:f AND has_name:f AND os:= AND hardware:= AND detected_by:icmp AND service_count:<2
 
     Assets with Microsoft FTP server
         alive:t AND protocol:"ftp" AND banner:"=%Microsoft FTP%”
@@ -46,6 +49,9 @@ Asset Queries:
 
     Assets not managed by a Microsoft product
         source:runzero AND NOT (source:ms365defender OR source:intune OR source:azuread)
+
+    Assets more than 8 hops away:
+        attribute:"ip.ttl.hops" AND ip.ttl.hops:>"8
 
     Assets missing either Crowdstrike or SentinelOne EDR agents
         NOT edr.name:Crowdstrike AND (type:server OR type:desktop OR type:laptop) OR NOT edr.name:Sentinelone AND (type:server OR type:desktop OR type:laptop)
