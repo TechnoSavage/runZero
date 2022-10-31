@@ -108,6 +108,9 @@ Service Queries:
     SSH version predating 2.0
         protocol:ssh AND (banner:"%1.0%" OR banner:"%1.5-")
 
+    Detect OpenSSL version 3.0 - 3.0.6
+        product:openssl version:3.0
+
 Vulnerability Queries:
 
     Rapid7 - fails PCI compliance
