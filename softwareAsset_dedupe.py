@@ -25,7 +25,7 @@ def usage():
                     results to return a list of assets.
                     
                     Arguments:
-                    -i <filename> jsonl file exported from console 
+                    -f <filename> jsonl file exported from console 
                     -h            Show this help dialogue
                     
                 Examples:
@@ -104,9 +104,9 @@ if __name__ == "__main__":
     if "-h" in sys.argv:
         usage()
         exit()
-    if "-i" in sys.argv:
+    if "-f" in sys.argv:
         try:
-            fileName = sys.argv[sys.argv.index("-i") + 1]
+            fileName = sys.argv[sys.argv.index("-f") + 1]
         except IndexError as error:
             print("No filename provided!\n")
             usage()
