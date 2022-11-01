@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    softwareAsset_dedupe.py, version 1.0 by Derek Burke
+    softwareAsset_dedupe.py, version 1.1 by Derek Burke
     This script is created with the intention of deduplicating assets by UUID after running a query
     in the software portion of the runZero asset inventory. Specifically, this script is intended 
     assist when a user wants to find all assets that do NOT have a specific application installed.
