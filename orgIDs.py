@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    org_oids.py, version 1.0 by Derek Burke
+    orgIDs.py, version 1.1 by Derek Burke
     Script to retrieve all Organization IDs and 'friendly' names for a given account. """
 
 import json
@@ -13,7 +13,7 @@ from requests.exceptions import ConnectionError
 def usage():
     """ Display usage and switches. """
     print(""" Usage:
-                    org_oids.py [arguments]
+                    orgIDs.py [arguments]
 
                     You will be prompted to provide your runZero Account API key
                     Default bahavior is to write output to stdout
@@ -23,7 +23,12 @@ def usage():
                     -j --json            Write output in JSON format
                     -f --file <filename> Write output to specified file (plain text default)
                                          combine with -j for JSON
-                    -h --help            Show this help dialogue""")
+                    -h --help            Show this help dialogue
+                    
+                    Examples:
+                    orgIDs.py 
+                    orgIDs.py -j -f output.json
+                    orgIDs.py -u https://custom.runzero.com -f output.txt """)
 
 def getOIDs(uri, token):
     """ Retrieve Organizational IDs from Console.
@@ -91,12 +96,22 @@ if __name__ == "__main__":
     fileName = ""
 
     if "-u" in sys.argv:
-        uri = sys.argv[sys.argv.index("-u") + 1] + "/api/v1.0/account/orgs"
+        try:
+            uri = sys.argv[sys.argv.index("-u") + 1] + "/api/v1.0/account/orgs"
+        except IndexError as error:
+            print("URI switch used but URI not provided!\n")
+            usage()
+            exit()
     if "-j" in sys.argv:
         formatJSON = True
     if "-f" in sys.argv:
         saveFile = True
-        fileName = sys.argv[sys.argv.index("-f") + 1]
+        try:
+            fileName = sys.argv[sys.argv.index("-f") + 1]
+        except IndexError as error:
+            print("File save switch used but file name not provided!\n")
+            usage()
+            exit()
 
     orgData = getOIDs(uri, token)
     orgOIDs = parseOIDs(orgData)
