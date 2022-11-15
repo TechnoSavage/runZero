@@ -125,6 +125,14 @@ Vulnerability Queries:
 
     Tenable - High and Critical severity vulnerabilities where explots are not required
         plugin.exploitabilityEase:"No exploit is required" AND (severity:critical OR severity:high)
+        
+    Tenable - Query on VPR score (equal to, greater than, or less than)
+        plugin.vpr.score:"6.0" 
+        plugin.vpr.score:>"6.0" 
+        plugin.vpr.score:<"6.0"
+        
+    Tenable - Vulnerability has an available patch 
+        plugin.hasPatch:"true"
 
 Wireless Queries:
 
