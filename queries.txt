@@ -80,7 +80,7 @@ Asset Queries:
     VMs not syncing time with host
         @vmware.vm.config.tools.syncTimeWithHost:"=false"
 
-    VMs where VMware tools is not installed
+    VMs where VMware tools are not installed
         @vmware.vm.config.extra.guestinfo.vmtools.versionString:”_”
 
     VMs with less than 16GB of memory
