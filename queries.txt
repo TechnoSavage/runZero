@@ -67,6 +67,9 @@ Asset Queries:
 
     Assets with SentinelOne Agent requiring patch
         (alive:t OR scanned:f) AND has:"@sentinelone.dev.appsVulnerabilityStatus" AND @sentinelone.dev.appsVulnerabilityStatus:"=patch_required"
+        
+    Assets that have been scanned by Tenable over 2 weeks ago
+        @tenable.dev.lastScanTimeTS:>"2weeks"
 
     Linux VMs
         source:VMware AND os:Linux
@@ -130,6 +133,7 @@ Vulnerability Queries:
         plugin.vpr.score:"6.0" 
         plugin.vpr.score:>"6.0" 
         plugin.vpr.score:<"6.0"
+        
         
     Tenable - Vulnerability has an available patch 
         plugin.hasPatch:"true"
