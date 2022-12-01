@@ -67,6 +67,9 @@ Asset Queries:
 
     Assets with SentinelOne Agent requiring patch
         (alive:t OR scanned:f) AND has:"@sentinelone.dev.appsVulnerabilityStatus" AND @sentinelone.dev.appsVulnerabilityStatus:"=patch_required"
+        
+    Assets that have been scanned by Tenable over 2 weeks ago
+        @tenable.dev.lastScanTimeTS:>"2weeks"
 
     Linux VMs
         source:VMware AND os:Linux
@@ -77,7 +80,7 @@ Asset Queries:
     VMs not syncing time with host
         @vmware.vm.config.tools.syncTimeWithHost:"=false"
 
-    VMs where VMware tools is not installed
+    VMs where VMware tools are not installed
         @vmware.vm.config.extra.guestinfo.vmtools.versionString:”_”
 
     VMs with less than 16GB of memory
@@ -128,6 +131,15 @@ Vulnerability Queries:
 
     Tenable - High and Critical severity vulnerabilities where explots are not required
         plugin.exploitabilityEase:"No exploit is required" AND (severity:critical OR severity:high)
+        
+    Tenable - Query on VPR score (equal to, greater than, or less than)
+        plugin.vpr.score:"6.0" 
+        plugin.vpr.score:>"6.0" 
+        plugin.vpr.score:<"6.0"
+        
+        
+    Tenable - Vulnerability has an available patch 
+        plugin.hasPatch:"true"
 
 Wireless Queries:
 
