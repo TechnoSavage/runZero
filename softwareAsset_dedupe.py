@@ -1,16 +1,16 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    softwareAsset_dedupe.py, version 1.1 by Derek Burke
+    softwareAsset_dedupe.py, version 1.2 by Derek Burke
     This script is created with the intention of deduplicating assets by UUID after running a query
     in the software portion of the runZero asset inventory. Specifically, this script is intended 
     assist when a user wants to find all assets that do NOT have a specific application installed.
-    This typically assumes the customer has an integration that provides comprehensive software 
-    inventory (such as SentinelOne) and runs a query such as 'source:sentinelone and not product:"1password"'.
-    The query results will provide all assets without 1password but will include an entry for an asset that
-    reflects every OTHER software product on that asset when the user cares only to see the assets missing 1password.
-    This script will accept the JSON export from the resulting query and deduplicate assets by UUID to provide a list
-    solely of the assets in question. """
+    This typically assumes the user has an integration that provides comprehensive software 
+    inventory (such as SentinelOne) and when running a query such as 'source:sentinelone and not 
+    product:"1password"' wishes to see only the assets missing the software. The query results will 
+    show all assets without 1password but will also include multiple entries for each asset corresponding 
+    to every other installed software product. This script will accept the JSON export from the resulting
+    query and deduplicate assets by UUID to provide a list solely of the assets in question. """
 
 import json
 import re
