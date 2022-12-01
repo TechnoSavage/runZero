@@ -1,6 +1,6 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
     importNessus.py, version 1.0 by Derek Burke
-    Bulk import all .nessus files in a specified folde via the runZero API."""
+    Bulk import all .nessus files in a specified folder via the runZero API."""
 
 import json
 import re
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     path = ""
     uri = "https://console.runzero.com"
     if "-s" not in sys.argv:
-        siteID = input("Please provide the Site ID to apply scan data to: ")
+        siteID = input("Please provide the Site ID to apply the vulnerability scan data to: ")
     else:
         siteID = sys.argv[sys.argv.index("-s") + 1]
     if "-d" not in sys.argv:
