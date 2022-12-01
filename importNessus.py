@@ -35,10 +35,11 @@ def usage():
                     python -m importNessus""")
 
 def importScan(uri, siteID, scan):
-    """ Extract relevant fields from task data and tally new assets. 
+    """ Upload a .nessus scan file . 
     
-        :param uri: A string, URI of API call.
-        :param scan: JSON object, runZero task data.
+        :param uri: A string, URL of the runZero console.
+        :param siteID: A string, the site ID of the Site to apply scan to.
+        :param scan: A .nessus file, Nessus scan file to upload.
         :returns: Dict Object, JSON formatted.
         :raises: ConnectionError: if unable to successfully make PUT request to console."""
 
