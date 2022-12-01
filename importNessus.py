@@ -15,15 +15,17 @@ def usage():
     print(""" Usage:
                     importNessus.py [arguments]
 
-                    Default mode is to append subnets to the specified site. Use the "-r" flag
-                    to run in replace mode and overwrite site information. 
+                    This script will upload all .nessus vulnerability scan files from a specified
+                    folder to a specified site in the runZero console. This requires the Organization
+                    API key for which the site belongs to. This script should work on *nix systems
+                    and MacOS.
 
                     You will be prompted to provide your runZero Organization API key
                     
                     Optional arguments:
 
                     -u  <uri>            URI of console (default is https://console.runzero.com)
-                    -s  <site ID>        Site ID to apply scan data to (mandatory)
+                    -s  <site ID>        Site ID to apply scan data to
                     -d  <path/directory> Specify directory path to import .nessus scans from
                     -h                   Show this help dialogue
                     
