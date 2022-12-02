@@ -114,9 +114,13 @@ Service Queries:
     Detect OpenSSL version 3.0
         _service.product:="OpenSSL:OpenSSL:3.0"
 
+
 Software Queries:
     Detect OpenSSL version 3.0
         product:openssl AND version:3.0
+
+    Assets with SQL databases
+        product:sql OR product:mariadb OR product:oracledb
 
 Vulnerability Queries:
 
