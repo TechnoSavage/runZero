@@ -161,7 +161,7 @@ Vulnerability Queries:
 
 Wireless Queries:
 
-    Search ESSID for authencitcation exceptions:
+    Search ESSID for authentication exceptions:
         essid:"TheHUB" AND NOT authentication:"wpa2-enterprise"
 
     Find unknown BSSIDs broadcasting known ESSID (exclude known BSSIDs in query for gap analysis)
