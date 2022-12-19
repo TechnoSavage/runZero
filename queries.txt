@@ -47,11 +47,32 @@ Asset Queries:
     All available serial number sources
         protocol:snmp has:snmp.serialNumbers OR hw.serialNumber:t OR ilo.serialNumber:t
 
+    Assets that are virtual machines
+        attribute:virtual
+
+    Assets that are Azure, AWS EC2, or GCP, virtual machines
+        virtual:azure OR virtual:ec2 or virtual:gcp
+
+    Assets that are VMware, or Hyper-V, or Xen virtual machines
+        virtual:vmware OR virtual:"Hyper-V" OR virtual:xen
+
     Assets not managed by a Microsoft product
         source:runzero AND NOT (source:ms365defender OR source:intune OR source:azuread)
 
     Assets more than 8 hops away:
         attribute:"ip.ttl.hops" AND ip.ttl.hops:>"8
+
+    Assets first seen within the past two weeks:
+        first_seen:<"2weeks"
+
+    Assets created in the inventory within the last two weeks:
+        created_at:<"2weeks"
+
+    Assets last seen over two weeks ago:
+        last_seen:>"2weeks" 
+
+    Assets last updated over two weeks ago:
+        updated_at:>"2weeks"
 
     Assets missing either Crowdstrike or SentinelOne EDR agents
         NOT edr.name:Crowdstrike AND (type:server OR type:desktop OR type:laptop) OR NOT edr.name:Sentinelone AND (type:server OR type:desktop OR type:laptop)
@@ -158,6 +179,39 @@ Vulnerability Queries:
         
     Tenable - Vulnerability has an available patch 
         plugin.hasPatch:"true"
+
+    Qualys - Easy to exploit vulnerabilities
+        vulnerability.threatIntel:"%Easy_Exploit%"
+
+    Qualys - vulnerabilities with publicly available exploits
+        vulnerability.threatIntel:"%Exploit_Public%"	
+    
+    Qualys - vulnerabilities enabling lateral movement
+        vulnerability.threatIntel:"%High_Lateral_Movement%"
+
+    Qualys - vulnerabilities 
+        vulnerability.threatIntel:"%High_Data_Loss%"
+    
+    Qualys - vulnerabilities that enable DoS
+        vulnerability.threatIntel:"%Denial_of_Service%"
+
+    Qualys - vulnerabilities 
+        vulnerability.threatIntel:"%Predicted_High_Risk%"
+
+    Qualys - vulnerabilities that allow for unauthenticated exploit
+        vulnerability.threatIntel:"%unauthenticated_Exploitation%"
+
+    Qualys - vulnerabilities that allow RCE
+        vulnerability.threatIntel:"%Remote_Code_Execution%"
+
+    Qualys - vulnerabilities that are wormable
+        vulnerability.threatIntel:"%Wormable%"
+
+    Qualys - Ransomware
+        vulnerability.threatIntel:"%Ransomware%"
+        
+    Qualys - High and Critical severity vulnerabilities that are on CISA's Known Exploited list
+        vulnerability.threatIntel:"%Cisa_Known_Exploited_Vulns%"
 
 Wireless Queries:
 
