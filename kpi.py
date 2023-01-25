@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    kpi.py, version 1.1 by Derek Burke
+    kpi.py, version 1.2 by Derek Burke
     Calculate defined KPI metrics. """
 
 import json
@@ -88,29 +88,32 @@ def metrics(assetCounts):
                 percentOfTotal = round(count / totalAssets * 100, 2)
                 weightedPriority = round(count * 3 / totalAssets * 100, 2)
                 compliance = 100 - percentOfTotal
-                normalAverage += percentOfTotal
-                weightedComply += weightedPriority
-                report.append('%s: %s - %% of total: %s - %% in compliance: %s - weighted total: %s' % (metric, str(count), percentOfTotal, compliance, weightedPriority))
-            elif 'Medium' in metric:
-                percentOfTotal = round(count / totalAssets * 100, 2)
-                weightedPriority = round(count * 2 / totalAssets * 100, 2)
-                compliance = 100 - percentOfTotal
-                normalAverage += percentOfTotal
-                weightedComply += weightedPriority
+                normalAverage += count
+                weightedComply += count * 3
                 report.append('%s: %s - %% of total: %s - %% in compliance: %s - weighted total: %s' % (metric, str(count), percentOfTotal, compliance, weightedPriority))
             elif 'High' in metric:
                 percentOfTotal = round(count / totalAssets * 100, 2)
+                weightedPriority = round(count * 2 / totalAssets * 100, 2)
+                compliance = 100 - percentOfTotal
+                normalAverage += count
+                weightedComply += count * 2
+                report.append('%s: %s - %% of total: %s - %% in compliance: %s - weighted total: %s' % (metric, str(count), percentOfTotal, compliance, weightedPriority))
+            elif 'Medium' in metric:
+                percentOfTotal = round(count / totalAssets * 100, 2)
                 weightedPriority = percentOfTotal
                 compliance = 100 - percentOfTotal
-                normalAverage += percentOfTotal
-                weightedComply += weightedPriority
+                normalAverage += count
+                weightedComply += count
                 report.append('%s: %s - %% of total: %s - %% in compliance: %s - weighted total: %s' % (metric, str(count), percentOfTotal, compliance, weightedPriority))
             else:
                 pass
-        report.append('Total Compliance KPI (weighted average based on priority, 3 = critical, 1 =lowest): ' + str(100 - weightedComply))
-        report.append('vs normal average of all figures: ' + str(100 - normalAverage))
+        report.append('Total Compliance KPI (weighted average based on priority, 3 = critical, 1 =lowest): ' + str(round(100 - (weightedComply / totalAssets * 100), 2)))
+        report.append('vs normal average of all figures: ' + str(round(100 - (normalAverage / totalAssets * 100), 2)))
         return report
     except KeyError as error:
+        raise error
+    except ZeroDivisionError as error:
+        print('Zero assets were discovered that match the intial query; nothing to process.')
         raise error
 
 def writeFile(fileName, contents):
@@ -127,9 +130,9 @@ def writeFile(fileName, contents):
 
 if __name__ == "__main__":
     #Provide Organization API key to token variable
-    token = ''
+    token = 'OT552674676FA4882E93DFAA6D848E'
     #Provide URL of console
-    console = 'https://console.runzero.com'
+    console = 'https://demo.runzero.com' #'https://console.runzero.com'
     #Output report name; default uses UTC time
     fileName = "KPI_report_" + str(datetime.utcnow())
     #KPIs variable is a list that will be iterated over and used to return total number of matching assets.
@@ -144,8 +147,8 @@ if __name__ == "__main__":
             {'title': 'Systems with Critical Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:critical AND first_detected_at:>"3days"', 'type': 'vuln'},
             {'title': 'Systems with High Vulnerabilities', 'query': 'source:crowdstrike AND severity:high', 'type': 'vuln'},
             {'title': 'Systems with High Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"1month"', 'type': 'vuln'},
-            {'title': 'Systems with Critical Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"14days"', 'type': 'vuln'},
-            {'title': 'Systems with Critical Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"3days"', 'type': 'vuln'},
+            {'title': 'Systems with High Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"14days"', 'type': 'vuln'},
+            {'title': 'Systems with High Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"3days"', 'type': 'vuln'},
             {'title': 'Systems with Medium Vulnerabilities', 'query': 'source:crowdstrike AND severity:medium', 'type': 'vuln'},
             {'title': 'Systems with Medium Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:medium AND first_detected_at:>"1month"', 'type': 'vuln'},
             {'title': 'Systems with Medium Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:medium AND first_detected_at:>"14days"', 'type': 'vuln'},
@@ -162,5 +165,3 @@ if __name__ == "__main__":
     report = metrics(assetCounts)
     #Write resulting report to file
     writeFile(fileName, '\n'.join(report))
-
-    
