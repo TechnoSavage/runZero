@@ -51,7 +51,7 @@ Asset Queries:
         attribute:virtual
 
     Assets that are Azure, AWS EC2, or GCP, virtual machines
-        virtual:azure OR virtual:ec2 or virtual:gcp
+        virtual:azure OR virtual:ec2 OR virtual:gcp
 
     Assets that are VMware, or Hyper-V, or Xen virtual machines
         virtual:vmware OR virtual:"Hyper-V" OR virtual:xen
@@ -73,6 +73,9 @@ Asset Queries:
 
     Assets last updated over two weeks ago:
         updated_at:>"2weeks"
+
+    Assets that (likely) have Tanium Client installed and running
+        alive:t AND port:17472 AND (type:server OR type:desktop OR type:laptop)
 
     Assets missing either Crowdstrike or SentinelOne EDR agents
         NOT edr.name:Crowdstrike AND (type:server OR type:desktop OR type:laptop) OR NOT edr.name:Sentinelone AND (type:server OR type:desktop OR type:laptop)
@@ -145,7 +148,7 @@ Service Queries:
         protocol:telnet AND NOT port:23
 
     SSH version predating 2.0
-        protocol:ssh AND (banner:"%1.0%" OR banner:"%1.5-")
+        protocol:ssh AND (banner:"%1.0%" OR banner:"%1.5-" OR banner:"1.99")
     
     Detect OpenSSL version 3.0
         _service.product:="OpenSSL:OpenSSL:3.0"
