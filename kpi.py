@@ -131,7 +131,7 @@ if __name__ == "__main__":
     #Provide URL of console
     console = 'https://console.runzero.com'
     #Output report name; default uses UTC time
-    fileName = "KPI_report" + str(datetime.utcnow())
+    fileName = "KPI_report_" + str(datetime.utcnow())
     #KPIs variable is a list that will be iterated over and used to return total number of matching assets.
     #Format is 'title' (Reported KPI metric), 'query' (the query needed to filter the assets according to KPI),
     #and 'type' which is either 'asset' or 'vuln' according to the API endpoint that must be queried to obtain
