@@ -138,21 +138,23 @@ if __name__ == "__main__":
     #KPIs variable is a list that will be iterated over and used to return total number of matching assets.
     #Format is 'title' (Reported KPI metric), 'query' (the query needed to filter the assets according to KPI),
     #and 'type' which is either 'asset' or 'vuln' according to the API endpoint that must be queried to obtain
-    #the desired information
-    #Add or remove relevant KPIs AND associated queries as needed.
-    KPIs = [{'title': 'Systems Discovered within Last 30 Days', 'query': 'first_seen:<"1month"', 'type': 'asset'},
+    #the desired information.
+    #Uncomment metrics for the time range of interest and leave others commented; mixing time ranges will skew results.
+    KPIs = [{'title': 'Systems Discovered within the Last 30 Days', 'query': 'first_seen:<"1month"', 'type': 'asset'},
+            #{'title': 'Systems Discovered within Last 14 Days', 'query': 'first_seen:<"14days"', 'type': 'asset'},
+            #{'title': 'Systems Discovered within Last 3 Days', 'query': 'first_seen:<"3days"', 'type': 'asset'},
             {'title': 'Systems with Critical Vulnerabilities','query': 'source:crowdstrike AND severity:critical', 'type': 'vuln'},
-            {'title': 'Systems with Critical Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:critical AND first_detected_at:>"1month"', 'type': 'vuln'},
-            {'title': 'Systems with Critical Vulnerabilities Older than 14 Days', 'query': 'source:crowdstrike AND severity:critical AND first_detected_at:>"14days"', 'type': 'vuln'},
-            {'title': 'Systems with Critical Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:critical AND first_detected_at:>"3days"', 'type': 'vuln'},
+            #{'title': 'Systems with Critical Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:critical AND first_detected_at:>"1month"', 'type': 'vuln'},
+            #{'title': 'Systems with Critical Vulnerabilities Older than 14 Days', 'query': 'source:crowdstrike AND severity:critical AND first_detected_at:>"14days"', 'type': 'vuln'},
+            #{'title': 'Systems with Critical Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:critical AND first_detected_at:>"3days"', 'type': 'vuln'},
             {'title': 'Systems with High Vulnerabilities', 'query': 'source:crowdstrike AND severity:high', 'type': 'vuln'},
-            {'title': 'Systems with High Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"1month"', 'type': 'vuln'},
-            {'title': 'Systems with High Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"14days"', 'type': 'vuln'},
-            {'title': 'Systems with High Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"3days"', 'type': 'vuln'},
+            #{'title': 'Systems with High Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"1month"', 'type': 'vuln'},
+            #{'title': 'Systems with High Vulnerabilities Older than 14 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"14days"', 'type': 'vuln'},
+            #{'title': 'Systems with High Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:high AND first_detected_at:>"3days"', 'type': 'vuln'},
             {'title': 'Systems with Medium Vulnerabilities', 'query': 'source:crowdstrike AND severity:medium', 'type': 'vuln'},
-            {'title': 'Systems with Medium Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:medium AND first_detected_at:>"1month"', 'type': 'vuln'},
-            {'title': 'Systems with Medium Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:medium AND first_detected_at:>"14days"', 'type': 'vuln'},
-            {'title': 'Systems with Medium Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:medium AND first_detected_at:>"3days"', 'type': 'vuln'},
+            #{'title': 'Systems with Medium Vulnerabilities Older than 30 Days', 'query': 'source:crowdstrike AND severity:medium AND first_detected_at:>"1month"', 'type': 'vuln'},
+            #{'title': 'Systems with Medium Vulnerabilities Older than 14 Days', 'query': 'source:crowdstrike AND severity:medium AND first_detected_at:>"14days"', 'type': 'vuln'},
+            #{'title': 'Systems with Medium Vulnerabilities Older than 3 Days', 'query': 'source:crowdstrike AND severity:medium AND first_detected_at:>"3days"', 'type': 'vuln'},
             ]
     assetCounts = {}
     for item in KPIs:
