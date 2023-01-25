@@ -130,9 +130,9 @@ def writeFile(fileName, contents):
 
 if __name__ == "__main__":
     #Provide Organization API key to token variable
-    token = 'OT552674676FA4882E93DFAA6D848E'
+    token = ''
     #Provide URL of console
-    console = 'https://demo.runzero.com' #'https://console.runzero.com'
+    console = 'https://console.runzero.com'
     #Output report name; default uses UTC time
     fileName = "KPI_report_" + str(datetime.utcnow())
     #KPIs variable is a list that will be iterated over and used to return total number of matching assets.
