@@ -79,37 +79,38 @@ def metrics(assetCounts):
     try:
         report = []
         totalAssets = 0
-        weightedComply = 0
+        weighted = 0
         normalAverage = 0
+        categories = 3 #Critical, High, Medium
+        critWeight = 3
+        highWeight = 2
+        medWeight = 1
         for metric, count in assetCounts.items():
             if 'Discovered' in metric:
                 totalAssets = count
                 report.append(metric + ': ' + str(count))
             elif 'Critical' in metric:
                 percentOfTotal = count / totalAssets * 100
-                weightedPriority = count * 3 / totalAssets * 100
                 compliance = 100 - percentOfTotal
-                normalAverage += count
-                weightedComply += count * 3
-                report.append('%s: %s - %% of total: %s - %% in compliance: %s - weighted total: %s' % (metric, count, round(percentOfTotal, 2), round(compliance, 2), round(weightedPriority, 2)))
+                normalAverage += compliance
+                weighted += compliance * critWeight
+                report.append('%s: %s - %% of total: %s - %% in compliance: %s' % (metric, count, round(percentOfTotal, 2), round(compliance, 2)))
             elif 'High' in metric:
                 percentOfTotal = count / totalAssets * 100
-                weightedPriority = count * 2 / totalAssets * 100
                 compliance = 100 - percentOfTotal
-                normalAverage += count
-                weightedComply += count * 2
-                report.append('%s: %s - %% of total: %s - %% in compliance: %s - weighted total: %s' % (metric, count, round(percentOfTotal, 2), round(compliance, 2), round(weightedPriority, 2)))
+                normalAverage += compliance
+                weighted += compliance * highWeight
+                report.append('%s: %s - %% of total: %s - %% in compliance: %s' % (metric, count, round(percentOfTotal, 2), round(compliance, 2)))
             elif 'Medium' in metric:
                 percentOfTotal = count / totalAssets * 100
-                weightedPriority = percentOfTotal
                 compliance = 100 - percentOfTotal
-                normalAverage += count
-                weightedComply += count
-                report.append('%s: %s - %% of total: %s - %% in compliance: %s - weighted total: %s' % (metric, count, round(percentOfTotal, 2), round(compliance, 2), round(weightedPriority, 2)))
+                normalAverage += compliance
+                weighted += compliance * medWeight
+                report.append('%s: %s - %% of total: %s - %% in compliance: %s' % (metric, count, round(percentOfTotal, 2), round(compliance, 2)))
             else:
                 pass
-        report.append('Total Compliance KPI (weighted average based on priority, 3 = critical, 1 =lowest): ' + str(round(100 - (weightedComply / totalAssets * 100), 2)))
-        report.append('vs normal average of all figures: ' + str(round(100 - (normalAverage / totalAssets * 100), 2)))
+        report.append('Total Compliance KPI (weighted average based on priority, 3 = critical, 2 = medium, 1 = lowest): ' + str(round(weighted / (critWeight + highWeight + medWeight), 2)))
+        report.append('vs normal average of all figures: ' + str(round(normalAverage / categories, 2)))
         return report
     except KeyError as error:
         raise error
@@ -141,7 +142,7 @@ if __name__ == "__main__":
     # according to KPI), and 'type' which is either 'asset' or 'vuln' according to the API endpoint that must be queried to obtain
     #the desired information. 
     timeRange = "1month" #Define time range for discovered assets in runZero syntax e.g. 1month, 2weeks, 3days, 12hours
-    KPIs = [{'title': 'Systems Discovered within the Last %s' % timeRange, 'query': 'edr.name:crowdstrike AND first_seen:<"%s"' % timeRange, 'type': 'asset'},
+    KPIs = [{'title': 'Systems Discovered within the Last %s' % timeRange, 'query': 'first_seen:<"%s"' % timeRange, 'type': 'asset'},
             {'title': 'Systems within the Last %s with Critical Vulnerabilities' % timeRange, 'query': 'source:crowdstrike AND severity:critical AND first_detected_at:<"%s"' % timeRange, 'type': 'vuln'},
             {'title': 'Systems within the Last %s with High Vulnerabilities' % timeRange, 'query': 'source:crowdstrike AND severity:high AND first_detected_at:<"%s"' % timeRange, 'type': 'vuln'},
             {'title': 'Systems within the Last %s with Medium Vulnerabilities' % timeRange, 'query': 'source:crowdstrike AND severity:medium AND first_detected_at:<"%s"' % timeRange, 'type': 'vuln'}]
