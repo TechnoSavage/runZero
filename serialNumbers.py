@@ -64,7 +64,7 @@ def getAssets(uri, token, filter=" ", fields=" "):
         :param uri: A string, URI of runZero console.
         :param token: A string, Organization API Key.
         :param filter: A string, query to filter returned assets(" " returns all).
-        :param fields: A string, comma separates string of fields to return(" " returns all).
+        :param fields: A string, comma separated string of fields to return(" " returns all).
         :returns: a dict, JSON object of assets.
         :raises: ConnectionError: if unable to successfully make GET request to console."""
 
