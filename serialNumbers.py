@@ -50,8 +50,8 @@ def readConfig(configFile):
     try:
         with open( configFile, 'r') as c:
             config = c.read()
-            url = re.search("uri=(http[s]?://[a-z0-9\.]*[^\s])", config).group(1)
-            token = re.search("exportToken=([0-9A-Z]*[^\s])", config).group(1)
+            url = re.search("uri=(http[s]?://[a-z0-9\.]+)", config).group(1)
+            token = re.search("exportToken=([0-9A-Z]+)", config).group(1)
             return(url, token)
     except IOError as error:
         raise error
