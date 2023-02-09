@@ -128,10 +128,20 @@ if __name__ == "__main__":
     else:
         print("Enter your Organization API Key: ")
         token = getpass()
-    if "-s" not in sys.argv and not config or siteID == '':
-        siteID = input("Please provide the Site ID to apply the vulnerability scan data to: ")
-    if "-d" not in sys.argv and not config or path == '':
-        path = input("Please provide the path to the directory containing .nessus scan files: ")
+    if "-s" in sys.argv and not config:
+        try:
+            siteID = sys.argv[sys.argv.index("-s") + 1]
+        except IndexError as error:
+            print("site ID switch used but site ID not provided!\n")
+            usage()
+            exit()
+    if "-d" in sys.argv and not config:
+        try:
+            path = sys.argv[sys.argv.index("-d") + 1]
+        except IndexError as error:
+            print("Directory switch used but directory not provided!\n")
+            usage()
+            exit()
     if "-u" in sys.argv and not config:
         try:
             consoleURL = sys.argv[sys.argv.index("-u") + 1]
@@ -139,6 +149,10 @@ if __name__ == "__main__":
             print("URI switch used but URI not provided!\n")
             usage()
             exit()
+    if siteID == '':
+        siteID = input("Please provide the Site ID to apply the vulnerability scan data to: ")
+    if path == '':
+        path = input("Please provide the path to the directory containing .nessus scan files: ")
     try:     
         contents = subprocess.check_output(['ls', path]).splitlines()
         for item in contents:
