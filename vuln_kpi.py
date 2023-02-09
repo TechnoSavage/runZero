@@ -206,6 +206,7 @@ def writeFile(fileName, contents):
                     o.write(contents)
     except IOError as error:
         raise error
+    
 
 if __name__ == "__main__":
     if "-h" in sys.argv:
@@ -269,12 +270,13 @@ if __name__ == "__main__":
     #Generate report from asset counts
     report = metrics(assetCounts)
     #Write resulting report to file
-    if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1] not in ('csv', 'html', 'json'):
-        fileName = fileName + '.txt'
-        writeFile(fileName, '\n'.join(report))
-    elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1] == 'json':
-        fileName = fileName + '.json'
-        writeJSON(fileName, report)
+    if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() not in ('all', 'csv', 'html', 'json'):
+        writeFile(fileName + '.txt', '\n'.join(report))
+    elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() == 'json':
+        writeJSON(fileName + '.json', report)
+    elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() == 'all':
+        threading.Thread(writeFile(fileName + '.txt', '\n'.join(report))).start()
+        threading.Thread(writeJSON(fileName + '.json', report)).start()
     else:
         fileName = fileName + '.txt'
         writeFile(fileName, '\n'.join(report))
