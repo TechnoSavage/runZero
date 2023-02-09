@@ -8,6 +8,7 @@
     of vulnerable assets are compared to the total asset count for the time period and then calculates a compliance metric based on
     weighted scoring of vulnerability criticality."""
 
+import csv
 import json
 import re
 import requests
@@ -206,7 +207,19 @@ def writeFile(fileName, contents):
                     o.write(contents)
     except IOError as error:
         raise error
-    
+
+def writeCSV(fileName, contents):
+    """ """
+    pass
+
+
+def writeHTML(fileName, contents):
+    """ """
+    html = """<HTML>
+                <HEAD><TITLE>%s</TITLE></HEAD>
+                <BODY><p>%s</p></BODY>
+              </HTML>""" % (fileName, input)
+    writeFile(fileName, html)  
 
 if __name__ == "__main__":
     if "-h" in sys.argv:
@@ -275,8 +288,8 @@ if __name__ == "__main__":
     elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() == 'json':
         writeJSON(fileName + '.json', report)
     elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() == 'all':
-        threading.Thread(writeFile(fileName + '.txt', '\n'.join(report))).start()
-        threading.Thread(writeJSON(fileName + '.json', report)).start()
+        writeFile(fileName + '.txt', '\n'.join(report))
+        writeJSON(fileName + '.json', report)
     else:
         fileName = fileName + '.txt'
         writeFile(fileName, '\n'.join(report))
