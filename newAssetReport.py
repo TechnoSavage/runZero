@@ -110,7 +110,7 @@ if __name__ == "__main__":
     consoleURL = 'https://console.runzero.com'
     token = ''
     #Output report name; default uses UTC time
-    fileName = "New_Asset_Report" + str(datetime.utcnow())
+    fileName = "New_Asset_Report_" + str(datetime.utcnow())
     #Define config file to read from
     if "-c" in sys.argv:
         try:
