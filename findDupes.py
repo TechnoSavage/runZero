@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    findDupes.py, version 1.1 by Derek Burke
+    findDupes.py, version 1.2 by Derek Burke
     Query runZero API for all assets found within an Organization (tied to Export API key provided) and sort out assets with
     same MAC, Hostname, and IP but different asset ID. Optionally, an output file format can be specified to write to."""
 
@@ -119,20 +119,32 @@ def findDupes(data):
                     pass
                 else:
                     macMatch = False
-                    addMatch = False
-                    nameMatch = False  
+                    addrMatch = False
+                    nameMatch = False
+                    matchedMACs = []
+                    matchedAddresses = []
+                    matchedHostnames = []  
                     for mac in others['macs']:
                         if mac in macs:
                             macMatch = True
-                    for add in others['addresses']:
-                        if add in addresses:
+                            matchedMACs.append(mac)
+                    for addr in others['addresses']:
+                        if addr in addresses:
                             addMatch = True
+                            matchedAddresses.append(addr)
                     for name in others['names']:
                         if name in hostnames:
                             nameMatch = True
-                    if macMatch or addMatch or nameMatch:
-                        asset['possible_dupe'] = others['id']
-                        asset['shared_fields'] = {'MAC': macMatch, 'IP address': addMatch, 'Hostname': nameMatch, 'site': others['site_id']}
+                            matchedHostnames.append(name)
+                    if macMatch or addrMatch or nameMatch:
+                        asset['possible_dupe'] = {'id': others['id'], 'os': others['os'], 'hw': others['hw']}
+                        asset['shared_fields'] = {'MAC': macMatch,
+                                                  'matched_MACs': matchedMACs,  
+                                                  'IP address': addrMatch, 
+                                                  'matched_Addresses': matchedAddresses, 
+                                                  'Hostname': nameMatch, 
+                                                  'matched_Hostnames': matchedHostnames, 
+                                                  'site': others['site_id']}
                         possblDups.append(asset)
         if len(possblDups) > 0:
             return possblDups
