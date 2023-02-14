@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    findDupes.py, version 1.0 by Derek Burke
+    findDupes.py, version 1.1 by Derek Burke
     Query runZero API for all assets found within an Organization (tied to Export API key provided) and sort out assets with
     same MAC, Hostname, and IP but different asset ID. Optionally, an output file format can be specified to write to."""
 
@@ -25,6 +25,7 @@ def usage():
 
                     -u <uri>                URI of console (default is https://console.runzero.com)
                     -t <time span>          Time span to search for new assets e.g. 1day, 2weeks, 1month.
+                                            If used in conjunction with config will take precedence over config value.
                     -c <config file/path>   Filename of config file including absolute path.
                     -o <text| json | all>   Output file format for report. JSON is default.
                     -g                      Generate config file template.
@@ -162,6 +163,7 @@ if __name__ == "__main__":
     configFile = ''
     consoleURL = 'https://console.runzero.com'
     token = ''
+    timeRange = ' '
     #Output report name; default uses UTC time
     fileName = "Duplicate_Asset_Report_" + str(datetime.utcnow())
     #Define config file to read from
@@ -172,6 +174,7 @@ if __name__ == "__main__":
             confParams = readConfig(configFile)
             consoleURL = confParams[0]
             token = confParams[1]
+            timeRange = confParams[2]
         except IndexError as error:
             print("Config file switch used but no file provided!\n")
             usage()
@@ -186,8 +189,15 @@ if __name__ == "__main__":
             print("URI switch used but URI not provided!\n")
             usage()
             exit()
+    if "-t" in sys.argv:
+        try:
+            timeRange = sys.argv[sys.argv.index("-t") + 1]
+        except IndexError as error:
+            print("time range switch used but time range not provided!\n")
+            usage()
+            exit()
     fields = "id, os, hw, addresses, macs, names, alive, site_id" #fields to return in API call; modify for more or less
-    assets = getAssets(consoleURL, token, ' ', fields)
+    assets = getAssets(consoleURL, token, 'first_seen:<' + timeRange, fields)
     dupes = findDupes(assets)
     if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() not in ('text', 'txt', 'all'):
         writeFile(fileName + '.json', json.dumps(dupes, indent=4))
