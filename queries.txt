@@ -98,6 +98,9 @@ Asset Queries:
     Assets that have been scanned by Tenable over 2 weeks ago
         @tenable.dev.lastScanTimeTS:>"2weeks"
 
+    Assets scanned by Tenable over an 8 ACR (asset cirticality rating) score:
+        (alive:t OR scanned:f) AND has:"@tenable.dev.acrScore" AND @tenable.dev.acrScore:"=8"
+
     Assets where last Rapid7 scan concluded over 2 weeks ago
         @rapid7.dev.report.endTimeTS:">2weeks"
 
@@ -139,6 +142,9 @@ Asset Queries:
 
     Video related assets
         type:"IP Camera" OR type:"DVR" OR type:"Video Encoder"
+
+    IP Cameras with possible publically exposed video streams or login pages:
+        type:"ip camera" and has_public:t and (protocol:rtsp or protocol:http)
 
 Service Queries:
     Online assets with SSH accepting password authentication
