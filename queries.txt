@@ -29,7 +29,7 @@ Asset Queries:
     Assets offering remote access protocols
         protocol:rdp OR protocol:vnc OR protocol:teamviewer
 
-    Assets with open ports assciated with clear text protocols
+    Assets with open ports associated with clear text protocols
         port:21 OR port:23 OR port:80 OR port:139 OR port:445 OR port:3306 OR port:1433 OR port:161 OR port:8080 OR port:3389 OR port:5900
 
     Multi-homed assets connected only to private networks
@@ -60,7 +60,7 @@ Asset Queries:
         source:runzero AND NOT (source:ms365defender OR source:intune OR source:azuread)
 
     Assets more than 8 hops away:
-        attribute:"ip.ttl.hops" AND ip.ttl.hops:>"8
+        attribute:"ip.ttl.hops" AND ip.ttl.hops:>"8"
 
     Assets first seen within the past two weeks:
         first_seen:<"2weeks"
@@ -148,7 +148,7 @@ Asset Queries:
 
 Service Queries:
     Online assets with SSH accepting password authentication
-        alive:t AND has:"ssh.authMethods" AND protocol:"ssh" AND (ssh.authMethods:"=password" OR ssh.authMethods:"=password%publickey"
+        alive:t AND has:"ssh.authMethods" AND protocol:"ssh" AND (ssh.authMethods:"=password" OR ssh.authMethods:"=password%publickey")
 
     Telnet running on non-standard port
         protocol:telnet AND NOT port:23
@@ -178,7 +178,7 @@ Vulnerability Queries:
     Tenable - Critical severity vulnerabilities where exploits are avaialable
         plugin.exploitabilityEase:"Exploits are available" AND severity:critical
 
-    Tenable - High and Critical severity vulnerabilities where explots are not required
+    Tenable - High and Critical severity vulnerabilities where exploits are not required
         plugin.exploitabilityEase:"No exploit is required" AND (severity:critical OR severity:high)
         
     Tenable - Query on VPR score (equal to, greater than, or less than)
