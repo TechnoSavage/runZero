@@ -27,7 +27,7 @@ Asset Queries:
         has_public:t OR has_public:t AND alive:t AND (protocol:rdp OR protocol:vnc OR protocol:teamviewer)
 
     Assets offering remote access protocols
-        protocol:rdp OR protocol:vnc OR protocol:teamviewer
+        protocol:rdp OR protocol:vnc OR protocol:teamviewer OR protocol:ssh OR protocol:telnet
 
     Assets with open ports associated with clear text protocols
         port:21 OR port:23 OR port:80 OR port:139 OR port:445 OR port:3306 OR port:1433 OR port:161 OR port:8080 OR port:3389 OR port:5900
@@ -41,7 +41,7 @@ Asset Queries:
     Assets with serial numbers from SNMP
         protocol:snmp has:snmp.serialNumbers
 
-    Switch assets accepting Username and Password authentication 
+    Switch assets accepting Username and Password authentication over HTTP
         type:switch AND (_asset.protocol:http AND NOT _asset.protocol:tls) AND ( html.inputs:"password:" OR last.html.inputs:"password:" OR has:http.head.wwwAuthenticate OR has:last.http.head.wwwAuthenticate )
     
     All available serial number sources
@@ -158,6 +158,9 @@ Service Queries:
     
     Detect OpenSSL version 3.0
         _service.product:="OpenSSL:OpenSSL:3.0"
+
+    PHP websites
+        product:php OR banner:"%php%" OR cookie:phpsessid OR html.forms:"%.php" OR http.body:"%php%" OR http.head.location:"%.php" OR http.head.setCookie:"%phpsessid%" OR last.http.uri:"%.php" OR last.http.body:"%php%" OR last.html.forms:"%.php"
 
 
 Software Queries:
