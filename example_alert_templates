@@ -1,0 +1,48 @@
+#HTML template for new device discovery
+
+#Subject
+
+{{assets_new}} devices were detected during the last scan
+
+#Body
+
+<h1>{{site.name}}</h1>
+
+<h2>Scan Results</h2>
+{{#scan}}
+<ul>
+<li>{{assets_new}} new assets</li>
+</ul>
+{{/scan}}
+
+<h2>New assets</h2>
+<ul>
+{{#report.new}}
+<li>{{names}} IP(s):{{addresses}} OS:{{os}} HW:{{hw}} Type:{{type}} Services:{{service_count}}</li>
+{{/report.new}}
+{{^report.new}}
+<li>No new assets were discovered.</li>
+{{/report.new}}
+</ul>
+
+<p><a href="{{task.url}}">View the scan results</a></p>
+
+#HTML template for service query alerts
+
+#subject
+
+{{search.found}} matches found
+
+#Body
+
+<h1>{{organization.name}}</h1>
+<h1>{{site.name}}</h1>
+
+<h2>Detected assets and services</h2>
+<ul>
+{{#query.services}}
+<li>{{id}} Hostname:{{names}} IP:{{address}} Summary:{{summary}} Port:{{port}} OS:{{os}} HW:{{hw}} Type:{{type}}</li>
+{{/query.services}}
+</ul>
+
+<p><a href="{{task.url}}">View the scan results</a></p>
