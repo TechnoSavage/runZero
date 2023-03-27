@@ -144,7 +144,7 @@ Asset Queries:
         type:"IP Camera" OR type:"DVR" OR type:"Video Encoder"
 
     IP Cameras with possible publicly exposed video streams or login pages:
-        type:"ip camera" and has_public:t and (protocol:rtsp or protocol:http)
+        type:"ip camera" AND has_public:t AND (protocol:rtsp OR protocol:http)
 
 Service Queries:
     Online assets with SSH accepting password authentication
