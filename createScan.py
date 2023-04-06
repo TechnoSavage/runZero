@@ -22,7 +22,6 @@ def usage():
                     Optional arguments:
 
                     -u <uri>              URI of console (default is https://console.runzero.com)
-                    -s <site UID>         Provide the Site ID where the scan results should be saved
                     -t <target file/path> Specify a file containing scan targets (e.g.
                                           IP addresses/CIDR blocks, one per line)
                     -c <config file/path> Filename of config file including absolute path
