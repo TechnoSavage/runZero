@@ -17,7 +17,8 @@ def usage():
                     createScan.py [arguments]
 
                     You will be prompted to provide your runZero Organization API key unless
-                    it is included in a specified config file.
+                    it is included in a specified config file. If no config is provided you will
+                    prompted to provide scan task parameters.
                     
                     Optional arguments:
 
@@ -36,7 +37,7 @@ def genConfig():
     """Create a template for script configuration file."""
 
     template = """orgToken= #Organization API Key\nuri=https://console.runzero.com #Console URL\nsiteID= #Site ID whare scan results are saved\n
-    scanName= #name of scan task\nscanDesc= #Description for scan task\nscanRate= #scan rate in packets per second"""
+    scanExplor= #UID of explorer to use\nscanName= #name of scan task\nscanDesc= #Description for scan task\nscanRate= #scan rate in packets per second"""
     writeFile("config_template", template)
     exit()
 
