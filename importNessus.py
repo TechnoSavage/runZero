@@ -126,8 +126,7 @@ if __name__ == "__main__":
             usage()
             exit()
     else:
-        print("Enter your Organization API Key: ")
-        token = getpass()
+        token = getpass(prompt="Enter your Organization API Key: ")
     if "-s" in sys.argv and not config:
         try:
             siteID = sys.argv[sys.argv.index("-s") + 1]
