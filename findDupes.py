@@ -3,7 +3,10 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
     findDupes.py, version 1.2 by Derek Burke
     Query runZero API for all assets found within an Organization (tied to Export API key provided) and sort out assets with
-    same MAC, Hostname, and IP but different asset ID. Optionally, an output file format can be specified to write to."""
+    same MAC, Hostname, and IP but different asset ID. Optionally, an output file format can be specified to write to.
+    
+    !!!NOTE!!! runZero now support queries for address_overlap, mac_overlap, and name_overlap. These keywords allow for 
+    identification of potential duplicate assets directly in the console making the functionality of this script redundant."""
 
 import json
 import re
@@ -192,8 +195,7 @@ if __name__ == "__main__":
             usage()
             exit()
     else:
-        print("Enter your Export API Key: ")
-        token = getpass()
+        token = getpass(prompt="Enter your Export API Key: ")
     if "-u" in sys.argv and not config:
         try:
             consoleURL = sys.argv[sys.argv.index("-u") + 1]
