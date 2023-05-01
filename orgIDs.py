@@ -139,8 +139,7 @@ if __name__ == "__main__":
             usage()
             exit()
     else:
-        print("Enter your Account API Key: ")
-        token = getpass()
+        token = getpass(prompt="Enter your Account API Key: ")
     if "-u" in sys.argv:
         try:
             consoleURL = sys.argv[sys.argv.index("-u") + 1] + "/api/v1.0/account/orgs"
