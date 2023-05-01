@@ -125,8 +125,7 @@ if __name__ == "__main__":
             usage()
             exit()
     else:
-        print("Enter your Export API Key: ")
-        token = getpass()
+        token = getpass(prompt="Enter your Export API Key: ")
     if "-u" in sys.argv and not config:
         try:
             consoleURL = sys.argv[sys.argv.index("-u") + 1]
