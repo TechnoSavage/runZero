@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    orgIDs.py, version 2.0 by Derek Burke
+    orgIDs.py, version 3.0 by Derek Burke
     Script to retrieve all Organization IDs and 'friendly' names for a given account. """
 
 import json
-import re
+import os
 import requests
 import sys
 from datetime import datetime
@@ -17,13 +17,14 @@ def usage():
     print(""" Usage:
                     orgIDs.py [arguments]
 
-                    You will be prompted to provide your runZero Account API key
-                    Default bahavior is to write output to stdout
-                    Optional arguments.
+                    You will be prompted to provide your runZero Account API key if it
+                    is not specified in the .env file. Default bahavior is to write output 
+                    to stdout.
+
+                    Optional arguments:
 
                     -u <uri>              URI of console (default is https://console.runzero.com)
-                    -c <config file/path> Filename of config file including absolute path
-                    -j --json             Write output in JSON format
+                    -j                    Write output in JSON format
                     -f                    Write output to specified file (plain text default)
                                           combine with -j for JSON
                     -h --help             Show this help dialogue
@@ -31,33 +32,7 @@ def usage():
                     Examples:
                     orgIDs.py 
                     orgIDs.py -j -f output.json
-                    orgIDs.py -u https://custom.runzero.com -f output.txt
-                    python3 -m orgIDs -c example.config """)
-    
-def genConfig():
-    """Create a template for script configuration file."""
-
-    template = "accountToken= #Account API Key\nuri=https://console.runzero.com #Console URL\n"
-    writeFile("config_template", template)
-    exit()
-
-def readConfig(configFile):
-    """ Read values from configuration file
-
-        :param config: a file, file containing values for script
-        :returns: a tuple, console url at index 0 and API token at index 1.
-        :raises: IOError: if file cannot be read.
-        :raises FileNotFoundError: if file cannot be found."""
-    try:
-        with open( configFile, 'r') as c:
-            config = c.read()
-            url = re.search("uri=(http[s]?://[a-z0-9\.]+)", config).group(1)
-            token = re.search("accountToken=([0-9A-Z]+)", config).group(1)
-            return(url, token)
-    except IOError as error:
-        raise error
-    except FileNotFoundError as error:
-        raise error
+                    python3 -m orgIDs -u https://custom.runzero.com -f output.txt """)
 
 def getOIDs(uri, token):
     """ Retrieve Organizational IDs from Console.
@@ -118,31 +93,17 @@ if __name__ == "__main__":
     if "-h" in sys.argv:
         usage()
         exit()
-    if "-g" in sys.argv:
-        genConfig()
-    consoleURL = "https://console.runzero.com"
+    consoleURL = os.environ["CONSOLE_BASE_URL"]
+    token = os.environ["RUNZERO_ACCOUNT_TOKEN"]
     formatJSON = False
     saveFile = False
-    config = False
-    configFile = ""
     #Output report name; default uses UTC time
     fileName = "Org_IDs_Report_" + str(datetime.utcnow())
-    if "-c" in sys.argv:
-        try:
-            config = True
-            configFile =sys.argv[sys.argv.index("-c") + 1]
-            confParams = readConfig(configFile)
-            consoleURL = confParams[0]
-            token = confParams[1]
-        except IndexError as error:
-            print("Config file switch used but no file provided!\n")
-            usage()
-            exit()
-    else:
+    if token == '':
         token = getpass(prompt="Enter your Account API Key: ")
     if "-u" in sys.argv:
         try:
-            consoleURL = sys.argv[sys.argv.index("-u") + 1] + "/api/v1.0/account/orgs"
+            consoleURL = sys.argv[sys.argv.index("-u") + 1]
         except IndexError as error:
             print("URI switch used but URI not provided!\n")
             usage()
@@ -151,6 +112,8 @@ if __name__ == "__main__":
         formatJSON = True
     if "-f" in sys.argv:
         saveFile = True
+    if consoleURL == '':
+         consoleURL = input('Enter the URL of the console (e.g. http://console.runzero.com): ')
 
     orgData = getOIDs(consoleURL, token)
     orgOIDs = parseOIDs(orgData)
