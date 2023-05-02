@@ -161,7 +161,7 @@ if __name__ == "__main__":
         token = getpass(prompt="Enter your Organization API Key: ")
     if "-u" in sys.argv and not config:
         try:
-            uri = sys.argv[sys.argv.index("-u") + 1]
+            consoleURL = sys.argv[sys.argv.index("-u") + 1]
         except IndexError as error:
             print("URI switch used but URI not provided!\n")
             usage()
