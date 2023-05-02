@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    serialNumbers.py, version 1.0 by Derek Burke
+    serialNumbers.py, version 2.0 by Derek Burke
     Retrieve assets from console using Export API endpoint, extract defined fields and serial numbers,
     and write to file in JSON format. This allows users to pull assets and SN information with a predefined
     set of attributes included."""
 
 import json
-import re
+import os
 import requests
 import sys
 from datetime import datetime
@@ -19,44 +19,16 @@ def usage():
     print(""" Usage:
                     serialNumbers.py [arguments]
 
-                    You will be prompted to provide your runZero Export API key unless a
-                    configuration file is specified as an argument.
-                    
-                    Optional arguments:
+                    You will be prompted to provide your runZero Export API key unless it is
+                    specified in the .env file.
 
+                    Optional arguments:
                     -u <uri>                    URI of console (default is https://console.runzero.com)
-                    -c <config file/path>       Filename of config file including absolute path
-                    -g                          Generate config file template
                     -h                          Show this help dialogue
                     
                 Examples:
-                    serialNumbers.py -c example.config
+                    serialNumbers.py
                     python -m serialNumbers -u https://custom.runzero.com""")
-
-def genConfig():
-    """Create a template for script configuration file."""
-
-    template = "exportToken= #Export API Key\nuri=https://console.runzero.com #Console URL\n"
-    writeFile("config_template", template)
-    exit()
-
-def readConfig(configFile):
-    """ Read values from configuration file
-
-        :param config: a file, file containing values for script
-        :returns: a tuple, console url at index 0 and API token at index 1.
-        :raises: IOError: if file cannot be read.
-        :raises FileNotFoundError: if file cannot be found."""
-    try:
-        with open( configFile, 'r') as c:
-            config = c.read()
-            url = re.search("uri=(http[s]?://[a-z0-9\.]+)", config).group(1)
-            token = re.search("exportToken=([0-9A-Z]+)", config).group(1)
-            return(url, token)
-    except IOError as error:
-        raise error
-    except FileNotFoundError as error:
-        raise error
     
 def getAssets(uri, token, filter=" ", fields=" "):
     """ Retrieve assets using supplied query filter from Console and restrict to fields supplied.
@@ -98,8 +70,14 @@ def parseSNs(data):
             for field in item:
                 if field == 'attributes':
                     try:
-                        asset['hw.serialNumber'] = item[field]['hw.serialNumber'] 
+                        asset['hw.serialNumber'] = item[field]['hw.serialNumber']
+                    except KeyError as error:
+                        pass
+                    try: 
                         asset['snmp.serialNumbers'] = item[field]['snmp.serialNumbers']
+                    except KeyError as error:
+                        pass
+                    try:
                         asset['ilo.serialNumber'] = item[field]['ilo.serialNumber']
                     except KeyError as error:
                         pass
@@ -128,35 +106,22 @@ if __name__ == "__main__":
     if "-h" in sys.argv:
         usage()
         exit()
-    if "-g" in sys.argv:
-        genConfig()
-    config = False
-    configFile = ''
-    consoleURL = 'https://console.runzero.com'
-    token = ''
+    consoleURL = os.environ["CONSOLE_BASE_URL"]
+    token = os.environ["RUNZERO_EXPORT_TOKEN"]
     #Output report name; default uses UTC time
     fileName = "Asset_Serial_Numbers" + str(datetime.utcnow()) + ".json"
-    #Define config file to read from
-    if "-c" in sys.argv:
-        try:
-            config = True
-            configFile =sys.argv[sys.argv.index("-c") + 1]
-            confParams = readConfig(configFile)
-            consoleURL = confParams[0]
-            token = confParams[1]
-        except IndexError as error:
-            print("Config file switch used but no file provided!\n")
-            usage()
-            exit()
-    else:
+    if token == '':
         token = getpass(prompt="Enter your Export API Key: ")
-    if "-u" in sys.argv and not config:
+    if "-u" in sys.argv:
         try:
             consoleURL = sys.argv[sys.argv.index("-u") + 1]
         except IndexError as error:
             print("URI switch used but URI not provided!\n")
             usage()
             exit()
+    if consoleURL == '':
+        consoleURL = input('Enter the URL of the console (e.g. http://console.runzero.com): ')
+
     query = "protocol:snmp has:snmp.serialNumbers or hw.serialNumber:t or ilo.serialNumber:t" #Query to grab all assets with serial number fields
     fields = "id, os, os_vendor, os_product, os_version, hw, addresses, macs, attributes" #fields to return in API call; modify for more or less
     results = getAssets(consoleURL, token, query, fields)
