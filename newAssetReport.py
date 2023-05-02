@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    newAssetReport.py, version 2.0 by Derek Burke
+    newAssetReport.py, version 2.1 by Derek Burke
     Query runZero API for all assets found within an Organization (tied to Export API key provided) first seen within the specified 
     time period and return select fields. Default behavior will be to print assets to stdout in JSON format. Optionally, an output 
     file format can be specified to write to."""
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     #Output report name; default uses UTC time
     fileName = "New_Asset_Report_" + str(datetime.utcnow())
     #Define config file to read from
-    if token == '' or 'XXX' in token:
+    if token == '':
         token = getpass(prompt="Enter your Export API Key: ")
     if "-u" in sys.argv:
         try:
