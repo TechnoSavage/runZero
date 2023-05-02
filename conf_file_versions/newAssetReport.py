@@ -133,7 +133,7 @@ if __name__ == "__main__":
             print("URI switch used but URI not provided!\n")
             usage()
             exit()
-    query = "first_seen:<%s" % timeRange #Query to grab all assets with serial number fields
+    query = "first_seen:<%s" % timeRange #Query to grab all assets first seen within the specified time value
     fields = "id, os, os_vendor, hw, addresses, macs, attributes" #fields to return in API call; modify for more or less
     report = getAssets(consoleURL, token, query, fields)
     if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() not in ('text'):
