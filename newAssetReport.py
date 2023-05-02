@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    newAssetReport.py, version 2.1 by Derek Burke
+    newAssetReport.py, version 2.2 by Derek Burke
     Query runZero API for all assets found within an Organization (tied to Export API key provided) first seen within the specified 
     time period and return select fields. Default behavior will be to print assets to stdout in JSON format. Optionally, an output 
     file format can be specified to write to."""
@@ -96,8 +96,14 @@ if __name__ == "__main__":
             print("Time Span switch used but time value not provided!\n")
             usage()
             exit()
-    query = "first_seen:<%s" % timeRange #Query to grab all assets first seen within the specified time value
-    fields = "id, os, os_vendor, hw, addresses, macs, attributes" #fields to return in API call; modify for more or less
+    if consoleURL == '':
+         consoleURL = input('Enter the URL of the console (e.g. http://console.runzero.com): ')
+    if timeRange == '':
+         timeRange = input('Enter the time range of new assets to report (e.g. 2weeks, 7days):')
+    #Query to grab all assets first seen within the specified time value
+    query = "first_seen:<%s" % timeRange
+    #fields to return in API call; modify for more or less
+    fields = "id, os, os_vendor, hw, addresses, macs, attributes"
     report = getAssets(consoleURL, token, query, fields)
     if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() not in ('text'):
         writeFile(fileName + '.json', json.dumps(report, indent=4))
