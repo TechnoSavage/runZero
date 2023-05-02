@@ -194,7 +194,16 @@ if __name__ == "__main__":
             usage()
             exit()
     if token == "":
-        print("Enter your Organization API Key: ")
-        token = getpass()
+        token = getpass(prompt="Enter your Organization API Key: ")
+    if siteID == "":
+        siteID = input('Specify the Site ID for the scan: ')
+    if explorer == "":
+        explorer = input('Specify the Explorer ID for the scan: ')
+    if name == "":
+        name = input('')
+    if description == "":
+        description = input('')
+    if rate == "":
+        rate = input('')
     response = createScan(consoleURL, token, siteID, explorer, name, description, rate, targetList)
     print(response)
