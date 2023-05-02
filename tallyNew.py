@@ -5,7 +5,7 @@
     Script to retrieve last 'n' completed tasks and tally new asset counts. """
 
 import json
-import re
+import os
 import requests
 import sys
 from datetime import datetime
@@ -24,44 +24,16 @@ def usage():
 
                     -t <1-1000>           Number of tasks, from most recent to oldest to analyze (default is 1000)
                     -u <uri>              URI of console (default is https://console.runzero.com)
-                    -c <config file/path> Filename of config file including absolute path
                     -j                    Write output in JSON format
                     -f                    Write output to file (plain text default)
                                           combine with -j for JSON
-                    -g                    Generate config file template
                     -h                    Show this help dialogue
                     
                 Examples:
                     tallyNew.py -t 20
                     tallyNew.py -j -f output.json
                     tallyNew.py -u https://custom.runzero.com -t 15 -f output.txt
-                    python3 -m tallyNew -c example.config """)
-
-def genConfig():
-    """Create a template for script configuration file."""
-
-    template = "orgToken= #Organization API Key\nuri=https://console.runzero.com #Console URL\ntaskNo=1000 #Number of recent tasks to fetch\n"
-    writeFile("config_template", template)
-    exit()
-
-def readConfig(configFile):
-    """ Read values from configuration file
-
-        :param config: a file, file containing values for script
-        :returns: a tuple, console url at index, API token at index 1, and task number at index 2.
-        :raises: IOError: if file cannot be read.
-        :raises: FileNotFoundError: if file doesn't exist."""
-    try:
-        with open(configFile, 'r') as c:
-            config = c.read()
-            url = re.search("uri=(http[s]?://[a-z0-9.]+)", config).group(1)
-            token = re.search("orgToken=([0-9A-Z]+)", config).group(1)
-            taskNo = re.search("taskNo=([0-9]+)", config).group(1)
-            return(url, token,taskNo)
-    except IOError as error:
-        raise error
-    except FileNotFoundError as error:
-        raise error
+                    python3 -m tallyNew """)
 
 def getTasks(uri, token): 
     """ Retrieve Tasks from Organization corresponding to supplied token.
@@ -135,38 +107,23 @@ if __name__ == "__main__":
     if "-h" in sys.argv:
         usage()
         exit()
-    if "-g" in sys.argv:
-        genConfig()
-    consoleURL = "https://console.runzero.com"
-    taskNo = 1000
+    consoleURL = os.environ["CONSOLE_BASE_URL"]
+    token = os.environ["RUNZERO_ORG_TOKEN"]
+    taskNo = os.environ["TASK_NO"]
     formatJSON = False
     saveFile = False
-    config = False
-    configFile = ""
     #Output report name; default uses UTC time
     fileName = "Asset_Tally_Report_" + str(datetime.utcnow())
-    if "-c" in sys.argv:
-        try:
-            config = True
-            configFile =sys.argv[sys.argv.index("-c") + 1]
-            confParams = readConfig(configFile)
-            consoleURL = confParams[0]
-            token = confParams[1]
-            taskNo = confParams[2]
-        except IndexError as error:
-            print("Config file switch used but no file provided!\n")
-            usage()
-            exit()
-    else:
+    if token == '':
         token = getpass(prompt="Enter your Organization API Key: ")
-    if "-u" in sys.argv and not config:
+    if "-u" in sys.argv:
         try:
-            uri = sys.argv[sys.argv.index("-u") + 1]
+            consoleURL = sys.argv[sys.argv.index("-u") + 1]
         except IndexError as error:
             print("URI switch used but URI not provided!\n")
             usage()
             exit()
-    if "-t" in sys.argv and not config:
+    if "-t" in sys.argv:
         try:
             taskNo = sys.argv[sys.argv.index("-t") + 1]
             int(taskNo)
@@ -180,6 +137,10 @@ if __name__ == "__main__":
         formatJSON = True
     if "-f" in sys.argv:
         saveFile = True
+    if consoleURL == '':
+        consoleURL = input('Enter the URL of the console (e.g. http://console.runzero.com): ')
+    if taskNo == '':
+        taskNo = input('Enter the number of tasks to tally new assets for (e.g. 100):')
 
     data = getTasks(consoleURL, token)
     results = parseTasks(data, taskNo)
