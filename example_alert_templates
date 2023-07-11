@@ -43,7 +43,7 @@
 <h2>Detected assets</h2>
 <ul>
 {{#query.assets}}
-<li>{{id}} Hostname:{{names}} IP:{{address}} OS:{{os}} Open Ports:{{port}} Protocol:{{protocol}} HW:{{hw}} Type:{{type}}</li>
+<li>Asset ID:{{id}} Hostname:{{names}} IP:{{address}} OS:{{os}} Open Ports:{{port}} Protocol:{{protocol}} HW:{{hw}} Type:{{type}}</li>
 {{/query.assets}}
 </ul>
 
@@ -65,7 +65,7 @@
 <h2>Detected assets and services</h2>
 <ul>
 {{#query.services}}
-<li>{{id}} Hostname:{{names}} IP:{{address}} Summary:{{summary}} Port:{{port}} OS:{{os}} HW:{{hw}} Type:{{type}}</li>
+<li>Asset ID:{{id}} Hostname:{{names}} IP:{{address}} Summary:{{summary}} Port:{{port}} OS:{{os}} HW:{{hw}} Type:{{type}}</li>
 {{/query.services}}
 </ul>
 
