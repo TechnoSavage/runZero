@@ -2,7 +2,7 @@
 
 #Subject
 
-{{assets_new}} devices were detected during the last scan
+{{assets_new}} new devices were detected during the last scan of {{rule.name}}
 
 #Body
 
@@ -25,13 +25,37 @@
 {{/report.new}}
 </ul>
 
+<p><a href="{{search.url}}">View assets in console</a></p>
 <p><a href="{{task.url}}">View the scan results</a></p>
+
+
+#HTML template for asset query alerts
+
+#subject
+
+{{search.found}} assets match {{rule.name}}
+
+#Body
+
+<h1>{{organization.name}}</h1>
+<h1>{{site.name}}</h1>
+
+<h2>Detected assets</h2>
+<ul>
+{{#query.assets}}
+<li>{{id}} Hostname:{{names}} IP:{{address}} OS:{{os}} Open Ports:{{port}} Protocol:{{protocol}} HW:{{hw}} Type:{{type}}</li>
+{{/query.assets}}
+</ul>
+
+<p><a href="{{search.url}}">View assets in console</a></p>
+<p><a href="{{task.url}}">View the scan results</a></p>
+
 
 #HTML template for service query alerts
 
 #subject
 
-{{search.found}} matches found
+{{search.found}} services match {{rule.name}}
 
 #Body
 
@@ -45,4 +69,5 @@
 {{/query.services}}
 </ul>
 
+<p><a href="{{search.url}}">View services in console</a></p>
 <p><a href="{{task.url}}">View the scan results</a></p>
