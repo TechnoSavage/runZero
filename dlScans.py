@@ -21,7 +21,8 @@ def usage():
                     
                     Optional arguments:
 
-                    -c <url>              URL of the runZero console, this argument will take priority over the .env file
+                    -u <url>              URL of the runZero console, this argument will take priority over the .env file
+                    -a                    Prompt for Organization API key, this argument will take priority over the .env file
                     -t <1-1000>           Number of tasks to fetch from the console, this argument will take priority over the .env file
                     -h                    Show this help dialogue
                     
@@ -38,7 +39,8 @@ def getTasks(uri, token):
            :raises: ConnectionError: if unable to successfully make GET request to console."""
     
     uri = uri + "/api/v1.0/org/tasks"
-    payload = {'status':'processed'}
+    payload = {'search':'scan',
+               'status':'processed'} #change {'search':'scan'} to {'search':'sample'} to retrieve traffic sampling tasks 
     headers = {'Accept': 'application/json',
                'Authorization': 'Bearer %s' % token}
     try:
@@ -106,11 +108,17 @@ if __name__ == "__main__":
     token = os.environ['RUNZERO_ORG_TOKEN']
     tasks = int(os.environ['TASK_NO'])
     path = os.environ['SAVE_PATH']
-    if "-c" in sys.argv:
+    if "-u" in sys.argv:
         try:
-            srcURL = sys.argv[sys.argv.index("-c") + 1]
+            consoleURL = sys.argv[sys.argv.index("-u") + 1]
         except IndexError as error:
             print("URL switch used but URL not provided!\n")
+            usage()
+            exit()
+    if "-a" in sys.argv:
+        token = getpass(prompt="Enter your Organization API Key: ")
+        if token == '':
+            print("No API token provided!\n")
             usage()
             exit()
     if "-t" in sys.argv:
