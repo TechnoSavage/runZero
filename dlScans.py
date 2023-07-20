@@ -22,7 +22,7 @@ def usage():
                     Optional arguments:
 
                     -u <url>              URL of the runZero console, this argument will take priority over the .env file
-                    -a                    Prompt for Organization API key, this argument will take priority over the .env file
+                    -k                    Prompt for Organization API key, this argument will take priority over the .env file
                     -t <1-1000>           Number of tasks to fetch from the console, this argument will take priority over the .env file
                     -h                    Show this help dialogue
                     
@@ -115,7 +115,7 @@ if __name__ == "__main__":
             print("URL switch used but URL not provided!\n")
             usage()
             exit()
-    if "-a" in sys.argv:
+    if "-k" in sys.argv:
         token = getpass(prompt="Enter your Organization API Key: ")
         if token == '':
             print("No API token provided!\n")
