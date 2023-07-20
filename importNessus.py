@@ -1,5 +1,7 @@
+#!/usr/bin/python
+
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    importNessus.py, version 3.0 by Derek Burke
+    importNessus.py, version 3.1 by Derek Burke
     Bulk import all .nessus files in a specified folder via the runZero API."""
 
 import json
@@ -20,19 +22,17 @@ def usage():
                     folder to a specified site in the runZero console. This requires the Organization
                     API key for which the site belongs to. This script should work on *nix systems
                     and MacOS.
-
-                    You will be prompted to provide your runZero Organization API key if not specified
-                    in the .env file.
                     
                     Optional arguments:
 
-                    -u <uri>              URI of console (default is https://console.runzero.com)
-                    -s <site ID>          Site ID to apply scan data to
-                    -d <path/directory>   Specify directory path to .nessus scan files
+                    -u <url>              URL of console, , this argument will take priority over the .env file
+                    -k                    Prompt for Organization API key, this argument will take priority over the .env file
+                    -s <site ID>          Site ID to apply scan data to, , this argument will take priority over the .env file
+                    -d <path/directory>   Specify directory path to .nessus scan files, , this argument will take priority over the .env file
                     -h                    Show this help dialogue
                     
                 Examples:
-                    importNessus.py -s 92hu9740-1ed3-4365-b6a4-733638f2a63d
+                    importNessus.py -k -s 92hu9740-1ed3-4365-b6a4-733638f2a63d
                     python3 -m importNessus -u https://custom.runzero.com -s 92hu9740-1ed3-4365-b6a4-733638f2a63d -d /documents/scans/""")
 
 def importScan(uri, token, siteID, scan):
@@ -56,20 +56,7 @@ def importScan(uri, token, siteID, scan):
         data = json.loads(content)
         return data
     except ConnectionError as error:
-        content = "No Response"
         raise error
-    
-def writeFile(fileName, contents):
-    """ Write contents to output file in plaintext. 
-    
-        :param filename: a string, name for file including (optionally) file extension.
-        :param contents: anything, file contents.
-        :raises: IOError: if unable to write to file. """
-    try:
-        with open( fileName, 'w') as o:
-                    o.write(contents)
-    except IOError as error:
-        raise error 
 
 if __name__ == "__main__":
     if "-h" in sys.argv:
@@ -79,8 +66,19 @@ if __name__ == "__main__":
     token = os.environ["RUNZERO_ORG_TOKEN"]
     siteID = os.environ["SITE_ID"]
     path = os.environ["NESSUS_DIR"]
-    if token == '':
+    if "-u" in sys.argv:
+        try:
+            consoleURL = sys.argv[sys.argv.index("-u") + 1]
+        except IndexError as error:
+            print("URI switch used but URI not provided!\n")
+            usage()
+            exit()
+    if "-k" in sys.argv:
         token = getpass(prompt="Enter your Organization API Key: ")
+        if token == '':
+            print("No API token provided!\n")
+            usage()
+            exit()
     if "-s" in sys.argv:
         try:
             siteID = sys.argv[sys.argv.index("-s") + 1]
@@ -95,19 +93,6 @@ if __name__ == "__main__":
             print("Directory switch used but directory not provided!\n")
             usage()
             exit()
-    if "-u" in sys.argv:
-        try:
-            consoleURL = sys.argv[sys.argv.index("-u") + 1]
-        except IndexError as error:
-            print("URI switch used but URI not provided!\n")
-            usage()
-            exit()
-    if consoleURL == '':
-         consoleURL = input('Enter the URL of the console (e.g. http://console.runzero.com): ')
-    if siteID == '':
-        siteID = input("Please provide the Site ID to apply the vulnerability scan data to: ")
-    if path == '':
-        path = input("Please provide the path to the directory containing .nessus scan files: ")
     try:     
         contents = subprocess.check_output(['ls', path]).splitlines()
         for item in contents:
