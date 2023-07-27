@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
     scanSync.py, version 1.0 by Derek Burke
     This script is designed to sync task data from one console to another by downloading the last 'n' successful tasks
@@ -114,7 +116,7 @@ def uploadData(uri, token, site_id, path, taskData):
         :param site_id: A string, UUID of site to upload scan to.
         :param path: A string, directory path to scan data file.
         :param taskData: A string, filename of the scan data (json.gz) file.
-        :raises: ConnectionError: if unable to successfully make GET request to console."""
+        :raises: ConnectionError: if unable to successfully make PUT request to console."""
     
     uri = uri + "/api/v1.0/org/sites/%s/import" % site_id
     file = [('application/octet-stream',(taskData,open(path + taskData,'rb'),'application/octet-stream'))]
