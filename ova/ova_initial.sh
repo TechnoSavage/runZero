@@ -74,7 +74,7 @@ echo -e "\nYou may now log into the runZero console at https://$CONSOLE with use
 #Download Token
 #DKEY=''
 
-#Download fresh explorer (automated explorer install intended but presents challenge: first random string of upper and digit is statid, second one of lower and digit changes upon each TLS cert regen) 
+#Download fresh explorer (automated explorer install intended but presents challenge: first random string of upper and digit is static, second one of lower and digit changes upon each TLS cert regen) 
 #rm ruzero-explorer.bin
 #curl -f -o runzero-explorer.bin https://$CONSOLE:443/download/explorer/DT521F823BCD680C8FA8C281F1C7B6/64cc3552/runzero-explorer-linux-amd64.bin -k
 #Install explorer
