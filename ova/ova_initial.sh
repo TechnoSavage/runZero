@@ -58,6 +58,7 @@ rumblectl restart
 
 echo -e "\nYou may now log into the runZero console at https://$CONSOLE with username $USERNAME and password $PASSWORD\n"
 
+echo -e "\nIt is highly recommended to create a new superuser account and delete the existing default superuser.\n"
 
 #Half-baked ideas and unneeded lines below:
 # echo "Creating initial superuser account..."
@@ -74,7 +75,9 @@ echo -e "\nYou may now log into the runZero console at https://$CONSOLE with use
 #Download Token
 #DKEY=''
 
-#Download fresh explorer (automated explorer install intended but presents challenge: first random string of upper and digit is static, second one of lower and digit changes upon each TLS cert regen) 
+#Download fresh explorer (automated explorer install intended but presents challenge: first random string of upper and digit is static, second one of lower and digit changes upon each TLS cert regen)
+#First 4 digits static? 5 changes on IP changes, last three rotate on cert generation
+#ffuf -w wordlist.txt -u https://$CONSOLE:443/download/explorer/DT521F823BCD680C8FA8C281F1C7B6/<uid>FUZZ/runzero-explorer-linux-amd64.bin -mc all -fs 81887232
 #rm ruzero-explorer.bin
 #curl -f -o runzero-explorer.bin https://$CONSOLE:443/download/explorer/DT521F823BCD680C8FA8C281F1C7B6/64cc3552/runzero-explorer-linux-amd64.bin -k
 #Install explorer
