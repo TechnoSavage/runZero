@@ -36,8 +36,8 @@ Notes on initial_setup.sh shell script:
 
 Notes on SSH key regeneration:
 
-    The VM has a systemD service running that will generate new SSH host keys
-    when the OVA image is started for the first time, afterwhich, it diables itself.
+    The VM has a systemd service running that will generate new SSH host keys
+    when the OVA image is started for the first time, afterwhich, it disables itself.
 
     If it is more desirable to have SSH keys regenerated at each system restart then
     edit /etc/systemd/system/ssh_hostkey_regen.service and remove this line under the [service]
