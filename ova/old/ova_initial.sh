@@ -6,7 +6,7 @@ if [[ $(id -u) != 0 ]]; then
 
 This script must be run as root!
 Please rerun with sudo e.g.
-sudo ./ova_intial.sh
+sudo ./ova_initial.sh
 
 EOM
 exit 1
