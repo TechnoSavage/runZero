@@ -1,0 +1,23 @@
+ ###########################################################
+ #                                                         #
+ #      ***Welcome to the runZero virtual appliance***     #
+ #                                                         #
+ #		        !!!Pre-Flight Checklist!!!                 #
+ #                                                         #
+ #             1. Create new user password                 #
+ #                                                         #
+ #          2. If connecting via SSH reconnect             #
+ #                    using new password                   #
+ #    (session will close after entering new password)     #               
+ #                                                         #
+ #             3. run 'sudo ./install.sh'                  # 
+ #                                                         #
+ #      4. Log into the console at the provided URL        #
+ #          with the provided username and password        #
+ #                                                         #
+ #      5. Deploy Explorer(s) and assign scan tasks        #
+ #                   (see documentation)                   #
+ #                                                         #
+ #    *SSH host keys were regenerated at first startup*    #
+ #                                                         #
+ ########################################################### 
