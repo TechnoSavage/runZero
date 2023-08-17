@@ -12,15 +12,15 @@ EOM
 exit 1
 
 else
-    echo "Beginning initial setup..."
+    echo "Beginning installation..."
 fi
 
-#Install runzero platform using only distro packages
-./rumble-platform.bin install --distro-packages-only
+#Install runzero platform in offline mode using only distro packages
+/home/runzero/runzero-platform.bin install --offline --distro-packages-only
 #Update the console (if needed)
-rumblectl update
+#rumblectl update
 #Prompt user for an email to use for the initial superuser account
-read -p "\nEnter the email for the initial superuser account: " ACCOUNT
+read -p "Enter the email for the initial superuser account: " ACCOUNT
 #Initialize the superuser; this will also print the initial login password
 rumblectl initial $ACCOUNT
 
