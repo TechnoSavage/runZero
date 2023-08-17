@@ -1,0 +1,54 @@
+runZero virtual appliance
+-------------------------
+
+Credentials:
+    username: runzero
+    password: runzero
+
+Virtual machine hardware settings:
+
+    Built to target ESXi 7.0
+
+    The VM is preconfigured to:
+        Processor: 4 CPUs with 1 core per
+        Memory: 32GiB 
+        Storage: Up to 1 TiB (SCSI)
+
+    This meets the minimum recommended production requirements for the console. 
+    These should be edited as needed for deployment. recommended production requirements are:
+
+        Processor: 12+ CPU cores at 2GHz or faster
+        Memory: 128GiB 
+        Storage: 1 TiB+
+
+Notes on first connection:
+    When logging into the VM for the first time the user will be forced to create a new
+    password for the default account. If connecting via SSH the session will be disconnected
+    after creating the new password. Simply reconnect with SSH and use the newly created password
+    for login to proceed with running the install.sh script.
+
+Notes on the OS:
+    This VM uses Ubuntu 22.04 Server as the OS. The necessary postgresql 14 packages
+    for the runzero platform have been pre-installed. 
+
+Notes on install.sh shell script:
+
+    This script will issue the necessary commands to install the runzero platform from the binary
+    located in the home folder. It will prompt the user for an email to use as the initial superuser
+    account. After providing the email at the prompt the following output will include the URL to access
+    the console as well as the username (email provided) and login password.
+
+
+Notes on SSH key regeneration:
+
+    The VM has a systemd service running that will generate new SSH host keys
+    when the OVA image is started for the first time. The service will disable itself
+    after running.
+
+    If it is more desirable to have SSH keys regenerated at each system restart then
+    edit /etc/systemd/system/ssh_hostkey_regen.service and remove this line under the [service]
+    section:
+
+        ExecStartPost=/bin/systemctl disable ssh_hostkey_regen
+ 
+    Then run 'sudo systemctl enable ssh_hostkey_regen'
