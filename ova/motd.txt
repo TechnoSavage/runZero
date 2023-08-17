@@ -4,11 +4,11 @@
  #                                                         #
  #		        !!!Pre-Flight Checklist!!!                 #
  #                                                         #
- #             1. Create new user password                 #
+ #           1. Create new password at prompt              #
  #                                                         #
  #          2. If connecting via SSH reconnect             #
  #                    using new password                   #
- #    (session will close after entering new password)     #               
+ #    (session will close after creating new password)     #               
  #                                                         #
  #             3. run 'sudo ./install.sh'                  # 
  #                                                         #
