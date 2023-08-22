@@ -162,6 +162,14 @@ Service Queries:
     PHP websites
         product:php OR banner:"%php%" OR cookie:phpsessid OR html.forms:"%.php" OR http.body:"%php%" OR http.head.location:"%.php" OR http.head.setCookie:"%phpsessid%" OR last.http.uri:"%.php" OR last.http.body:"%php%" OR last.html.forms:"%.php"
 
+    Cisco devices with loopback interface configured:
+        snmp.arpcache.ports:"lo"
+
+    Cisco device with specific IP assigned to loopback interface:
+        snmp.arpcache.ports:"lo" and snmp.interfaceAddrs:"<loopback IP>"
+        e.g.
+        snmp.arpcache.ports:"lo" and snmp.interfaceAddrs:"192.168.100.1"
+        snmp.arpcache.ports:"lo" and snmp.interfaceAddrs:"192.168.100.1/255.255.255.0"
 
 Software Queries:
     Detect OpenSSL version 3.0
