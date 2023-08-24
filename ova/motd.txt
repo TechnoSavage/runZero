@@ -2,7 +2,7 @@
  #                                                         #
  #      ***Welcome to the runZero virtual appliance***     #
  #                                                         #
- #		        !!!Pre-Flight Checklist!!!                 #
+ #              !!!Pre-Flight Checklist!!!                 #
  #                                                         #
  #           1. Create new password at prompt              #
  #                                                         #
