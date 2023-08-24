@@ -8,9 +8,9 @@
  #                                                         #
  #          2. If connecting via SSH reconnect             #
  #                    using new password                   #
- #    (session will close after creating new password)     #               
+ #    (session will close after creating new password)     #
  #                                                         #
- #             3. run 'sudo ./install.sh'                  # 
+ #             3. run 'sudo ./install.sh'                  #
  #                                                         #
  #      4. Log into the console at the provided URL        #
  #          with the provided username and password        #
@@ -20,4 +20,4 @@
  #                                                         #
  #    *SSH host keys were regenerated at first startup*    #
  #                                                         #
- ########################################################### 
+ ###########################################################
