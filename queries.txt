@@ -233,6 +233,18 @@ Vulnerability Queries:
     Qualys - High and Critical severity vulnerabilities that are on CISA's Known Exploited list
         vulnerability.threatIntel:"%Cisa_Known_Exploited_Vulns%"
 
+    Qualys - assets with Qualys endpoint agent installed:
+        @qualys.dev.host.trackingMethod:="AGENT"
+
+    Qualys - Reported by Qualys but do not have the endpoint agent installed
+        source:qualys and not @qualys.dev.host.trackingMethod:="AGENT"
+
+    Qualys - Reported by qualys and found via vuln scan
+        @qualys.dev.host.trackingMethod:="IP"
+    
+    Qualys - Endpoints that could host a Qualys endpoint agent but do not have one installed
+        not @qualys.dev.host.trackingMethod:="AGENT" and (type:server or type:laptop or type:desktop)
+        
 Wireless Queries:
 
     Search ESSID for authentication exceptions:
