@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    newAssetReport.py, version 2.2 by Derek Burke
+    newAssetReport.py, version 2.3 by Derek Burke
     Query runZero API for all assets found within an Organization (tied to Export API key provided) first seen within the specified 
     time period and return select fields. Default behavior will be to print assets to stdout in JSON format. Optionally, an output 
     file format can be specified to write to."""
@@ -48,7 +48,7 @@ def getAssets(uri, token, filter=" ", fields=" "):
               'fields': fields}
     payload = ''
     headers = {'Accept': 'application/json',
-               'Authorization': 'Bearer %s' % token}
+               'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(uri, headers=headers, params=params, data=payload)
         content = response.content
@@ -68,9 +68,9 @@ def writeFile(fileName, contents):
         with open( fileName, 'w') as o:
                     o.write(contents)
     except IOError as error:
-        raise error 
+        raise error
     
-if __name__ == "__main__":
+def main():
     if "-h" in sys.argv:
         usage()
         exit()
@@ -101,11 +101,11 @@ if __name__ == "__main__":
     if timeRange == '':
          timeRange = input('Enter the time range of new assets to report (e.g. 2weeks, 7days):')
     #Query to grab all assets first seen within the specified time value
-    query = "first_seen:<%s" % timeRange
+    query = f"first_seen:<{timeRange}"
     #fields to return in API call; modify for more or less
     fields = "id, os, os_vendor, hw, addresses, macs, attributes"
     report = getAssets(consoleURL, token, query, fields)
-    if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() not in ('text'):
+    if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() not in ('text', 'txt'):
         writeFile(fileName + '.json', json.dumps(report, indent=4))
     elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() in ('text', 'txt'):
         stringList = []
@@ -115,3 +115,6 @@ if __name__ == "__main__":
         writeFile(fileName + '.txt', textFile)
     else:
         print(json.dumps(report, indent=4))
+    
+if __name__ == "__main__":
+    main()
