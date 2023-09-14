@@ -1,7 +1,5 @@
-#!/usr/bin/python
-
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    softwareAsset_dedupe.py, version 1.3 by Derek Burke
+    softwareAsset_dedupe.py, version 1.5 by Derek Burke
     This script is created with the intention of deduplicating assets by UUID after running a query
     in the software portion of the runZero asset inventory. Specifically, this script is intended 
     assist when a user wants to find all assets that do NOT have a specific application installed.
@@ -99,8 +97,8 @@ def writeFile(fileName, contents):
                     fileName.write(contents)
     except IOError as error:
         raise error
-
-if __name__ == "__main__":
+    
+def main():
     if "-h" in sys.argv:
         usage()
         exit()
@@ -118,3 +116,6 @@ if __name__ == "__main__":
     outputName = delFileExt[0] + "_deduped.json"
     parsed = parseFile(fileName)
     writeFile(outputName, json.dumps(parsed))
+
+if __name__ == "__main__":
+    main()
