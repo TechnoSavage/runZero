@@ -1,7 +1,5 @@
-#!/usr/bin/python
-
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    serialNumbers.py, version 2.0 by Derek Burke
+    serialNumbers.py, version 2.1 by Derek Burke
     Retrieve assets from console using Export API endpoint, extract defined fields and serial numbers,
     and write to file in JSON format. This allows users to pull assets and SN information with a predefined
     set of attributes included."""
@@ -45,7 +43,7 @@ def getAssets(uri, token, filter=" ", fields=" "):
               'fields': fields}
     payload = ''
     headers = {'Accept': 'application/json',
-               'Authorization': 'Bearer %s' % token}
+               'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(uri, headers=headers, params=params, data=payload)
         content = response.content
@@ -101,8 +99,8 @@ def writeFile(fileName, contents):
                     o.write(contents)
     except IOError as error:
         raise error
-
-if __name__ == "__main__":
+    
+def main():
     if "-h" in sys.argv:
         usage()
         exit()
@@ -127,3 +125,6 @@ if __name__ == "__main__":
     results = getAssets(consoleURL, token, query, fields)
     parsed = parseSNs(results)
     writeFile(fileName, json.dumps(parsed))
+
+if __name__ == "__main__":
+    main()
