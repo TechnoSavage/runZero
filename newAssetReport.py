@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
     newAssetReport.py, version 2.3 by Derek Burke
     Query runZero API for all assets found within an Organization (tied to Export API key provided) first seen within the specified 
