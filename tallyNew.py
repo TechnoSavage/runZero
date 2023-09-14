@@ -1,7 +1,5 @@
-#!/usr/bin/python
-
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    tallyNew.py, version 2.0 by Derek Burke
+    tallyNew.py, version 2.1 by Derek Burke
     Script to retrieve last 'n' completed tasks and tally new asset counts. """
 
 import json
@@ -44,7 +42,7 @@ def getTasks(uri, token):
     uri = uri + "/api/v1.0/org/tasks"
     payload = ""
     headers = {'Accept': 'application/json',
-               'Authorization': 'Bearer %s' % token}
+               'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(uri, headers=headers, data=payload)
         content = response.content
@@ -102,8 +100,8 @@ def writeFile(fileName, contents):
                     o.write(contents)
     except IOError as error:
         raise error
-
-if __name__ == "__main__":
+    
+def main():
     if "-h" in sys.argv:
         usage()
         exit()
@@ -162,3 +160,7 @@ if __name__ == "__main__":
         else:
             for line in results:
                 print(line)
+
+
+if __name__ == "__main__":
+    main()
