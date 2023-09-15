@@ -1,4 +1,4 @@
-# Snipe-IT custom integrations for runZero
+# Snipe-IT custom integration for runZero
 Custom integration designed to pull asset information from Snipe-IT ITAM and create or merge to runZero asset data. Snipe-IT is highly customizable in terms of the field an asset can contain; some relevant attributes are hardware serial number, maufacturer, and hardware EOL. This integration is useful for representing assets that are part of the network infrastructure that do not communicate at OSI Layer 2 and above (e.g. network TAPs). 
 
 ## Background
