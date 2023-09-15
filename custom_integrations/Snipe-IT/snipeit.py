@@ -97,7 +97,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         assets.append(
             ImportAsset(
                 id=id,
-                network_interfaces=[network],
+                networkInterfaces=[network],
                 model=model,
                 deviceType=deviceType,
                 manufacturer=man,
