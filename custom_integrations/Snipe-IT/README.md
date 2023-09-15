@@ -47,7 +47,7 @@ SNIPE_API_KEY - The API token for the Snipe instance. Created in user account dr
 git clone https://github.com/TechnoSavage/runZero.git
 ```
 
-- Clone .env_sample to .env under the same directory
+- Clone custom_integrations/Snipe-IT/.env_sample to .env under the same directory
 
 ```
 cp .env_sample .env
