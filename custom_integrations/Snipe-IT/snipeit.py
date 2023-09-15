@@ -54,20 +54,25 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # try/except statements account for Snipe-IT reported assets that may not contain the custom field
         id = item.get('id', uuid.uuid4)
         try:
-            flat_mac = flatten(item['custom_fields'])
-            mac = flat_mac["MAC Address_value"]
+            flatMac = flatten(item['custom_fields'])
+            mac = flatMac["MAC Address_value"]
         except KeyError as error:
             mac = None
         try:
-            flat_model = flatten(item["model"])
-            device_type = flat_model["name"]
+            flatModel = flatten(item["model"])
+            model = flatModel["name"]
         except KeyError as error:
-            device_type = None
+            model = None
         try:
-            flat_man = flatten(item["manufacturer"])
-            manufacturer = flat_man["name"]
+            flatCat = flatten(item["category"])
+            deviceType = flatCat["name"]
         except KeyError as error:
-            manufacturer = None
+            deviceType = None
+        try:
+            flatMan = flatten(item["manufacturer"])
+            man = flatMan["name"]
+        except KeyError as error:
+            man = None
 
         #  # if multiple mac addresses, take the first one
         # if len(mac) > 0:
@@ -93,9 +98,10 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
             ImportAsset(
                 id=id,
                 network_interfaces=[network],
-                device_type=device_type,
-                manufacturer=manufacturer,
-                customAttributes=custom_attrs
+                model=model,
+                deviceType=deviceType,
+                manufacturer=man,
+                customAttributes=custom_attrs,
             )
         )
     return assets
