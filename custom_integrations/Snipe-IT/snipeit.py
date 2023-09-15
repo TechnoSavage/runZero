@@ -49,13 +49,25 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
     assets: List[ImportAsset] = []
     for item in json_input:
         # grab known API attributes from the json dict that are always present
+        #If custom fields created in Snipe-IT align to asset fields in r0 SDK docs
+        #additional attributes can be added here following the pattern
+        # try/except statements account for Snipe-IT reported assets that may not contain the custom field
         id = item.get('id', uuid.uuid4)
-        flat_mac = flatten(item['custom_fields'])
-        mac = flat_mac["MAC Address_value"]
-        flat_model = flatten(item["model"])
-        device_type = flat_model["name"]
-        flat_man = flatten(item["manufacturer"])
-        manufacturer = flat_man["name"]
+        try:
+            flat_mac = flatten(item['custom_fields'])
+            mac = flat_mac["MAC Address_value"]
+        except KeyError as error:
+            mac = None
+        try:
+            flat_model = flatten(item["model"])
+            device_type = flat_model["name"]
+        except KeyError as error:
+            device_type = None
+        try:
+            flat_man = flatten(item["manufacturer"])
+            manufacturer = flat_man["name"]
+        except KeyError as error:
+            manufacturer = None
 
         #  # if multiple mac addresses, take the first one
         # if len(mac) > 0:
