@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    dlScans.py, version 1.1 by Derek Burke
+    dlScans.py, version 1.2 by Derek Burke
     This script will download the scan data from the last 'n' processed tasks in an organization, 
     as specified by the user."""
 
@@ -38,7 +38,7 @@ def getTasks(uri, token):
            :returns: A JSON object, runZero task data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
     
-    uri = uri + "/api/v1.0/org/tasks"
+    uri = f"{uri}/api/v1.0/org/tasks"
     payload = {'search':'scan',
                'status':'processed'} #change {'search':'scan'} to {'search':'sample'} to retrieve traffic sampling tasks 
     headers = {'Accept': 'application/json',
@@ -86,13 +86,13 @@ def getData(uri, token, taskID, path):
            :raises: ConnectionError: if unable to successfully make GET request to console.
            :raises: IOError: if unable to write file."""
     
-    uri = uri + f"/api/v1.0/org/tasks/{taskID}/data"
+    uri = f"{uri}/api/v1.0/org/tasks/{taskID}/data"
     payload = ""
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(uri, headers=headers, data=payload, stream=True)
-        with open( path + 'scan_' + taskID + '.json.gz', 'wb') as f:
+        with open( f"{path}scan_{taskID}.json.gz", 'wb') as f:
             for chunk in response.iter_content(chunk_size=128):
                 f.write(chunk)
     except ConnectionError as error:
