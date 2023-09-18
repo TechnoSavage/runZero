@@ -1,7 +1,5 @@
-#!/usr/bin/python
-
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    importNessus.py, version 3.2 by Derek Burke
+    importNessus.py, version 3.3 by Derek Burke
     Bulk import all .nessus files in a specified folder via the runZero API."""
 
 import json
@@ -48,11 +46,11 @@ def importScan(uri, token, siteID, scan):
         :returns: Dict Object, JSON formatted.
         :raises: ConnectionError: if unable to successfully make PUT request to console."""
 
-    uri = uri + "/api/v1.0/org/sites/%s/import/nessus" % siteID
+    uri = f"{uri}/api/v1.0/org/sites/{siteID}/import/nessus"
     payload = ""
     file = [('application/octet-stream',(scan,open(scan,'rb'),'application/octet-stream'))]
     headers = {'Accept': 'application/octet-stream',
-               'Authorization': 'Bearer %s' % token}
+               'Authorization': f'Bearer {token}'}
     try:
         response = requests.put(uri, headers=headers, data=payload, files=file)
         code = response.status_code
@@ -85,12 +83,12 @@ def logging(log):
         :param log: A Dict, dictionary of nessus filenames and upload status.
         :raises: IOError: if unable to write to file. """
     try:
-        with open( "importNessus_log_" + str(datetime.now()), 'w') as o:
+        with open( f"importNessus_log_{str(datetime.now())}", 'w') as o:
                     o.write(json.dumps(log, indent=4))
     except IOError as error:
         raise error
-
-if __name__ == "__main__":
+    
+def main():
     if "-h" in sys.argv:
         usage()
         exit()
@@ -153,4 +151,7 @@ if __name__ == "__main__":
         logging(log)
     if tidy:
         cleanUp(path, log)
+
+if __name__ == "__main__":
+    main()
 
