@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    newAssetReport.py, version 2.3 by Derek Burke
+    newAssetReport.py, version 2.4 by Derek Burke
     Query runZero API for all assets found within an Organization (tied to Export API key provided) first seen within the specified 
     time period and return select fields. Default behavior will be to print assets to stdout in JSON format. Optionally, an output 
     file format can be specified to write to."""
@@ -41,7 +41,7 @@ def getAssets(uri, token, filter=" ", fields=" "):
         :returns: a dict, JSON object of assets.
         :raises: ConnectionError: if unable to successfully make GET request to console."""
 
-    uri = uri + "/api/v1.0/export/org/assets.json?"
+    uri = f"{uri}/api/v1.0/export/org/assets.json?"
     params = {'search': filter,
               'fields': fields}
     payload = ''
@@ -76,7 +76,7 @@ def main():
     token = os.environ["RUNZERO_EXPORT_TOKEN"]
     timeRange = os.environ["TIME"]
     #Output report name; default uses UTC time
-    fileName = "New_Asset_Report_" + str(datetime.utcnow())
+    fileName = f"New_Asset_Report_{str(datetime.utcnow())}"
     #Define config file to read from
     if token == '':
         token = getpass(prompt="Enter your Export API Key: ")
@@ -103,14 +103,21 @@ def main():
     #fields to return in API call; modify for more or less
     fields = "id, os, os_vendor, hw, addresses, macs, attributes"
     report = getAssets(consoleURL, token, query, fields)
-    if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() not in ('text', 'txt'):
-        writeFile(fileName + '.json', json.dumps(report, indent=4))
+    if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() in ('json'):
+        writeFile(f"{fileName}.json", json.dumps(report, indent=4))
     elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() in ('text', 'txt'):
         stringList = []
         for line in report:
                 stringList.append(str(line))
         textFile = '\n'.join(stringList)
-        writeFile(fileName + '.txt', textFile)
+        writeFile(f"{fileName}.txt", textFile)
+    elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() in ('all'):
+        writeFile(f"{fileName}.json", json.dumps(report, indent=4))
+        stringList = []
+        for line in report:
+                stringList.append(str(line))
+        textFile = '\n'.join(stringList)
+        writeFile(f"{fileName}.txt", textFile)
     else:
         print(json.dumps(report, indent=4))
     
