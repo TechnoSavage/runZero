@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    orgIDs.py, version 3.1 by Derek Burke
+    orgIDs.py, version 3.2 by Derek Burke
     Script to retrieve all Organization IDs and 'friendly' names for a given account. """
 
 import json
@@ -39,7 +39,7 @@ def getOIDs(uri, token):
            :returns: A JSON object, runZero Org data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
 
-    uri = uri + "/api/v1.0/account/orgs"
+    uri = f"{uri}/api/v1.0/account/orgs"
     payload = ""
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
@@ -96,7 +96,7 @@ def main():
     formatJSON = False
     saveFile = False
     #Output report name; default uses UTC time
-    fileName = "Org_IDs_Report_" + str(datetime.utcnow())
+    fileName = f"Org_IDs_Report_{str(datetime.utcnow())}"
     if token == '':
         token = getpass(prompt="Enter your Account API Key: ")
     if "-u" in sys.argv:
@@ -117,14 +117,14 @@ def main():
     orgOIDs = parseOIDs(orgData)
     if formatJSON:
         if saveFile:
-            fileName = fileName + '.json'
+            fileName = f"{fileName}.json"
             JSON = json.dumps(orgOIDs, indent=4)
             writeFile(fileName, JSON)
         else:
             print(json.dumps(orgOIDs, indent=4))
     else:
         if saveFile:
-            fileName = fileName + '.txt'
+            fileName = f"{fileName}.txt"
             stringList = []
             for line in orgOIDs:
                 stringList.append(str(line))
