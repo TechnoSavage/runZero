@@ -46,7 +46,7 @@ def getAssets(uri, token, filter=" ", fields=" "):
         :returns: a dict, JSON object of assets.
         :raises: ConnectionError: if unable to successfully make GET request to console."""
 
-    uri = uri + "/api/v1.0/export/org/assets.json?"
+    uri = f"{uri}/api/v1.0/export/org/assets.json?"
     params = {'search': filter,
               'fields': fields}
     payload = ''
@@ -147,7 +147,7 @@ def main():
     token = os.environ["RUNZERO_EXPORT_TOKEN"]
     timeRange = os.environ["TIME"]
     #Output report name; default uses UTC time
-    fileName = "Duplicate_Asset_Report_" + str(datetime.utcnow())
+    fileName = f"Duplicate_Asset_Report_{str(datetime.utcnow())}"
     if token == '':
         token = getpass(prompt="Enter your Export API Key: ")
     if "-u" in sys.argv:
@@ -168,19 +168,23 @@ def main():
             exit()
 
     fields = "id, os, hw, addresses, macs, names, alive, site_id" #fields to return in API call; modify for more or less
-    assets = getAssets(consoleURL, token, 'first_seen:<' + timeRange, fields)
+    assets = getAssets(consoleURL, token, f"first_seen:<{timeRange}", fields)
     dupes = findDupes(assets)
     if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() not in ('text', 'txt', 'all'):
-        writeFile(fileName + '.json', json.dumps(dupes, indent=4))
+        writeFile(f"{fileName}.json", json.dumps(dupes, indent=4))
     elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() in ('text', 'txt'):
         stringList = []
         for line in dupes:
                 stringList.append(str(line))
         textFile = '\n'.join(stringList)
-        writeFile(fileName + '.txt', textFile)
+        writeFile(f"{fileName}.txt", textFile)
     elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() == 'all':
-        writeFile(fileName + '.txt', '\n'.join(dupes))
-        writeFile(fileName + '.json', json.dumps(dupes, indent=4))
+        writeFile(f"{fileName}.json", json.dumps(dupes, indent=4))
+        stringList = []
+        for line in dupes:
+                stringList.append(str(line))
+        textFile = '\n'.join(stringList)
+        writeFile(f"{fileName}.txt", textFile)
     else:
         print(json.dumps(dupes, indent=4))
     
