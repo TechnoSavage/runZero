@@ -1,7 +1,5 @@
-#!/usr/bin/python
-
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    scanSync.py, version 1.0 by Derek Burke
+    scanSync.py, version 1.1 by Derek Burke
     This script is designed to sync task data from one console to another by downloading the last 'n' successful tasks
     from one console and uploading them to another. Example use case, download external scan tasks from a SaaS console
     and import them into a self-hosted instance. The script will attempt to automatically delete local files it creates."""
@@ -46,11 +44,11 @@ def getTasks(uri, token):
            :returns: A JSON object, runZero task data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
     
-    uri = uri + "/api/v1.0/org/tasks"
+    uri = f"{uri}/api/v1.0/org/tasks"
     payload = {'search':'scan',
                'status':'processed'} #change {'search':'scan'} to {'search':'sample'} to retrieve traffic sampling tasks 
     headers = {'Accept': 'application/json',
-               'Authorization': 'Bearer %s' % token}
+               'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(uri, headers=headers, params=payload)
         content = response.content
@@ -94,13 +92,13 @@ def getData(uri, token, taskID, path):
            :raises: ConnectionError: if unable to successfully make GET request to console.
            :raises: IOError: if unable to write file."""
     
-    uri = uri + "/api/v1.0/org/tasks/%s/data" % taskID
+    uri = f"{uri}/api/v1.0/org/tasks/{taskID}/data"
     payload = ""
     headers = {'Accept': 'application/json',
-               'Authorization': 'Bearer %s' % token}
+               'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(uri, headers=headers, data=payload, stream=True)
-        with open( path + 'scan_' + id + '.json.gz', 'wb') as f:
+        with open( path + 'scan_' + taskID + '.json.gz', 'wb') as f:
             for chunk in response.iter_content(chunk_size=128):
                 f.write(chunk)
     except ConnectionError as error:
@@ -118,11 +116,11 @@ def uploadData(uri, token, site_id, path, taskData):
         :param taskData: A string, filename of the scan data (json.gz) file.
         :raises: ConnectionError: if unable to successfully make PUT request to console."""
     
-    uri = uri + "/api/v1.0/org/sites/%s/import" % site_id
+    uri = f"{uri}/api/v1.0/org/sites/{site_id}/import"
     file = [('application/octet-stream',(taskData,open(path + taskData,'rb'),'application/octet-stream'))]
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/octet-stream',
-               'Authorization': 'Bearer %s' % token}
+               'Authorization': f'Bearer {token}'}
     try:
         response = requests.put(uri, headers=headers, data=file, stream=True)
         content = response.content
@@ -140,7 +138,7 @@ def cleanUp(taskID, path):
         :returns None: this function returns nothing but removes files from disk.
         :raises: IOerror, if unable to delete file."""
 
-    handle = 'scan_' + taskID + '.json.gz'
+    handle = f"scan_{taskID}.json.gz"
     try:
         dir_contents = subprocess.check_output(['ls', path]).splitlines()
         for item in dir_contents:
@@ -151,8 +149,8 @@ def cleanUp(taskID, path):
                 pass
     except IOError as error:
         raise error
-        
-if __name__ == "__main__":
+    
+def main():
     if "-h" in sys.argv:
         usage()
         exit()
@@ -215,10 +213,12 @@ if __name__ == "__main__":
     taskInfo = getTasks(srcURL, srcTok)
     idList = parseIDs(taskInfo, tasks)
     for id in idList:
-        taskData = getData(srcURL, srcTok, id, path)
+        getData(srcURL, srcTok, id, path)
         try:
-            response = uploadData(dstURL, dstTok, siteID, path, 'scan_' + id + '.json.gz')
+            uploadData(dstURL, dstTok, siteID, path, f"scan_{id}.json.gz")
             cleanUp(id, path)
         except OSError as error:
             print(error)
-    
+        
+if __name__ == "__main__":
+    main()
