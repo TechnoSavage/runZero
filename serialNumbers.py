@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    serialNumbers.py, version 2.1 by Derek Burke
+    serialNumbers.py, version 2.2 by Derek Burke
     Retrieve assets from console using Export API endpoint, extract defined fields and serial numbers,
     and write to file in JSON format. This allows users to pull assets and SN information with a predefined
     set of attributes included."""
@@ -38,7 +38,7 @@ def getAssets(uri, token, filter=" ", fields=" "):
         :returns: a dict, JSON object of assets.
         :raises: ConnectionError: if unable to successfully make GET request to console."""
 
-    uri = uri + "/api/v1.0/export/org/assets.json?"
+    uri = f"{uri}/api/v1.0/export/org/assets.json?"
     params = {'search': filter,
               'fields': fields}
     payload = ''
@@ -107,7 +107,7 @@ def main():
     consoleURL = os.environ["CONSOLE_BASE_URL"]
     token = os.environ["RUNZERO_EXPORT_TOKEN"]
     #Output report name; default uses UTC time
-    fileName = "Asset_Serial_Numbers" + str(datetime.utcnow()) + ".json"
+    fileName = f"Asset_Serial_Numbers_{str(datetime.utcnow())}.json"
     if token == '':
         token = getpass(prompt="Enter your Export API Key: ")
     if "-u" in sys.argv:
