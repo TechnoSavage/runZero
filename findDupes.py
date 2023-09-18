@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    findDupes.py, version 2.1 by Derek Burke
+    findDupes.py, version 2.2 by Derek Burke
     Query runZero API for all assets found within an Organization (tied to Export API key provided) and sort out assets with
     same MAC, Hostname, and IP but different asset ID. Optionally, an output file format can be specified to write to.
     
