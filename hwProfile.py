@@ -1,7 +1,5 @@
-#!/usr/bin/python
-
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    hwProfile.py, version 1.0 by Derek Burke
+    hwProfile.py, version 1.1 by Derek Burke
     Query runZero API for physical assets found within an Organization (tied to Export API key provided) and generate JSON
     output of all attributes describing the physical hardware of the asset."""
 
@@ -39,12 +37,12 @@ def getAssets(uri, token, filter=" ", fields=" "):
         :returns: a dict, JSON object of assets.
         :raises: ConnectionError: if unable to successfully make GET request to console."""
 
-    uri = uri + "/api/v1.0/export/org/assets.json?"
+    uri = f"{uri}/api/v1.0/export/org/assets.json?"
     params = {'search': filter,
               'fields': fields}
     payload = ''
     headers = {'Accept': 'application/json',
-               'Authorization': 'Bearer %s' % token}
+               'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(uri, headers=headers, params=params, data=payload)
         content = response.content
@@ -69,6 +67,22 @@ def parseHW(data):
             asset = {}
             for field in item:
                 if field == 'attributes':
+                    try:
+                        asset['hw.product'] = item[field]['hw.product']
+                    except KeyError as error:
+                        pass
+                    try: 
+                        asset['hw.device'] = item[field]['hw.device']
+                    except KeyError as error:
+                        pass
+                    try: 
+                        asset['hw.vendor'] = item[field]['hw.vendor']
+                    except KeyError as error:
+                        pass
+                    try:
+                        asset['snmp.sysDesc'] = item[field]['snmp.sysDesc']
+                    except KeyError as error:
+                        pass
                     try:
                         asset['hw.serialNumber'] = item[field]['hw.serialNumber']
                     except KeyError as error:
@@ -122,15 +136,15 @@ def writeFile(fileName, contents):
                     o.write(contents)
     except IOError as error:
         raise error
-
-if __name__ == "__main__":
+    
+def main():
     if "-h" in sys.argv:
         usage()
         exit()
     consoleURL = os.environ["CONSOLE_BASE_URL"]
     token = os.environ["RUNZERO_EXPORT_TOKEN"]
     #Output report name; default uses UTC time
-    fileName = "Physical_Hardware_Types_" + str(datetime.utcnow()) + ".json"
+    fileName = f"Physical_Hardware_Types_{str(datetime.utcnow())}.json"
     if token == '':
         token = getpass(prompt="Enter your Export API Key: ")
     if "-u" in sys.argv:
@@ -143,8 +157,11 @@ if __name__ == "__main__":
     if consoleURL == '':
         consoleURL = input('Enter the URL of the console (e.g. http://console.runzero.com): ')
 
-    query = "not attribute:virtual" #Query to grab all physical assets
+    query = "(type:desktop or type:laptop or type:server) and not attribute:virtual" #Query to grab all physical assets
     fields = "os, os_vendor, hw, addresses, attributes, foreign_attributes" #fields to return in API call; modify for more or less
     results = getAssets(consoleURL, token, query, fields)
     parsed = parseHW(results)
     writeFile(fileName, json.dumps(parsed))
+
+if __name__ == "__main__":
+    main()
