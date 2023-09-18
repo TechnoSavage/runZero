@@ -111,7 +111,7 @@ def main():
     formatJSON = False
     saveFile = False
     #Output report name; default uses UTC time
-    fileName = "Asset_Tally_Report_" + str(datetime.utcnow())
+    fileName = f"Asset_Tally_Report_{str(datetime.utcnow())}"
     if token == '':
         token = getpass(prompt="Enter your Organization API Key: ")
     if "-u" in sys.argv:
