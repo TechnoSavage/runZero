@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    tallyNew.py, version 2.1 by Derek Burke
+    tallyNew.py, version 2.2 by Derek Burke
     Script to retrieve last 'n' completed tasks and tally new asset counts. """
 
 import json
@@ -39,7 +39,7 @@ def getTasks(uri, token):
            :param token: A string, Account API Key.
            :returns: A JSON object, runZero task data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
-    uri = uri + "/api/v1.0/org/tasks"
+    uri = f"{uri}/api/v1.0/org/tasks"
     payload = ""
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
