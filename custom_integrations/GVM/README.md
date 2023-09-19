@@ -45,7 +45,7 @@ GVM_PASSWORD - Password for the account
 
 There are multiple methods for connecting to the GVM API: Unix socket connection, SSH, and TLS. Additional configurations must be made if using the GVM community edition container as well. Each of these methods and configurations are discussed below.
 
-# Method 1: Unix Socket
+### Method 1: Unix Socket
 
 Using the Unix socket is the simplest method to connect to the GVM API with the caveat that the connections must be made on localhost, therefore this integrations script must run on the same host as GVM.
 
@@ -55,9 +55,9 @@ Per python-gvm docs:
 
 
 
-# Method 2: SSH
+### Method 2: SSH
 
-# Method 3: TLS
+### Method 3: TLS
 
 ## Getting Started
 
