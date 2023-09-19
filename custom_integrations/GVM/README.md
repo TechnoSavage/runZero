@@ -43,7 +43,7 @@ GVM_PASSWORD - Password for the account
 
 ## GVM Configuration
 
-There are multiple methods for connecting to the GVM API: Unix socket connection, SSH, and TLS. Additional configurations must be made if using the GVM community edition container as well. Each of these methods and configurations are discussed below.
+There are multiple methods for connecting to the GVM API: Unix socket connection, SSH, and TLS. Additional configurations must be made if using the GVM community edition container. Each of these methods and configurations are discussed below.
 
 ### Method 1: Unix Socket
 
