@@ -52,27 +52,13 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         #If custom fields created in Snipe-IT align to asset fields in r0 SDK docs
         #additional attributes can be added here following the pattern
         # try/except statements account for Snipe-IT reported assets that may not contain the custom field
+        item = flatten(item)
         id = item.get('id', uuid.uuid4)
-        try:
-            flatMac = flatten(item['custom_fields'])
-            mac = flatMac["MAC Address_value"]
-        except KeyError as error:
-            mac = None
-        try:
-            flatModel = flatten(item["model"])
-            model = flatModel["name"]
-        except KeyError as error:
-            model = None
-        try:
-            flatCat = flatten(item["category"])
-            deviceType = flatCat["name"]
-        except KeyError as error:
-            deviceType = None
-        try:
-            flatMan = flatten(item["manufacturer"])
-            man = flatMan["name"]
-        except KeyError as error:
-            man = None
+        mac = item.get('custom_fields_MAC Address_value', '')
+        model = item.get('model_name', '')
+        deviceType = item.get('category_name', '')
+        man = item.get('manufacturer_name', '')
+        firstSeen = item.get('created_at_datetime', '')
 
         #  # if multiple mac addresses, take the first one
         # if len(mac) > 0:
@@ -101,6 +87,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
                 model=model,
                 deviceType=deviceType,
                 manufacturer=man,
+                firstSeenTS=firstSeen,
                 customAttributes=custom_attrs,
             )
         )
