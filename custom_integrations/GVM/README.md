@@ -53,12 +53,56 @@ Per python-gvm docs:
 
 "If gvmd is provided by a package of the distribution, it should be /run/gvmd/gvmd.sock. If gvmd was built from source and did not set a prefix, the default path can be used by setting path = None"
 
-
+If using the GVM community edition container, additional configuration to expose the socket is necessary. This part of the documentation addresses the necessary changes: https://greenbone.github.io/docs/latest/22.4/container/workflows.html#exposing-gvmd-unix-socket-for-gmp-access
 
 ### Method 2: SSH
 
 ### Method 3: TLS
 
+The GVM community edition container does not support SSL/TLS by default. Configurations changes to the docker-compose.yaml can be made to enable SSL/TLS.
+The relevant steps are documented below. The original source for this information can be found here: https://forum.greenbone.net/t/setting-up-ssl-tls-for-docker/13187/5 (Credit and thanks to forum users cseengineer and 3lackhawk)
+
+Change the 'gsa' section of your docker-compose.yaml file to reflect the following:
+
+```
+ gsa:
+    image: greenbone/gsa:stable
+    environment:
+      - GSAD_ARGS=--gnutls-priorities=SECURE256:-VERS-TLS-ALL:+VERS-TLS1.2:+VERS-TLS1.3 --no-redirect 
+    restart: on-failure
+    ports:
+      - 9392:443
+    volumes:
+      - gvmd_socket_vol:/run/gvmd
+    secrets:
+      - source: server-certificate
+        target: /var/lib/gvm/CA/servercert.pem
+      - source: private-key
+        target: /var/lib/gvm/private/CA/serverkey.pem
+    depends_on:
+      - gvmd
+```
+Key changes are:
+ - addition of the 'environment' option to enable TLS 1.2 and TLS 1.3 as well as disable redirects
+ - change of container internal port from 80 to 443
+ - addition of 'secrets' option with the default expected values
+
+
+At the end of the docker-compose.yaml file add these lines to define the server certificate and server key. The file paths should reflect the path(s) that you save the SSL cert and server key in.
+
+```
+secrets:
+  server-certificate:
+    file: /home/someusr/docker_keys/servercert.pem
+  private-key:
+    file: /home/someusr/docker_keys/serverkey.pem
+```
+
+You can generate the necessary cert and key with the following openssl command:
+
+```
+openssl req -x509 -newkey rsa:4096 -keyout serverkey.pem -out servercert.pem -nodes -subj '/CN=localhost' -addext 'subjectAltName = DNS:localhost' -days 365
+```
 ## Getting Started
 
 - Clone this repository
