@@ -59,37 +59,40 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         man = item.get('manufacturer_name', '')
         firstSeen = item.get('created_at_datetime', '')
 
-        #  # if multiple mac addresses, take the first one
-        # if len(mac) > 0:
-        #    mac = mac[0].replace('-', ':')
-        # else:
-        #    mac = None
+        if mac is not None:
+            #  # if multiple mac addresses, take the first one
+            # if len(mac) > 0:
+            #    mac = mac[0].replace('-', ':')
+            # else:
+            #    mac = None
 
-        # create the network interface
-        network = build_network_interface(ips=[], mac=mac)
+            # create the network interface
+            network = build_network_interface(ips=[], mac=mac)
 
-        # *** Should not need to touch this ***
-        # handle any additional values and insert into custom_attrs
-        custom_attrs: Dict[str, CustomAttribute] = {}
-        for key, value in item.items():
-            if isinstance(value, dict):
-                for k, v in value.items():
-                    custom_attrs[k] = CustomAttribute(str(v)[:1023])
-            else:
-               custom_attrs[key] = CustomAttribute(str(value))
+            # *** Should not need to touch this ***
+            # handle any additional values and insert into custom_attrs
+            custom_attrs: Dict[str, CustomAttribute] = {}
+            for key, value in item.items():
+                if isinstance(value, dict):
+                    for k, v in value.items():
+                        custom_attrs[k] = CustomAttribute(str(v)[:1023])
+                else:
+                    custom_attrs[key] = CustomAttribute(str(value))
 
-        # Build assets for import
-        assets.append(
-            ImportAsset(
-                id=id,
-                networkInterfaces=[network],
-                model=model,
-                deviceType=deviceType,
-                manufacturer=man,
-                firstSeenTS=firstSeen,
-                customAttributes=custom_attrs,
+            # Build assets for import
+            assets.append(
+                ImportAsset(
+                    id=id,
+                    networkInterfaces=[network],
+                    model=model,
+                    deviceType=deviceType,
+                    manufacturer=man,
+                    firstSeenTS=firstSeen,
+                    customAttributes=custom_attrs,
+                )
             )
-        )
+        else:
+            pass
     return assets
 
 # *** Should not need to touch this ***
