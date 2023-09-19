@@ -39,13 +39,14 @@ GVM_BASE_URL - The domain or IP of the GVM instance, minus any resource path e.g
 GVM_PORT - The port the GVM web interface is running on
 GVM_USERNAME - Username for an account with sufficient privileges to call Gmp.get_hosts()
 GVM_PASSWORD - Password for the account
+GVM_SOCKET_PATH - Path to GVM Unix socket (see Connection Method 1 below)
 ```
 
 ## GVM Configuration
 
 There are multiple methods for connecting to the GVM API: Unix socket connection, SSH, and TLS. Additional configurations must be made if using the GVM community edition container. Each of these methods and configurations are discussed below.
 
-### Method 1: Unix Socket
+### Connection Method 1: Unix Socket
 
 Using the Unix socket is the simplest method to connect to the GVM API with the caveat that the connections must be made on localhost, therefore this integrations script must run on the same host as GVM.
 
@@ -55,9 +56,10 @@ Per python-gvm docs:
 
 If using the GVM community edition container, additional configuration to expose the socket is necessary. This part of the documentation addresses the necessary changes: https://greenbone.github.io/docs/latest/22.4/container/workflows.html#exposing-gvmd-unix-socket-for-gmp-access
 
-### Method 2: SSH
-
-### Method 3: TLS
+### Connection Method 2: SSH
+To be implemented
+### Connection Method 3: TLS
+To be implemented but process to move GVM community edition container to SSL/TLS is outlined below.
 
 The GVM community edition container does not support SSL/TLS by default. Configurations changes to the docker-compose.yaml can be made to enable SSL/TLS.
 The relevant steps are documented below. The original source for this information can be found here: https://forum.greenbone.net/t/setting-up-ssl-tls-for-docker/13187/5 (Credit and thanks to forum users cseengineer and 3lackhawk)
