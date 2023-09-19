@@ -51,10 +51,9 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # grab known API attributes from the json dict that are always present
         #If custom fields created in Snipe-IT align to asset fields in r0 SDK docs
         #additional attributes can be added here following the pattern
-        # try/except statements account for Snipe-IT reported assets that may not contain the custom field
         item = flatten(item)
         id = item.get('id', uuid.uuid4)
-        mac = item.get('custom_fields_MAC Address_value', '')
+        mac = item.get('custom_fields_MAC Address_value', None)
         model = item.get('model_name', '')
         deviceType = item.get('category_name', '')
         man = item.get('manufacturer_name', '')
