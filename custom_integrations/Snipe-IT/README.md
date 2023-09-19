@@ -1,5 +1,5 @@
 # Snipe-IT custom integration for runZero
-Custom integration designed to pull asset information from Snipe-IT ITAM and create or merge to runZero asset data. Snipe-IT is highly customizable in terms of the field an asset can contain; some relevant attributes are hardware serial number, maufacturer, and hardware EOL.
+Custom integration designed to pull asset information from Snipe-IT ITAM and create or merge to runZero asset data. Snipe-IT is highly customizable in terms of the field an asset can contain; some relevant attributes are hardware serial number, maufacturer, and hardware EOL. This integration is useful for representing assets that are part of the network infrastructure that do not communicate at OSI Layer 2 and above (e.g. network TAPs).
 
 ## Background
 
@@ -75,3 +75,5 @@ pipenv shell
 # Important
 
 For runZero to merge asset data from Snipe-IT to existing assets there must be a common matching asset attribute and field between what is reported by Snipe-IT and what can be found in runZero scans or passive discovery. A MAC address field in Snipe-IT is a recommended method. Snipe-IT has a default fieldset called 'Asset with MAC Address' that will serve this purpose. This script in its current form expects this field to be present for merge logic to work. The user is free to define and utilize other fields/attributes for this purpose as well (see SDK documentation).
+
+New assets created by the integration that do not have MAC address (or other merge attributes) associated, such as the Network TAP example, will continue to be updated by subsequent sync tasks.
