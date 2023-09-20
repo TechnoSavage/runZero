@@ -48,7 +48,7 @@ There are multiple methods for connecting to the GVM API: Unix socket connection
 
 ### Connection Method 1: Unix Socket
 
-Using the Unix socket is the simplest method to connect to the GVM API with the caveat that the connections must be made on localhost, therefore this integrations script must run on the same host as GVM.
+Using the Unix socket is the simplest method to connect to the GVM API with the caveat that the connections must be made on localhost, therefore this integration script must run on the same host as GVM.
 
 Per python-gvm docs:
 
