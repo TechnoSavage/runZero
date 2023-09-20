@@ -65,11 +65,11 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         if 'hostname' in val_list:
             hostPos = val_list.index('hostname')
             hostKey = key_list[hostPos]
-            hostname = item.get(hostKey.replace('_name', '_value'), '')
+            hostname = item.get(hostKey.replace('_name', '_value'), '').upper()
         if 'OS' in val_list:
             osPos = val_list.index('best_os_txt')
             osKey = key_list[osPos]
-            os = item.get(osKey.replace('_name', '_value'), '').replace('/', ' ').upper()
+            os = item.get(osKey.replace('_name', '_value'), '').replace('/', ' ')
 
         #  # if multiple mac addresses, take the first one
         # if len(mac) > 0:
