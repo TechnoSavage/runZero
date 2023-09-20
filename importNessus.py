@@ -92,7 +92,7 @@ def main():
     if "-h" in sys.argv:
         usage()
         exit()
-    consoleURL = os.environ["CONSOLE_BASE_URL"]
+    consoleURL = os.environ["RUNZERO_BASE_URL"]
     token = os.environ["RUNZERO_ORG_TOKEN"]
     siteID = os.environ["SITE_ID"]
     path = os.environ["NESSUS_DIR"]
