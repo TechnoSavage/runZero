@@ -1,11 +1,9 @@
-#!/usr/bin/python
-
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    createScan.py, version 1.0 by Derek Burke
+    createScan.py, version 2.0 by Derek Burke
     Sample python script to set up and perform a scan task through the runZero API."""
 
 import json
-import re
+import os
 import requests
 import sys
 from getpass import getpass
@@ -17,83 +15,55 @@ def usage():
                     createScan.py [arguments]
 
                     You will be prompted to provide your runZero Organization API key unless
-                    it is included in a specified config file. If no config is provided you will
-                    prompted to provide scan task parameters.
+                    it is read from the .env file.
                     
                     Optional arguments:
 
-                    -u <uri>              URI of console (default is https://console.runzero.com)
+                    -u <uri>              URI of console, this argument will take priority over the .env file
+                    -k                    Prompt for Organization API key, this argument will take priority over the .env file
+                    -x <explorer UUID>    UUID of Explorer to scan with, this argument will take priority over the .env file
+                    -s <site ID>          UUID of the site to apply scan task to, this argument will take priority over the .env file
                     -t <target file/path> Specify a file containing scan targets (e.g.
                                           IP addresses/CIDR blocks, one per line)
-                    -c <config file/path> Filename of config file including absolute path
-                    -g                    Generate config file template
+                    -r <rate>             Specify rate (packets per second) for scan; defaults to 1000
+                    -n                    Prompt for scan name; otherwise "API Scan" will be used
+                    -d                    Prompt for scan description; otherwise blank
                     -h                    Show this help dialogue
                     
                 Examples:
-                    createScan.py -t targets.txt -c example.config
+                    createScan.py -t targets.txt
                     python3 -m createScan -u https://custom.runzero.com -t targets.txt""")
-
-def genConfig():
-    """Create a template for script configuration file."""
-
-    template = """orgToken= #Organization API Key\nuri=https://console.runzero.com #Console URL\nsiteID= #Site ID whare scan results are saved\n
-    scanExplor= #UID of explorer to use\nscanName= #name of scan task\nscanDesc= #Description for scan task\nscanRate= #scan rate in packets per second"""
-    writeFile("config_template", template)
-    exit()
-
-def readConfig(configFile):
-    """ Read values from configuration file
-
-        :param config: a file, file containing values for script
-        :returns: a tuple, console url at index, API token at index 1, and task number at index 2.
-        :raises: IOError: if file cannot be read.
-        :raises: FileNotFoundError: if file doesn't exist."""
-    try:
-        with open(configFile, 'r') as c:
-            config = c.read()
-            url = re.search("uri=(http[s]?://[a-z0-9.-]+)", config).group(1)
-            token = re.search("orgToken=([0-9A-Z]+)", config).group(1)
-            siteID = re.search("siteID=([0-9a-z-]+)", config).group(1)
-            scanExplor = re.search("scanExplor=([0-9a-z-]+)", config).group(1)
-            scanName = re.search("scanName=([0-9a-zA-Z-_ ]+)", config).group(1)
-            scanDesc = re.search("scanDesc=([0-9a-zA-Z-_ ]+)", config).group(1)
-            scanRate = re.search("scanRate=([0-9]+)", config).group(1)
-            return(url, token, siteID, scanExplor, scanName, scanDesc, scanRate)
-    except IOError as error:
-        raise error
-    except FileNotFoundError as error:
-        raise error
     
 def readTargets(targetFile):
     """ Read IP addresses, CIDR blocks, domains etc. from provided file
 
-        :param targetFile: a file, file containing targets one per line.
+        :param targetFile: a text file, file containing targets one per line.
         :returns: a List, list of targets to pass to scan task.
         :raises: IOError: if file cannot be read.
         :raises: FileNotFoundError: if file doesn't exist."""
     targetList = []
     try:
-       with open( targetFile, 'r') as t:
+        with open( targetFile, 'r') as t:
             targets = t.readlines()
             for target in targets:
                 target.rstrip('\n')
                 targetList.append(target)
-            return(targetList)
+        return(targetList)
     except IOError as error:
-        raise error
-    except FileNotFoundError as error:
-        raise error
+        return error
+    except OSError.FileNotFoundError as error:
+        return error 
 
-#This function only addresses basic settings for the scan in the config file. Adapt or modify as needed.
-def createScan(uri, token, siteID, explorer, name, description, rate, targetList): 
+#This function only addresses basic settings for the scan in arguments and .env file. Adapt or modify as needed.
+def createScan(uri, token, siteID, explorer, targetList, name="", description="", rate=1000): 
     """ Create new scan task.
            
-           :param uri: A string
+           :param uri: A string, URL of the runZero console.
            :param token: A string, Organization API Key.
            :returns: A JSON object, scan creation results.
            :raises: ConnectionError: if unable to successfully make PUT request to console."""
     
-    uri = uri + "/api/v1.0/org/sites/%s/scan" % siteID
+    uri = f"{uri}/api/v1.0/org/sites/{siteID}/scan"
     payload = json.dumps({"targets": ', '.join(targetList),
                "excludes": "string",
                "scan-name": name,
@@ -103,7 +73,7 @@ def createScan(uri, token, siteID, explorer, name, description, rate, targetList
                "scan-tags": "",
                "scan-grace-period": "4",
                "agent": explorer,
-               "rate": rate,
+               "rate": str(rate),
                "max-host-rate": "40",
                "passes": "3",
                "max-attempts": "3",
@@ -121,7 +91,7 @@ def createScan(uri, token, siteID, explorer, name, description, rate, targetList
                "probes": "arp,bacnet,connect,dns,echo,ike,ipmi,mdns,memcache,mssql,natpmp,netbios,pca,rdns,rpcbind,sip,snmp,ssdp,syn,ubnt,wlan-list,wsd"})
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json',
-               'Authorization': 'Bearer %s' % token}
+               'Authorization': f'Bearer {token}'}
     try:
         response = requests.put(uri, headers=headers, data=payload)
         content = response.content
@@ -130,80 +100,76 @@ def createScan(uri, token, siteID, explorer, name, description, rate, targetList
     except ConnectionError as error:
         content = "No Response"
         raise error
-
-def writeFile(fileName, contents):
-    """ Write contents to output file. 
     
-        :param filename: a string, name for file including (optionally) file extension.
-        :param contents: anything, file contents.
-        :raises: IOError: if unable to write to file. """
-    try:
-        with open( fileName, 'w') as o:
-                    o.write(contents)
-    except IOError as error:
-        raise error
-
-if __name__ == "__main__":
+def main():
     if "-h" in sys.argv:
         usage()
         exit()
-    if "-g" in sys.argv:
-        genConfig()
-    consoleURL = "https://console.runzero.com"
-    token = ""
-    siteID = ""
-    explorer = ""
-    name = ""
-    description = ""
-    rate = ""
-    config = False
-    configFile = ""
-    targetFile = ""
-    targetList = []
-    if "-c" in sys.argv:
+    consoleURL = os.environ["RUNZERO_BASE_URL"]
+    token = os.environ["RUNZERO_ORG_TOKEN"]
+    siteID = os.environ["RUNZERO_SITE_ID"]
+    explorer = os.environ["EXPLORER"]
+    targetFile = os.environ["TARGETS"]
+    name = 'API scan'
+    description = ''
+    rate = 1000
+    if "-u" in sys.argv:
         try:
-            config = True
-            configFile = sys.argv[sys.argv.index("-c") + 1]
-            confParams = readConfig(configFile)
-            consoleURL = confParams[0]
-            token = confParams[1]
-            siteID = confParams[2]
-            explorer = confParams[3]
-            name = confParams[4]
-            description = confParams[5]
-            rate = confParams[6]
+            consoleURL = sys.argv[sys.argv.index("-u") + 1]
         except IndexError as error:
-            print("Config file switch used but no file provided!\n")
+            print("URL switch used but URL not provided!\n")
             usage()
             exit()
-    if "-u" in sys.argv and not config:
+    if "-k" in sys.argv:
+        token = getpass(prompt="Enter the Organization API Key: ")
+        if token == '':
+            print("No API token provided!\n")
+            usage()
+            exit()
+    if "-x" in sys.argv:
         try:
-            uri = sys.argv[sys.argv.index("-u") + 1]
+            explorer = sys.argv[sys.argv.index("-x") + 1]
         except IndexError as error:
-            print("URI switch used but URI not provided!\n")
+            print("Explorer switch used but UUID not provided!\n")
+            usage()
+            exit()
+    if "-s" in sys.argv:
+        try:
+            siteID = sys.argv[sys.argv.index("-s") + 1]
+        except IndexError as error:
+            print("Site switch used but site ID not provided!\n")
             usage()
             exit()
     if "-t" in sys.argv:
         try:
             targetFile = sys.argv[sys.argv.index("-t") + 1]
-            targetList = readTargets(targetFile)
         except ValueError as error:
             raise error
         except IndexError as error:
             print("List of targets not provided!\n")
             usage()
             exit()
-    if token == "":
-        token = getpass(prompt="Enter your Organization API Key: ")
-    if siteID == "":
-        siteID = input('Specify the Site ID for the scan: ')
-    if explorer == "":
-        explorer = input('Specify the Explorer ID for the scan: ')
-    if name == "":
-        name = input('')
-    if description == "":
-        description = input('')
-    if rate == "":
-        rate = input('')
-    response = createScan(consoleURL, token, siteID, explorer, name, description, rate, targetList)
+    if "-r" in sys.argv:
+        try:
+            rate = int(sys.argv[sys.argv.index("-r") + 1])
+        except ValueError as error:
+            raise error
+        except IndexError as error:
+            print("Scan rate switch used but value invalid or not provided!\n")
+            usage()
+            exit()
+    if "-n" in sys.argv:
+        name = input('Enter scan name: ')
+        if name == '':
+            name = "API scan"
+    if "-d" in sys.argv:
+        description = input('Enter scan description: ')
+    targetList = readTargets(targetFile)
+    if type(targetList) is not list:
+        print("Target file is invalid or does not exist.")
+        exit()
+    response = createScan(consoleURL, token, siteID, explorer, targetList, name, description, rate)
     print(response)
+    
+if __name__ == "__main__":
+    main()
