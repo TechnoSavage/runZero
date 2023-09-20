@@ -59,9 +59,9 @@ If using the GVM community edition container, additional configuration to expose
 ### Connection Method 2: SSH
 To be implemented
 ### Connection Method 3: TLS
-To be implemented but process to move GVM community edition container to SSL/TLS is outlined below.
+To be implemented but process to enable SSL/TLS on the GVM community edition container is outlined below.
 
-The GVM community edition container does not support SSL/TLS by default. Configurations changes to the docker-compose.yaml can be made to enable SSL/TLS.
+The GVM community edition container does not support SSL/TLS by default. Configuration changes to the docker-compose.yaml can be made to enable SSL/TLS.
 The relevant steps are documented below. The original source for this information can be found here: https://forum.greenbone.net/t/setting-up-ssl-tls-for-docker/13187/5 (Credit and thanks to forum users cseengineer and 3lackhawk)
 
 Change the 'gsa' section of your docker-compose.yaml file to reflect the following:
