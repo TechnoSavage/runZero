@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    hwProfile.py, version 1.1 by Derek Burke
+    hwProfile.py, version 2.0 by Derek Burke
     Query runZero API for physical assets found within an Organization (tied to Export API key provided) and generate JSON
     output of all attributes describing the physical hardware of the asset."""
 
@@ -8,6 +8,7 @@ import os
 import requests
 import sys
 from datetime import datetime
+from flatten_json import flatten
 from getpass import getpass
 from requests.exceptions import ConnectionError
 
@@ -65,59 +66,27 @@ def parseHW(data):
         assetList = []
         for item in data:
             asset = {}
-            for field in item:
-                if field == 'attributes':
-                    try:
-                        asset['hw.product'] = item[field]['hw.product']
-                    except KeyError as error:
-                        pass
-                    try: 
-                        asset['hw.device'] = item[field]['hw.device']
-                    except KeyError as error:
-                        pass
-                    try: 
-                        asset['hw.vendor'] = item[field]['hw.vendor']
-                    except KeyError as error:
-                        pass
-                    try:
-                        asset['snmp.sysDesc'] = item[field]['snmp.sysDesc']
-                    except KeyError as error:
-                        pass
-                    try:
-                        asset['hw.serialNumber'] = item[field]['hw.serialNumber']
-                    except KeyError as error:
-                        pass
-                    try: 
-                        asset['snmp.serialNumbers'] = item[field]['snmp.serialNumbers']
-                    except KeyError as error:
-                        pass
-                    try:
-                        asset['ilo.serialNumber'] = item[field]['ilo.serialNumber']
-                    except KeyError as error:
-                        pass
-                elif field == 'foreign_attributes':
-                    try:
-                        asset['cpuID'] = item[field]['@sentinelone.dev'][0]['cpuID']
-                    except KeyError as error:
-                        pass
-                    try:
-                        asset['modelName'] = item[field]['@sentinelone.dev'][0]['modelName']
-                    except KeyError as error:
-                        pass
-                    try:
-                        asset['device.model'] = item[field]['@miradore.dev'][0]['device.model']
-                    except KeyError as error:
-                        pass
-                    try:
-                        asset['device.serialnumber'] = item[field]['@miradore.dev'][0]['device.serialNumber']
-                    except KeyError as error:
-                        pass
-                    try:
-                        asset['systemProductName'] = item[field]['@crowdstrike.dev'][0]['systemProductName']
-                    except KeyError as error:
-                        pass
-                else:
-                    asset[field] = item[field]
+            for key, value in item.items():
+                if not isinstance(value, dict):
+                    asset[key] = item.get(key)
+
+            root_keys_to_ignore = []
+            for key, value in item.items():
+                if not isinstance(value, dict):
+                    root_keys_to_ignore.append(key)
+                flattened_items = flatten(nested_dict=item, root_keys_to_ignore=root_keys_to_ignore)
+                asset['hw.product'] = flattened_items.get('attributes_hw.product')
+                asset['hw.device'] = flattened_items.get('attributes_hw.device')
+                asset['hw.vendor'] = flattened_items.get('attributes_hw.vendor')
+                asset['snmp.sysDesc'] = flattened_items.get('attributes_snmp.sysDesc')
+                asset['hw.serialNumber'] = flattened_items.get('attributes_hw.serialNumber')
+                asset['snmp.serialNumbers'] = flattened_items.get('attributes_snmp.serialNumbers') 
+                asset['ilo.serialNumber'] = flattened_items.get('attributes_ilo.serialNumber')
+                asset['cpuID'] = flattened_items.get('foreign_attributes_@sentinelone.dev_0_cpuID')
+                asset['modelName'] = flattened_items.get('foreign_attributes_@sentinelone.dev-0-modelName')
+                asset['device.model'] = flattened_items.get('foreign_attributes_@miradore.dev_0_device.model')
+                asset['device.serialnumber'] = flattened_items.get('foreign_attributes_@miradore.dev_0_device.serialNumber')
+                asset['systemProductName'] = flattened_items.get('foreign_attributes_@crowdstrike.dev_0_systemProductName')
             assetList.append(asset)
         return(assetList)
     except TypeError as error:
@@ -141,7 +110,7 @@ def main():
     if "-h" in sys.argv:
         usage()
         exit()
-    consoleURL = os.environ["CONSOLE_BASE_URL"]
+    consoleURL = os.environ["RUNZERO_BASE_URL"]
     token = os.environ["RUNZERO_EXPORT_TOKEN"]
     #Output report name; default uses UTC time
     fileName = f"Physical_Hardware_Types_{str(datetime.utcnow())}.json"
@@ -157,7 +126,7 @@ def main():
     if consoleURL == '':
         consoleURL = input('Enter the URL of the console (e.g. http://console.runzero.com): ')
 
-    query = "(type:desktop or type:laptop or type:server) and not attribute:virtual" #Query to grab all physical assets
+    query = "not attribute:virtual" #Query to grab all physical assets
     fields = "os, os_vendor, hw, addresses, attributes, foreign_attributes" #fields to return in API call; modify for more or less
     results = getAssets(consoleURL, token, query, fields)
     parsed = parseHW(results)
