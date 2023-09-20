@@ -91,7 +91,7 @@ def main():
     if "-h" in sys.argv:
         usage()
         exit()
-    consoleURL = os.environ["CONSOLE_BASE_URL"]
+    consoleURL = os.environ["RUNZERO_BASE_URL"]
     token = os.environ["RUNZERO_ACCOUNT_TOKEN"]
     formatJSON = False
     saveFile = False
