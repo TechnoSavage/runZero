@@ -158,7 +158,7 @@ def main():
     dstURL = os.environ['RUNZERO_BASE_URL']
     srcTok = os.environ['SOURCE_ORG_TOKEN']
     dstTok = os.environ['RUNZERO_ORG_TOKEN']
-    siteID = os.environ['SITE_ID']
+    siteID = os.environ['RUNZERO_SITE_ID']
     tasks = int(os.environ['TASK_NO'])
     path = os.environ['SAVE_PATH']
     if "-s" in sys.argv:
