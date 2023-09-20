@@ -155,7 +155,7 @@ def main():
         usage()
         exit()
     srcURL = os.environ['CONSOLE_SOURCE_URL']
-    dstURL = os.environ['CONSOLE_BASE_URL']
+    dstURL = os.environ['RUNZERO_BASE_URL']
     srcTok = os.environ['SOURCE_ORG_TOKEN']
     dstTok = os.environ['RUNZERO_ORG_TOKEN']
     siteID = os.environ['SITE_ID']
