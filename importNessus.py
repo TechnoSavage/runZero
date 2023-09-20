@@ -94,7 +94,7 @@ def main():
         exit()
     consoleURL = os.environ["RUNZERO_BASE_URL"]
     token = os.environ["RUNZERO_ORG_TOKEN"]
-    siteID = os.environ["SITE_ID"]
+    siteID = os.environ["RUNZERO_SITE_ID"]
     path = os.environ["NESSUS_DIR"]
     tidy = False
     writeLog = False
