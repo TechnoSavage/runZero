@@ -52,7 +52,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         #If custom fields created in Snipe-IT align to asset fields in r0 SDK docs
         #additional attributes can be added here following the pattern
         item = flatten(item)
-        id = item.get('id', uuid.uuid4)
+        asset_id = item.get('id', uuid.uuid4)
         mac = item.get('custom_fields_MAC Address_value', None)
         model = item.get('model_name', '')
         deviceType = item.get('category_name', '')
@@ -80,7 +80,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # Build assets for import
         assets.append(
             ImportAsset(
-                id=id,
+                id=asset_id,
                 networkInterfaces=[network],
                 model=model,
                 deviceType=deviceType,
