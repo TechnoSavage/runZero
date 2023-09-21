@@ -40,6 +40,7 @@ GVM_PORT - The port the GVM web interface is running on (see Connection Method 3
 GVM_USERNAME - Username for an account with sufficient privileges to call Gmp.get_hosts()
 GVM_PASSWORD - Password for the account
 GVM_SOCKET_PATH - Path to GVM Unix socket (see Connection Method 1 below)
+GVM_CONN_METHOD - 'socket', 'ssh', or 'tls'. Determines the connection method used to access GVM API (currently only socket is supported)
 ```
 
 ## GVM Configuration
