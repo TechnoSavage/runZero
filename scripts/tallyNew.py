@@ -23,7 +23,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='Output file format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
     return parser.parse_args()
 
 def getTasks(url, token): 
