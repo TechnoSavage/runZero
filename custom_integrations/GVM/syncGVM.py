@@ -59,17 +59,24 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         val_list = list(item.values())
 
         asset_id = item.get('@id', uuid.uuid4)  
-        ip = item.get('name', '')
-        hostname = ''
-        os = ''
+        ip = hostname = os = ''
+        mac = None
+        if 'ip' in val_list:
+            ipPos = val_list.index('ip')
+            ipKey = key_list[ipPos]
+            ip = item.get(ipKey.replace('_name', '_value'))
+        if 'MAC' in val_list:
+            macPos = val_list.index('MAC')
+            macKey = key_list[macPos]
+            mac = item.get(macKey.replace('_name', '_value'))
         if 'hostname' in val_list:
             hostPos = val_list.index('hostname')
             hostKey = key_list[hostPos]
-            hostname = item.get(hostKey.replace('_name', '_value'), '').upper()
+            hostname = item.get(hostKey.replace('_name', '_value')).upper()
         if 'OS' in val_list:
             osPos = val_list.index('best_os_txt')
             osKey = key_list[osPos]
-            os = item.get(osKey.replace('_name', '_value'), '').replace('/', ' ')
+            os = item.get(osKey.replace('_name', '_value')).replace('/', ' ')
 
         #  # if multiple mac addresses, take the first one
         # if len(mac) > 0:
@@ -78,7 +85,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         #    mac = None
 
         # create the network interface
-        network = build_network_interface(ips=[ip], mac=None)
+        network = build_network_interface(ips=[ip], mac=mac)
 
         # *** Should not need to touch this ***
         # handle any additional values and insert into custom_attrs
