@@ -63,8 +63,8 @@ def parseSNs(data):
         for item in data:
             asset = {}
             for key, value in item.items():
-                if not isinstance(value, dict) and key in ('id', 'hw', 'macs'):
-                    asset[key] = item.get(key, '')
+                if not isinstance(value, dict):
+                    asset[key] = item.get(key)
 
             root_keys_to_ignore = []
             for key, value in item.items():
@@ -118,8 +118,10 @@ def main():
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
-    query = "protocol:snmp has:snmp.serialNumbers or hw.serialNumber:t or ilo.serialNumber:t" #Query to grab all assets with serial number fields
-    fields = "id, os, os_vendor, os_product, os_version, hw, addresses, macs, attributes" #fields to return in API call; modify for more or less
+    #Query to grab all assets with serial number fields
+    query = "protocol:snmp has:snmp.serialNumbers or hw.serialNumber:t or ilo.serialNumber:t"
+    #fields to return in API call; modify for more or less
+    fields = "id, hw, macs, attributes"
     assets = getAssets(args.consoleURL, token, query, fields)
     results = parseSNs(assets)
     if args.output == 'json':
