@@ -1,50 +1,42 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    tallyNew.py, version 2.2 by Derek Burke
+    tallyNew.py, version 3.0
     Script to retrieve last 'n' completed tasks and tally new asset counts. """
 
+import argparse
 import json
 import os
 import requests
-import sys
 from datetime import datetime
+from flatten_json import flatten
 from getpass import getpass
 from requests.exceptions import ConnectionError
+    
+def parseArgs():
+    parser = argparse.ArgumentParser(description="Deduplicate assets from runZero software inventory JSONl export.")
+    parser.add_argument('-t', '--tasks', dest='taskNo', help='Number of tasks, from most recent to oldest to analyze. This argument will take priority over the .env file', 
+                        type=int, required=False, default=os.environ["TASK_NO"])
+    parser.add_argument('-u', '--url', dest='consoleURL', help='URL of console. This argument will take priority over the .env file', 
+                        required=False, default=os.environ["RUNZERO_BASE_URL"])
+    parser.add_argument('-k', '--key', dest='token', help='Prompt for Org API key (do not enter at command line). This argument will take priority over the .env file', 
+                        nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
+    parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
+                        required=False, default=os.environ["SAVE_PATH"])
+    parser.add_argument('-o', '--output', dest='output', help='Output file format', choices=['txt', 'json'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 3.0')
+    return parser.parse_args()
 
-def usage():
-    """ Display usage and switches. """
-    print(""" Usage:
-                    tallyNew.py [arguments]
-
-                    You will be prompted to provide your runZero Organization API key
-                    Default bahavior is to write output to stdout.
-                    
-                    Optional arguments:
-
-                    -t <1-1000>           Number of tasks, from most recent to oldest to analyze (default is 1000)
-                    -u <uri>              URI of console (default is https://console.runzero.com)
-                    -j                    Write output in JSON format
-                    -f                    Write output to file (plain text default)
-                                          combine with -j for JSON
-                    -h                    Show this help dialogue
-                    
-                Examples:
-                    tallyNew.py -t 20
-                    tallyNew.py -j -f output.json
-                    tallyNew.py -u https://custom.runzero.com -t 15 -f output.txt
-                    python3 -m tallyNew """)
-
-def getTasks(uri, token): 
+def getTasks(url, token): 
     """ Retrieve Tasks from Organization corresponding to supplied token.
 
            :param token: A string, Account API Key.
            :returns: A JSON object, runZero task data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
-    uri = f"{uri}/api/v1.0/org/tasks"
+    url = f"{url}/api/v1.0/org/tasks"
     payload = ""
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
-        response = requests.get(uri, headers=headers, data=payload)
+        response = requests.get(url, headers=headers, data=payload)
         content = response.content
         data = json.loads(content)
         return data
@@ -58,24 +50,21 @@ def parseTasks(data, taskNo=1000):
         :param data: JSON object, runZero task data.
         :param taskNo: an Integer, how many recent tasks to loop through.
         :returns: Dict Object, JSON formatted dictionary of relevant values.
-        :raises: TypeError: if data variable passed is not JSON format.
-        :raises: KeyError: if dict key is incorrect or doesn't exist. """
+        :raises: TypeError: if data variable passed is not JSON format."""
     try:
         count = 0
         parsed = []
         for item in data:
+            item = flatten(item)
             count += 1
             if count == int(taskNo) + 1:
                 break
             task = {} 
-            task["taskID"] = item["id"]
-            task["siteID"] = item["site_id"]
-            task["taskName"] = item["name"]
-            task["taskDescription"] = item["description"]
-            try:
-                task["newAssets"] = item["stats"]["change.new"]
-            except KeyError as error:
-                task["newAssets"] = 0
+            task["taskID"] = item.get("id", '')
+            task["siteID"] = item.get("site_id", '')
+            task["taskName"] = item.get("name", '')
+            task["taskDescription"] = item.get("description", '')
+            task["newAssets"] = item.get("stats_change.newAssets", 0)
             parsed.append(task)
         totalTasks = len(parsed) 
         totalNew = 0
@@ -85,9 +74,6 @@ def parseTasks(data, taskNo=1000):
         return parsed
     except TypeError as error:
         raise error
-    except KeyError as error:
-        raise error
-
 
 def writeFile(fileName, contents):
     """ Write contents to output file. 
@@ -97,70 +83,32 @@ def writeFile(fileName, contents):
         :raises: IOError: if unable to write to file. """
     try:
         with open( fileName, 'w') as o:
-                    o.write(contents)
+            o.write(contents)
     except IOError as error:
         raise error
     
 def main():
-    if "-h" in sys.argv:
-        usage()
-        exit()
-    consoleURL = os.environ["RUNZERO_BASE_URL"]
-    token = os.environ["RUNZERO_ORG_TOKEN"]
-    taskNo = os.environ["TASK_NO"]
-    formatJSON = False
-    saveFile = False
+    args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f"Asset_Tally_Report_{str(datetime.utcnow())}"
-    if token == '':
+    fileName = f"{args.path}Asset_Tally_Report_{str(datetime.utcnow())}"
+    token = args.token
+    if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
-    if "-u" in sys.argv:
-        try:
-            consoleURL = sys.argv[sys.argv.index("-u") + 1]
-        except IndexError as error:
-            print("URI switch used but URI not provided!\n")
-            usage()
-            exit()
-    if "-t" in sys.argv:
-        try:
-            taskNo = sys.argv[sys.argv.index("-t") + 1]
-            int(taskNo)
-        except ValueError as error:
-            raise error
-        except IndexError as error:
-            print("Task switch used but task number not provided!\n")
-            usage()
-            exit()
-    if "-j" in sys.argv:
-        formatJSON = True
-    if "-f" in sys.argv:
-        saveFile = True
-    if consoleURL == '':
-        consoleURL = input('Enter the URL of the console (e.g. http://console.runzero.com): ')
-    if taskNo == '':
-        taskNo = input('Enter the number of tasks to tally new assets for (e.g. 100):')
-
-    data = getTasks(consoleURL, token)
-    results = parseTasks(data, taskNo)
-    if formatJSON:
-        if saveFile:
-            fileName = fileName + '.json'
-            JSON = json.dumps(results, indent=4)
-            writeFile(fileName, JSON)
-        else:
-            print(json.dumps(results, indent=4))
+    data = getTasks(args.consoleURL, token)
+    results = parseTasks(data, args.taskNo)
+    if args.output == 'json':
+        fileName = f'{fileName}.json'
+        writeFile(fileName, json.dumps(results))
+    elif args.output == 'txt':
+        fileName = f'{fileName}.txt'
+        stringList = []
+        for line in results:
+            stringList.append(str(line))
+        textFile = '\n'.join(stringList)
+        writeFile(fileName, textFile)  
     else:
-        if saveFile:
-            fileName = fileName + '.txt'
-            stringList = []
-            for line in results:
-                stringList.append(str(line))
-            textFile = '\n'.join(stringList)
-            writeFile(fileName, textFile)
-        else:
-            for line in results:
-                print(line)
-
+        for line in results:
+            print(line)
 
 if __name__ == "__main__":
     main()
