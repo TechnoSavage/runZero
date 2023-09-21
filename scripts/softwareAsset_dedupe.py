@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    softwareAsset_dedupe.py, version 2.0
+    softwareAsset_dedupe.py, version 2.1
     This script is created with the intention of deduplicating assets by UUID after running a query
     in the software portion of the runZero asset inventory. Specifically, this script is intended 
     assist when a user wants to find all assets that do NOT have a specific application installed.
@@ -17,7 +17,7 @@ import re
 def parseArgs():
     parser = argparse.ArgumentParser(description="Deduplicate assets from runZero software inventory JSONl export.")
     parser.add_argument('-f', '--file', metavar='<path>filename', dest='fileName', help='jsonl file exported from console, including absolute path', required=True)
-    parser.add_argument('--version', action='version', version='%(prog)s 2.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.1')
     return parser.parse_args()
 
 def parseFile(inputFile):
@@ -26,8 +26,7 @@ def parseFile(inputFile):
     
         :param inputFile: JSONl formatted file.    
         :raises: FileNotFoundError: if provided filename not found is not JSON formatted.
-        :raises: JSONDecodeError: if content is not JSON formatted.
-        :raises: KeyError: if key:value pair not present in file content. """
+        :raises: JSONDecodeError: if content is not JSON formatted."""
     try:
         assetList = []
         with open (inputFile, 'r') as input:
@@ -35,32 +34,9 @@ def parseFile(inputFile):
             for line in content:
                 line = json.loads(line)
                 asset = {}
-                #add or remove asset attributes as needed
-                asset["id"] = line["id"]
-                asset["alive"] = line["alive"]
-                asset["type"] = line["type"]
-                asset["os_vendor"] = line["os_vendor"]
-                asset["os_product"] = line["os_product"]
-                asset["os_version"] = line["os_version"]
-                asset["os"] = line["os"]
-                asset["hw_vendor"] = line["hw_vendor"]
-                asset["hw_product"] = line["hw_product"]
-                asset["hw_version"] = line["hw_version"]
-                asset["hw"] = line["hw"]
-                asset["addresses"] = line["addresses"]
-                asset["addresses_extra"] = line["addresses_extra"]
-                asset["macs"] = line["macs"]
-                asset["mac_vendors"] = line["mac_vendors"]
-                asset["names"] = line["names"]
-                asset["tags"] = line["tags"]
-                asset["domains"] = line["domains"]
-                asset["attributes"] = line["attributes"]
-                asset["first_seen"] = line["first_seen"]
-                asset["last_seen"] = line["last_seen"]
-                asset["alive"] = line["alive"]
-                asset["site_id"] = line["site_id"]
-                asset["organization_id"] = line["organization_id"]
-                asset["detected_by"] = line["detected_by"]
+                for key, value in line.items():
+                    if 'software' not in key:
+                        asset[key] = line.get(key)
                 count = 0
                 for item in assetList:
                     if asset["id"] == item["id"]:
@@ -72,9 +48,6 @@ def parseFile(inputFile):
         raise error
     except json.JSONDecodeError as error:
         raise error
-    except KeyError as error:
-        raise error
-
 
 def writeFile(fileName, contents):
     """ Write contents to output file. 
