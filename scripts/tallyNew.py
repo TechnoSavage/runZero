@@ -1,8 +1,9 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    tallyNew.py, version 3.0
-    Script to retrieve last 'n' completed tasks and tally new asset counts. """
+    tallyNew.py, version 3.1
+    Script to retrieve last 'N' completed tasks and tally new asset counts. """
 
 import argparse
+import csv
 import json
 import os
 import requests
@@ -12,7 +13,7 @@ from getpass import getpass
 from requests.exceptions import ConnectionError
     
 def parseArgs():
-    parser = argparse.ArgumentParser(description="Deduplicate assets from runZero software inventory JSONl export.")
+    parser = argparse.ArgumentParser(description="Analyze last N number of tasks to report total new assets found.")
     parser.add_argument('-t', '--tasks', dest='taskNo', help='Number of tasks, from most recent to oldest to analyze. This argument will take priority over the .env file', 
                         type=int, required=False, default=os.environ["TASK_NO"])
     parser.add_argument('-u', '--url', dest='consoleURL', help='URL of console. This argument will take priority over the .env file', 
@@ -21,7 +22,7 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('-o', '--output', dest='output', help='Output file format', choices=['txt', 'json'], required=False)
+    parser.add_argument('-o', '--output', dest='output', help='Output file format', choices=['txt', 'json', 'csv'], required=False)
     parser.add_argument('--version', action='version', version='%(prog)s 3.0')
     return parser.parse_args()
 
@@ -74,6 +75,26 @@ def parseTasks(data, taskNo=1000):
         return parsed
     except TypeError as error:
         raise error
+    
+def writeCSV(fileName, contents):
+    """ Write contents to output file. 
+    
+        :param filename: a string, name for file including.
+        :param contents: json data, file contents.
+        :raises: IOError: if unable to write to file. """
+    try:
+        cf = open(f'{fileName}.csv', 'w')
+        csv_writer = csv.writer(cf)
+        count = 0
+        for item in contents:
+            if count == 0:
+                header = item.keys()
+                csv_writer.writerow(header)
+                count += 1
+            csv_writer.writerow(item.values())
+        cf.close()
+    except IOError as error:
+        raise error
 
 def writeFile(fileName, contents):
     """ Write contents to output file. 
@@ -105,7 +126,10 @@ def main():
         for line in results:
             stringList.append(str(line))
         textFile = '\n'.join(stringList)
-        writeFile(fileName, textFile)  
+        writeFile(fileName, textFile)
+    elif args.output == 'csv':
+        fileName = f'{fileName}.csv'
+        writeCSV(fileName, results)  
     else:
         for line in results:
             print(line)
