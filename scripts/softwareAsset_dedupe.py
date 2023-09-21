@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    softwareAsset_dedupe.py, version 1.6 by Derek Burke
+    softwareAsset_dedupe.py, version 2.0
     This script is created with the intention of deduplicating assets by UUID after running a query
     in the software portion of the runZero asset inventory. Specifically, this script is intended 
     assist when a user wants to find all assets that do NOT have a specific application installed.
@@ -10,25 +10,15 @@
     to every other installed software product. This script will accept the JSON export from the resulting
     query and deduplicate assets by UUID to provide a list solely of the assets in question. """
 
+import argparse
 import json
 import re
-import sys
-
-def usage():
-    """ Display usage and switches. """
-    print(""" Usage:
-                    softwareAsset_dedupe.py [arguments]
-
-                    Supply a JSONl formatted export file from runZero software inventory query and deduplicate
-                    results to return a list of assets.
-                    
-                    Arguments:
-                    -f <filename> jsonl file exported from console 
-                    -h            Show this help dialogue
-                    
-                Examples:
-                    softwareAsset_dedupe.py -i software-20221024134100-runZero_Lab-source_sentinelone_and_not_product_1password.jsonl 
-                    python -m softwareAsset_dedupe -i software-20221024134100-runZero_Lab-source_crowdstrike_and_not_product_1password.jsonl""")
+    
+def parseArgs():
+    parser = argparse.ArgumentParser(description="Deduplicate assets from runZero software inventory JSONl export.")
+    parser.add_argument('-f', '--file', metavar='<path>filename', dest='fileName', help='jsonl file exported from console, including absolute path', required=True)
+    parser.add_argument('--version', action='version', version='%(prog)s 2.0')
+    return parser.parse_args()
 
 def parseFile(inputFile):
     """ Read input file, parse contents and return list of JSON formatted
@@ -99,22 +89,10 @@ def writeFile(fileName, contents):
         raise error
     
 def main():
-    if "-h" in sys.argv:
-        usage()
-        exit()
-    if "-f" in sys.argv:
-        try:
-            fileName = sys.argv[sys.argv.index("-f") + 1]
-        except IndexError as error:
-            print("No filename provided!\n")
-            usage()
-            exit()
-    else:
-        usage()
-        exit()
-    delFileExt = re.match("[^.]*", fileName)
+    args = parseArgs()
+    delFileExt = re.match("[^.]*", args.fileName)
     outputName = f"{delFileExt[0]}_deduped.json"
-    parsed = parseFile(fileName)
+    parsed = parseFile(args.fileName)
     writeFile(outputName, json.dumps(parsed))
 
 if __name__ == "__main__":
