@@ -1,7 +1,7 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
     serialNumbers.py, version 3.0
     Retrieve assets from console using Export API endpoint, extract defined fields and serial numbers,
-    and write to file in JSON format. This allows users to pull assets and SN information with a predefined
+    and, optionally, write to file. This allows users to pull assets and SN information with a predefined
     set of attributes included."""
 
 import argparse
