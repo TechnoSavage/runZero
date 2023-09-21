@@ -13,22 +13,6 @@ from datetime import datetime
 from flatten_json import flatten
 from getpass import getpass
 from requests.exceptions import ConnectionError
-
-def usage():
-    """ Display usage and switches. """
-    print(""" Usage:
-                    serialNumbers.py [arguments]
-
-                    You will be prompted to provide your runZero Export API key unless it is
-                    specified in the .env file.
-
-                    Optional arguments:
-                    -u <uri>                    URI of console (default is https://console.runzero.com)
-                    -h                          Show this help dialogue
-                    
-                Examples:
-                    serialNumbers.py
-                    python -m serialNumbers -u https://custom.runzero.com""")
     
 def parseArgs():
     parser = argparse.ArgumentParser(description="Retrive all available serial numbers from inventory assets.")
@@ -38,7 +22,7 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_EXPORT_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('-o', '--output', dest='output', help='Output file format', choices=['txt', 'json', 'csv'], required=False)
+    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv'], required=False)
     parser.add_argument('--version', action='version', version='%(prog)s 3.0')
     return parser.parse_args()
     
