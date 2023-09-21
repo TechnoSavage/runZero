@@ -35,8 +35,8 @@ RUNZERO_SITE_ID - UUID of the Site to which integration will send data. Found in
 RUNZERO_CUSTOM_SOURCE_ID - UUID of the Custom Integration Source. Found in the console URL after navigating to Accounts -> Custom Integrations and clicking the integration name.
 RUNZERO_IMPORT_TASK_NAME - Name of the Custom Integration Source. Created in the console under Accounts -> Custom Integrations.
 
-GVM_BASE_URL - The domain or IP of the GVM instance, minus any resource path e.g. "http://my.gvm.instance"
-GVM_PORT - The port the GVM web interface is running on
+GVM_BASE_URL - The domain or IP of the GVM instance, minus any resource path e.g. "https://my.gvm.instance" (see Connection Method 3 below)
+GVM_PORT - The port the GVM web interface is running on (see Connection Method 3 below)
 GVM_USERNAME - Username for an account with sufficient privileges to call Gmp.get_hosts()
 GVM_PASSWORD - Password for the account
 GVM_SOCKET_PATH - Path to GVM Unix socket (see Connection Method 1 below)
