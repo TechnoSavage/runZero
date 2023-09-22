@@ -1,37 +1,33 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    newAssetReport.py, version 2.4 by Derek Burke
+    newAssetReport.py, version 3.0
     Query runZero API for all assets found within an Organization (tied to Export API key provided) first seen within the specified 
     time period and return select fields. Default behavior will be to print assets to stdout in JSON format. Optionally, an output 
-    file format can be specified to write to."""
+    file and format can be specified."""
 
+import argparse
+import csv
 import json
 import os
 import requests
-import sys
 from datetime import datetime
 from getpass import getpass
 from requests.exceptions import ConnectionError
-
-def usage():
-    """ Display usage and switches. """
-    print(""" Usage:
-                    newAssetReport.py [arguments]
-
-                    You will be prompted to provide your runZero Export API key unless it
-                    is defined in the .env file.
-                    
-                    Optional arguments:
-
-                    -u <uri>                URI of console (default is https://console.runzero.com)
-                    -t <time span>          Time span to search for new assets e.g. 1day, 2weeks, 1month.
-                    -o <text| json | all>   Output file format for report. Plain text is default.
-                    -h                      Show this help dialogue
-                    
-                Examples:
-                    newAssetReport.py -o json
-                    python3 -m newAssetReport -u https://custom.runzero.com -t 1week""")
     
-def getAssets(uri, token, filter=" ", fields=" "):
+def parseArgs():
+    parser = argparse.ArgumentParser(description="Report all assets that were first found within a specified time range.")
+    parser.add_argument('-r', '--range', dest='timeRange', help='Time span to search for new assets e.g. 1day, 2weeks, 1month. This argument will take priority over the .env file', 
+                        required=False, default=os.environ["TIME"])
+    parser.add_argument('-u', '--url', dest='consoleURL', help='URL of console. This argument will take priority over the .env file', 
+                        required=False, default=os.environ["RUNZERO_BASE_URL"])
+    parser.add_argument('-k', '--key', dest='token', help='Prompt for Export API key (do not enter at command line). This argument will take priority over the .env file', 
+                        nargs='?', const=None, required=False, default=os.environ["RUNZERO_EXPORT_TOKEN"])
+    parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
+                        required=False, default=os.environ["SAVE_PATH"])
+    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 3.0')
+    return parser.parse_args()
+    
+def getAssets(url, token, filter=" ", fields=" "):
     """ Retrieve assets using supplied query filter from Console and restrict to fields supplied.
         
         :param uri: A string, URI of runZero console.
@@ -41,19 +37,39 @@ def getAssets(uri, token, filter=" ", fields=" "):
         :returns: a dict, JSON object of assets.
         :raises: ConnectionError: if unable to successfully make GET request to console."""
 
-    uri = f"{uri}/api/v1.0/export/org/assets.json?"
+    url = f"{url}/api/v1.0/export/org/assets.json"
     params = {'search': filter,
               'fields': fields}
     payload = ''
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
-        response = requests.get(uri, headers=headers, params=params, data=payload)
+        response = requests.get(url, headers=headers, params=params, data=payload)
         content = response.content
         data = json.loads(content)
         return data
     except ConnectionError as error:
         content = "No Response"
+        raise error
+    
+def writeCSV(fileName, contents):
+    """ Write contents to output file. 
+    
+        :param filename: a string, name for file including.
+        :param contents: json data, file contents.
+        :raises: IOError: if unable to write to file. """
+    try:
+        cf = open(f'{fileName}.csv', 'w')
+        csv_writer = csv.writer(cf)
+        count = 0
+        for item in contents:
+            if count == 0:
+                header = item.keys()
+                csv_writer.writerow(header)
+                count += 1
+            csv_writer.writerow(item.values())
+        cf.close()
+    except IOError as error:
         raise error
     
 def writeFile(fileName, contents):
@@ -64,62 +80,39 @@ def writeFile(fileName, contents):
         :raises: IOError: if unable to write to file. """
     try:
         with open( fileName, 'w') as o:
-                    o.write(contents)
+            o.write(contents)
     except IOError as error:
         raise error
     
 def main():
-    if "-h" in sys.argv:
-        usage()
-        exit()
-    consoleURL = os.environ["RUNZERO_BASE_URL"]
-    token = os.environ["RUNZERO_EXPORT_TOKEN"]
-    timeRange = os.environ["TIME"]
+    args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f"New_Asset_Report_{str(datetime.utcnow())}"
+    fileName = f"{args.path}New_Asset_Report_{str(datetime.utcnow())}"
     #Define config file to read from
-    if token == '':
+    token = args.token
+    if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
-    if "-u" in sys.argv:
-        try:
-            consoleURL = sys.argv[sys.argv.index("-u") + 1]
-        except IndexError as error:
-            print("URI switch used but URI not provided!\n")
-            usage()
-            exit()
-    if "-t" in sys.argv:
-        try:
-            timeRange = sys.argv[sys.argv.index("-t") + 1]
-        except IndexError as error:
-            print("Time Span switch used but time value not provided!\n")
-            usage()
-            exit()
-    if consoleURL == '':
-         consoleURL = input('Enter the URL of the console (e.g. http://console.runzero.com): ')
-    if timeRange == '':
-         timeRange = input('Enter the time range of new assets to report (e.g. 2weeks, 7days):')
     #Query to grab all assets first seen within the specified time value
-    query = f"first_seen:<{timeRange}"
+    query = f"first_seen:<{args.timeRange}"
     #fields to return in API call; modify for more or less
     fields = "id, os, os_vendor, hw, addresses, macs, attributes"
-    report = getAssets(consoleURL, token, query, fields)
-    if "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() in ('json'):
-        writeFile(f"{fileName}.json", json.dumps(report, indent=4))
-    elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() in ('text', 'txt'):
+    results = getAssets(args.consoleURL, token, query, fields)
+    if args.output == 'json':
+        fileName = f'{fileName}.json'
+        writeFile(fileName, json.dumps(results))
+    elif args.output == 'txt':
+        fileName = f'{fileName}.txt'
         stringList = []
-        for line in report:
-                stringList.append(str(line))
+        for line in results:
+            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
-        writeFile(f"{fileName}.txt", textFile)
-    elif "-o" in sys.argv and sys.argv[sys.argv.index("-o") + 1].lower() in ('all'):
-        writeFile(f"{fileName}.json", json.dumps(report, indent=4))
-        stringList = []
-        for line in report:
-                stringList.append(str(line))
-        textFile = '\n'.join(stringList)
-        writeFile(f"{fileName}.txt", textFile)
+        writeFile(fileName, textFile)
+    elif args.output == 'csv':
+        fileName = f'{fileName}.csv'
+        writeCSV(fileName, results)  
     else:
-        print(json.dumps(report, indent=4))
+        for line in results:
+            print(json.dumps(line, indent=4))
     
 if __name__ == "__main__":
     main()
