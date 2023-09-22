@@ -70,7 +70,7 @@ def writeCSV(fileName, contents):
         :param contents: json data, file contents.
         :raises: IOError: if unable to write to file. """
     try:
-        cf = open(f'{fileName}.csv', 'w')
+        cf = open(f'{fileName}', 'w')
         csv_writer = csv.writer(cf)
         count = 0
         for item in contents:
