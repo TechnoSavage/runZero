@@ -59,16 +59,15 @@ def writeCSV(fileName, contents):
         :param contents: json data, file contents.
         :raises: IOError: if unable to write to file. """
     try:
-        cf = open( fileName, 'w')
-        csv_writer = csv.writer(cf)
-        count = 0
-        for item in contents:
-            if count == 0:
-                header = item.keys()
-                csv_writer.writerow(header)
-                count += 1
-            csv_writer.writerow(item.values())
-        cf.close()
+        with open(fileName, 'w') as o:
+            csv_writer = csv.writer(o)
+            count = 0
+            for item in contents:
+                if count == 0:
+                    header = item.keys()
+                    csv_writer.writerow(header)
+                    count += 1
+                csv_writer.writerow(item.values())
     except IOError as error:
         raise error
     
