@@ -57,8 +57,7 @@ def parseHW(data):
      
        :param data: a dict: runZero JSON asset data.
        :returns: a dict: parsed runZero asset data.
-       :raises: TypeError: if dataset is not iterable.
-       :raises: KeyError: if dictionary key does not exist."""
+       :raises: TypeError: if dataset is not iterable."""
     
     try:
         assetList = []
