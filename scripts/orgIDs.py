@@ -99,24 +99,24 @@ def writeFile(fileName, contents):
 def main():
     args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f"Org_IDs_Report_{str(datetime.utcnow())}"
+    fileName = f"{args.path}Org_IDs_Report_{str(datetime.utcnow())}"
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Account API Key: ")
     orgData = getOIDs(args.consoleURL, token)
     orgOIDs = parseOIDs(orgData)
     if args.output == 'json':
-        fileName = f'{args.path}{fileName}.json'
+        fileName = f'{fileName}.json'
         writeFile(fileName, json.dumps(orgOIDs))
     elif args.output == 'txt':
-        fileName = f'{args.path}{fileName}.txt'
+        fileName = f'{fileName}.txt'
         stringList = []
         for line in orgOIDs:
             stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
         writeFile(fileName, textFile)
     elif args.output == 'csv':
-        fileName = f'{args.path}{fileName}.csv'
+        fileName = f'{fileName}.csv'
         writeCSV(fileName, orgOIDs)  
     else:
         for line in orgOIDs:
