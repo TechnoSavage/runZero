@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    tallyNew.py, version 3.1
+    tallyNew.py, version 3.2
     Script to retrieve last 'N' completed tasks and tally new asset counts. """
 
 import argparse
@@ -23,7 +23,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='Output file format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.2')
     return parser.parse_args()
 
 def getTasks(url, token): 
@@ -124,7 +124,7 @@ def main():
         fileName = f'{fileName}.txt'
         stringList = []
         for line in results:
-            stringList.append(str(line))
+            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
         writeFile(fileName, textFile)
     elif args.output == 'csv':
@@ -132,7 +132,7 @@ def main():
         writeCSV(fileName, results)  
     else:
         for line in results:
-            print(line)
+            print(json.dumps(line, indent=4))
 
 if __name__ == "__main__":
     main()
