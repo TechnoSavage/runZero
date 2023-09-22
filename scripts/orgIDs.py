@@ -48,8 +48,7 @@ def parseOIDs(data):
     
         :param data: JSON object, runZero org data.
         :returns: Dict Object, JSON formatted dictionary of relevant values.
-        :raises: TypeError: if data variable passed is not JSON format.
-        :raises: KeyError: if dict key is incorrect or doesn't exist. """
+        :raises: TypeError: if data variable passed is not JSON format."""
     try:
         parsed = []
         for item in data:
