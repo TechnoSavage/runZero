@@ -1,52 +1,47 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    dlScans.py, version 1.2 by Derek Burke
+    dlScans.py, version 2.0
     This script will download the scan data from the last 'n' processed tasks in an organization, 
     as specified by the user."""
 
+import argparse
 import json
 import os
 import requests
-import sys
 from getpass import getpass
 from requests.exceptions import ConnectionError
-
-def usage():
-    """ Display usage and switches. """
-
-    print(""" Usage:
-                    scanSync.py [arguments]
-
-                    You will be prompted to provide a runZero Organization API key for the console unless
-                    it is included in a specified config file.
-                    
-                    Optional arguments:
-
-                    -u <url>              URL of the runZero console, this argument will take priority over the .env file
-                    -k                    Prompt for Organization API key, this argument will take priority over the .env file
-                    -t <1-1000>           Number of tasks to fetch from the console, this argument will take priority over the .env file
-                    -h                    Show this help dialogue
-                    
-                Examples:
-                    dlScans.py -t 500
-                    python3 -m dlScans -c https://custom.runzero.com -t 1""")
     
-def getTasks(uri, token): 
+def parseArgs():
+    parser = argparse.ArgumentParser(description="Download scan data from the last 'N' processed tasks.")
+    parser.add_argument('-t', '--tasks', dest='taskNo', help='Number of tasks, from most recent to oldest to download. This argument will override the .env file', 
+                        type=int, required=False, default=os.environ["TASK_NO"])
+    parser.add_argument('-u', '--url', dest='consoleURL', help='URL of console. This argument will override the .env file', 
+                        required=False, default=os.environ["RUNZERO_BASE_URL"])
+    parser.add_argument('-k', '--key', dest='token', help='Prompt for Organization API key (do not enter at command line). This argument will override the .env file', 
+                        nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
+    parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
+                        required=False, default=os.environ["SAVE_PATH"])
+    parser.add_argument('--version', action='version', version='%(prog)s 2.0')
+    return parser.parse_args()
+    
+def getTasks(url, token): 
     """ Retrieve Tasks from Organization corresponding to supplied token.
 
-           :param uri: A string, URL of the runZero console.
+           :param url: A string, URL of the runZero console.
            :param token: A string, Account API Key.
            :returns: A JSON object, runZero task data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
     
-    uri = f"{uri}/api/v1.0/org/tasks"
-    payload = {'search':'scan',
-               'status':'processed'} #change {'search':'scan'} to {'search':'sample'} to retrieve traffic sampling tasks 
+    url = f"{url}/api/v1.0/org/tasks"
+    #change {'search':'type": "scan'} to {'search':'type": "sample'} to retrieve traffic sampling tasks 
+    payload = {'search': 'type": "scan'}
+                #'status':'processed'} #filtering by status no longer working at time of this script update
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
-        response = requests.get(uri, headers=headers, params=payload)
+        response = requests.get(url, headers=headers, params=payload)
         content = response.content
         data = json.loads(content)
+        print(data)
         return data
     except ConnectionError as error:
         raise error
@@ -67,7 +62,7 @@ def parseIDs(data, taskNo=1000):
             if iters >= taskNo:
                 break
             else:
-                taskIDs.append(item['id'])
+                taskIDs.append(item.get('id'))
                 iters += 1
         return taskIDs
     except TypeError as error:
@@ -75,10 +70,10 @@ def parseIDs(data, taskNo=1000):
     except KeyError as error:
         raise error
 
-def getData(uri, token, taskID, path):
+def getData(url, token, taskID, path):
     """ Download and write scan data (.json.gz) for each task ID provided.
 
-           :param uri: A string, URL of the runZero console.
+           :param url: A string, URL of the runZero console.
            :param token: A string, Organization API key.
            :param taskID: A string, ID of scan task to download.
            :param path: A string, path to write files to.
@@ -86,12 +81,12 @@ def getData(uri, token, taskID, path):
            :raises: ConnectionError: if unable to successfully make GET request to console.
            :raises: IOError: if unable to write file."""
     
-    uri = f"{uri}/api/v1.0/org/tasks/{taskID}/data"
+    url = f"{url}/api/v1.0/org/tasks/{taskID}/data"
     payload = ""
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
-        response = requests.get(uri, headers=headers, data=payload, stream=True)
+        response = requests.get(url, headers=headers, data=payload, stream=True)
         with open( f"{path}scan_{taskID}.json.gz", 'wb') as f:
             for chunk in response.iter_content(chunk_size=128):
                 f.write(chunk)
@@ -101,39 +96,14 @@ def getData(uri, token, taskID, path):
         raise error
     
 def main():
-    if "-h" in sys.argv:
-        usage()
-        exit()
-    consoleURL = os.environ['RUNZERO_BASE_URL']
-    token = os.environ['RUNZERO_ORG_TOKEN']
-    tasks = int(os.environ['TASK_NO'])
-    path = os.environ['SAVE_PATH']
-    if "-u" in sys.argv:
-        try:
-            consoleURL = sys.argv[sys.argv.index("-u") + 1]
-        except IndexError as error:
-            print("URL switch used but URL not provided!\n")
-            usage()
-            exit()
-    if "-k" in sys.argv:
+    args = parseArgs()
+    token = args.token
+    if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
-        if token == '':
-            print("No API token provided!\n")
-            usage()
-            exit()
-    if "-t" in sys.argv:
-        try:
-            tasks = int(sys.argv[sys.argv.index("-t") + 1])
-        except ValueError as error:
-            raise error
-        except IndexError as error:
-            print("Task switch used but task number not provided!\n")
-            usage()
-            exit()
-    taskInfo = getTasks(consoleURL, token)
-    idList = parseIDs(taskInfo, tasks)
+    taskInfo = getTasks(args.consoleURL, token)
+    idList = parseIDs(taskInfo, args.taskNo)
     for id in idList:
-        getData(consoleURL, token, id, path)
+        getData(args.consoleURL, token, id, args.path)
 
 if __name__ == "__main__":
     main()
