@@ -1,38 +1,31 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    createScan.py, version 2.0 by Derek Burke
+    createScan.py, version 3.0
     Sample python script to set up and perform a scan task through the runZero API."""
 
+import argparse
 import json
 import os
 import requests
-import sys
 from getpass import getpass
 from requests.exceptions import ConnectionError
-
-def usage():
-    """ Display usage and switches. """
-    print(""" Usage:
-                    createScan.py [arguments]
-
-                    You will be prompted to provide your runZero Organization API key unless
-                    it is read from the .env file.
-                    
-                    Optional arguments:
-
-                    -u <uri>              URI of console, this argument will take priority over the .env file
-                    -k                    Prompt for Organization API key, this argument will take priority over the .env file
-                    -x <explorer UUID>    UUID of Explorer to scan with, this argument will take priority over the .env file
-                    -s <site ID>          UUID of the site to apply scan task to, this argument will take priority over the .env file
-                    -t <target file/path> Specify a file containing scan targets (e.g.
-                                          IP addresses/CIDR blocks, one per line)
-                    -r <rate>             Specify rate (packets per second) for scan; defaults to 1000
-                    -n                    Prompt for scan name; otherwise "API Scan" will be used
-                    -d                    Prompt for scan description; otherwise blank
-                    -h                    Show this help dialogue
-                    
-                Examples:
-                    createScan.py -t targets.txt
-                    python3 -m createScan -u https://custom.runzero.com -t targets.txt""")
+    
+def parseArgs():
+    parser = argparse.ArgumentParser(description="Create scan task via API.")
+    parser.add_argument('-u', '--url', dest='consoleURL', help='URL of console. This argument will override the .env file', 
+                        required=False, default=os.environ["RUNZERO_BASE_URL"])
+    parser.add_argument('-k', '--key', dest='token', help='Prompt for Organization API key (do not enter at command line). This argument will override the .env file', 
+                        nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
+    parser.add_argument('-x', '--explorer', dest='explorer', help='UUID of the Explorer. This argument will override the .env file', 
+                        required=False, default=os.environ["EXPLORER"])
+    parser.add_argument('-s', '--site', help='UUID of site to add scan data to. This argument will override the .env file', 
+                        required=False, default=os.environ["RUNZERO_SITE_ID"])
+    parser.add_argument('-iL', '--input-list', dest='targetFile', help='Text file with scan targets. This argument will override the .env file', 
+                        required=False, default=os.environ["TARGETS"])
+    parser.add_argument('-n', '--name', help='Name for the scan task.', required=False, default='API Scan')
+    parser.add_argument('-d', '--description', help='Description for scan task.', required=False)
+    parser.add_argument('-r', '--rate', help='Scan rate for task.', required=False, default='1000')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.0')
+    return parser.parse_args()
     
 def readTargets(targetFile):
     """ Read IP addresses, CIDR blocks, domains etc. from provided file
@@ -55,7 +48,7 @@ def readTargets(targetFile):
         return error 
 
 #This function only addresses basic settings for the scan in arguments and .env file. Adapt or modify as needed.
-def createScan(uri, token, siteID, explorer, targetList, name="", description="", rate=1000): 
+def createScan(url, token, siteID, explorer, targetList, name, description, rate): 
     """ Create new scan task.
            
            :param uri: A string, URL of the runZero console.
@@ -63,7 +56,7 @@ def createScan(uri, token, siteID, explorer, targetList, name="", description=""
            :returns: A JSON object, scan creation results.
            :raises: ConnectionError: if unable to successfully make PUT request to console."""
     
-    uri = f"{uri}/api/v1.0/org/sites/{siteID}/scan"
+    url = f"{url}/api/v1.0/org/sites/{siteID}/scan"
     payload = json.dumps({"targets": ', '.join(targetList),
                "excludes": "string",
                "scan-name": name,
@@ -73,7 +66,7 @@ def createScan(uri, token, siteID, explorer, targetList, name="", description=""
                "scan-tags": "",
                "scan-grace-period": "4",
                "agent": explorer,
-               "rate": str(rate),
+               "rate": rate,
                "max-host-rate": "40",
                "passes": "3",
                "max-attempts": "3",
@@ -93,7 +86,7 @@ def createScan(uri, token, siteID, explorer, targetList, name="", description=""
                'Content-Type': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
-        response = requests.put(uri, headers=headers, data=payload)
+        response = requests.put(url, headers=headers, data=payload)
         content = response.content
         data = json.loads(content)
         return data
@@ -102,73 +95,15 @@ def createScan(uri, token, siteID, explorer, targetList, name="", description=""
         raise error
     
 def main():
-    if "-h" in sys.argv:
-        usage()
-        exit()
-    consoleURL = os.environ["RUNZERO_BASE_URL"]
-    token = os.environ["RUNZERO_ORG_TOKEN"]
-    siteID = os.environ["RUNZERO_SITE_ID"]
-    explorer = os.environ["EXPLORER"]
-    targetFile = os.environ["TARGETS"]
-    name = 'API scan'
-    description = ''
-    rate = 1000
-    if "-u" in sys.argv:
-        try:
-            consoleURL = sys.argv[sys.argv.index("-u") + 1]
-        except IndexError as error:
-            print("URL switch used but URL not provided!\n")
-            usage()
-            exit()
-    if "-k" in sys.argv:
+    args = parseArgs()
+    token = args.token
+    if token == None:
         token = getpass(prompt="Enter the Organization API Key: ")
-        if token == '':
-            print("No API token provided!\n")
-            usage()
-            exit()
-    if "-x" in sys.argv:
-        try:
-            explorer = sys.argv[sys.argv.index("-x") + 1]
-        except IndexError as error:
-            print("Explorer switch used but UUID not provided!\n")
-            usage()
-            exit()
-    if "-s" in sys.argv:
-        try:
-            siteID = sys.argv[sys.argv.index("-s") + 1]
-        except IndexError as error:
-            print("Site switch used but site ID not provided!\n")
-            usage()
-            exit()
-    if "-t" in sys.argv:
-        try:
-            targetFile = sys.argv[sys.argv.index("-t") + 1]
-        except ValueError as error:
-            raise error
-        except IndexError as error:
-            print("List of targets not provided!\n")
-            usage()
-            exit()
-    if "-r" in sys.argv:
-        try:
-            rate = int(sys.argv[sys.argv.index("-r") + 1])
-        except ValueError as error:
-            raise error
-        except IndexError as error:
-            print("Scan rate switch used but value invalid or not provided!\n")
-            usage()
-            exit()
-    if "-n" in sys.argv:
-        name = input('Enter scan name: ')
-        if name == '':
-            name = "API scan"
-    if "-d" in sys.argv:
-        description = input('Enter scan description: ')
-    targetList = readTargets(targetFile)
+    targetList = readTargets(args.targetFile)
     if type(targetList) is not list:
         print("Target file is invalid or does not exist.")
         exit()
-    response = createScan(consoleURL, token, siteID, explorer, targetList, name, description, rate)
+    response = createScan(args.consoleURL, token, args.site, args.explorer, targetList, args.name, args.description, args.rate)
     print(response)
     
 if __name__ == "__main__":
