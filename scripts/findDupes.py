@@ -16,7 +16,7 @@ from getpass import getpass
 from requests.exceptions import ConnectionError
     
 def parseArgs():
-    parser = argparse.ArgumentParser(description="Report all assets that were first found within a specified time range.")
+    parser = argparse.ArgumentParser(description="Report potential duplicate assets sharing MAC, IP, and/or hostname.")
     parser.add_argument('-r', '--range', dest='timeRange', help='Time span to search for duplicate assets e.g. 1day, 2weeks, 1month. This argument will override the .env file', 
                         required=False, default=os.environ["TIME"])
     parser.add_argument('-u', '--url', dest='consoleURL', help='URL of console. This argument will override the .env file', 
