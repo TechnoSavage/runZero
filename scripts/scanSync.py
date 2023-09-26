@@ -17,9 +17,9 @@ def parseArgs():
     parser = argparse.ArgumentParser(description="Download last 'N' scans from one console and upload them to another console.")
     parser.add_argument('-t', '--tasks', dest='taskNo', help='Number of tasks, from most recent to oldest to sync. This argument will override the .env file', 
                         type=int, required=False, default=os.environ["TASK_NO"])
-    parser.add_argument('-s', '--src', dest='srcURL', help='URL of source console. This argument will override the .env file', 
+    parser.add_argument('-su', '--src', dest='srcURL', help='URL of source console. This argument will override the .env file', 
                         required=False, default=os.environ["CONSOLE_SOURCE_URL"])
-    parser.add_argument('-d', '--dst', dest='dstURL', help='URL of destination console. This argument will override the .env file', 
+    parser.add_argument('-du', '--dst', dest='dstURL', help='URL of destination console. This argument will override the .env file', 
                         required=False, default=os.environ["RUNZERO_BASE_URL"])
     parser.add_argument('-sk', '--srckey', dest='srcTok', help='Prompt for source Organization API key (do not enter at command line). This argument will override the .env file', 
                         nargs='?', const=None, required=False, default=os.environ["SOURCE_ORG_TOKEN"])
@@ -42,8 +42,8 @@ def getTasks(url, token):
     
     url = f"{url}/api/v1.0/org/tasks"
     #change {'search':'type": "scan'} to {'search':'type": "sample'} to retrieve traffic sampling tasks 
-    payload = {'search':'type": "scan'}
-               #'status':'processed'} #filtering by status no longer working at time of this script update
+    payload = {'search':'type": "scan',
+               'status':'processed'}
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
