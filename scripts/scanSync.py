@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    scanSync.py, version 2.0
+    scanSync.py, version 2.1
     This script is designed to sync task data from one console to another by downloading the last 'n' successful tasks
     from one console and uploading them to another. Example use case, download external scan tasks from a SaaS console
     and import them into a self-hosted instance. The script will attempt to automatically delete local files it creates."""
@@ -29,7 +29,7 @@ def parseArgs():
                         required=False, default=os.environ["RUNZERO_SITE_ID"])
     parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('--version', action='version', version='%(prog)s 2.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.1')
     return parser.parse_args()
     
 def getTasks(url, token): 
