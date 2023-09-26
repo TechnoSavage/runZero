@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    importNessus.py, version 4.0
+    importNessus.py, version 4.1
     Bulk import all .nessus files in a specified folder via the runZero API."""
 
 import argparse
@@ -27,7 +27,7 @@ def parseArgs():
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-c', '--clean', help='Enable file clean up. Automatically delete .nessus files that are successfully uploaded', action='store_true', required=False)
     parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 4.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 4.1')
     return parser.parse_args()
 
 def importScan(url, token, siteID, scan):
@@ -36,7 +36,7 @@ def importScan(url, token, siteID, scan):
         :param uri: A string, URL of the runZero console.
         :param token: A string, Organization API key
         :param siteID: A string, the site ID of the Site to apply scan to.
-        :param scan: A .nessus file, Nessus scan file to upload.
+        :param scan: A .nessus file, Nessus scan file to upload (including path).
         :returns: Dict Object, JSON formatted.
         :raises: ConnectionError: if unable to successfully make PUT request to console."""
 
@@ -55,6 +55,15 @@ def importScan(url, token, siteID, scan):
         raise error
     
 def fileUpload(url, token, site, dir):
+    """Identify nessus files in a directory and pass them
+       to importScan function. 
+    
+        :param url: A string, URL of the runZero console.
+        :param token: A string, Organization API key
+        :param siteID: A string, the site ID of the Site to upload to.
+        :param dir: A string, the directory path containing the nessus scans.
+        :returns: Dict Object, JSON formatted.
+        :raises: OSError: if unable to run subprocess commands."""
     uploadLog = []
     try:     
         contents = subprocess.check_output(['ls', dir]).splitlines()
@@ -78,10 +87,10 @@ def fileUpload(url, token, site, dir):
         uploadLog.append({error : 'A connection to the runZero console could not be established'})
     return uploadLog
     
-def cleanUp(path, log):
+def cleanUp(dir, log):
     """Remove nessus files that are uploaded successfully.
 
-        :param path: A String, path to nessus file location(s).
+        :param dir: A String, directory path to nessus file location(s).
         :param log: A Dict, dictionary of nessus filenames and upload status.
         :returns None: this function returns nothing but removes files from disk.
         :raises: IOerror, if unable to delete file."""
@@ -89,7 +98,7 @@ def cleanUp(path, log):
     for entry in log:
         if entry['Status'] == 'success':
             try:
-                os.remove(path + entry['File Name'])
+                os.remove(dir + entry['File Name'])
             except IOError as error:
                 print(error)
         else:
