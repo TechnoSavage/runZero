@@ -33,8 +33,8 @@ def getTasks(url, token):
     
     url = f"{url}/api/v1.0/org/tasks"
     #change {'search':'type": "scan'} to {'search':'type": "sample'} to retrieve traffic sampling tasks 
-    payload = {'search': 'type": "scan'}
-                #'status':'processed'} #filtering by status no longer working at time of this script update
+    payload = {'search': 'type": "scan',
+               'status':'processed'}
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
