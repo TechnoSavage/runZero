@@ -111,14 +111,14 @@ def uploadData(url, token, site_id, path, taskData):
         :raises: ConnectionError: if unable to successfully make PUT request to console."""
     
     url = f"{url}/api/v1.0/org/sites/{site_id}/import"
-    file = [('application/octet-stream',(taskData,open(path + taskData,'rb'),'application/octet-stream'))]
-    headers = {'Accept': 'application/json',
-               'Content-Type': 'application/octet-stream',
+    headers = {'Content-Type': 'application/octet-stream',
+               'Content-Encoding': 'gzip',
                'Authorization': f'Bearer {token}'}
     try:
-        response = requests.put(url, headers=headers, data=file, stream=True)
-        content = response.content
-        data = json.loads(content)
+        with open(path + taskData, 'rb') as file:
+            response = requests.put(url, headers=headers, data=file, stream=True)
+            content = response.content
+            data = json.loads(content)
         return data
     except ConnectionError as error:
         content = "No Response"
