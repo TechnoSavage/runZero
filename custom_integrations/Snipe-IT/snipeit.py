@@ -140,11 +140,11 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     # You can create one manually within the UI and hardcode RUNZERO_CUSTOM_SOURCE_ID
     '''
     custom_source_mgr = CustomSourcesAdmin(c)
-    my_asset_source = custom_source_mgr.get(name='fortiedr')
+    my_asset_source = custom_source_mgr.get(name='Snipe-IT')
     if my_asset_source:
         source_id = my_asset_source.id
     else:
-        my_asset_source = custom_source_mgr.create(name='fortiedr')
+        my_asset_source = custom_source_mgr.create(name='Snipe-IT')
         source_id = my_asset_source.id
     '''
 
