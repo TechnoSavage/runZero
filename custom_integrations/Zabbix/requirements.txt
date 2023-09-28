@@ -1,0 +1,2 @@
+requests>=2.29.0
+flatten_json>=0.1.13
