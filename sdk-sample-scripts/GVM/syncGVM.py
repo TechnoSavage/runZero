@@ -82,13 +82,17 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # create the network interface
         network = build_network_interface(ips=[ip], mac=mac)
 
-        # *** Should not need to touch this ***
         # handle any additional values and insert into custom_attrs
         custom_attrs: Dict[str, CustomAttribute] = {}
-        # Depending on log retention in GVM, custom attributes can easily exceed 1024 entries.
-        # Most attributes are redundant from one log to the next hence the much lower limit;
-        # adjust to suit your needs
-        limit = dict(itertools.islice(item.items(), 64))
+        # remap json key, value pairs generated from XML to cleaner, more useful pairs
+        remap = {}
+        for key, value in item.items():
+            if '_name' in key and 'source_name' not in key:
+                remap[value] = item.get(key.replace('_name', '_value'))
+        # Depending on log retention in GVM, custom attributes can easily exceed 1024 entries
+        # though less likely with remapped attributes handled above.
+        # Most attributes are redundant from one log to the next; adjust to suit your needs
+        limit = dict(itertools.islice(remap.items(), 128))
         for key, value in limit.items():
             if isinstance(value, dict):
                 for k, v in value.items():
