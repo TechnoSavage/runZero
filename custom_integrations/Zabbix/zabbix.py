@@ -25,10 +25,10 @@ RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
 RUNZERO_CLIENT_SECRET = os.environ['RUNZERO_CLIENT_SECRET']
 RUNZERO_ACCOUNT_TOKEN = os.environ['RUNZERO_ACCOUNT_TOKEN']
 RUNZERO_ORG_ID = os.environ['RUNZERO_ORG_ID']
-RUNZERO_CUSTOM_SOURCE_ID = os.environ['RUNZERO_CUSTOM_SOURCE_ID']
+RUNZERO_CUSTOM_SOURCE_ID = '96d36f62-1b37-45cf-af0b-7fd451cb7043' #os.environ['RUNZERO_CUSTOM_SOURCE_ID']
 RUNZERO_SITE_NAME = os.environ['RUNZERO_SITE_NAME']
 RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
-RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
+RUNZERO_IMPORT_TASK_NAME = 'Zabbix' #os.environ['RUNZERO_IMPORT_TASK_NAME']
 RUNZERO_HEADER = {'Authorization': f'Bearer {RUNZERO_ACCOUNT_TOKEN}'}
 
 # Configure Zabbix variables
@@ -75,12 +75,6 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         if mac == '':
             mac = None
 
-        # if multiple mac addresses, take the first one
-        # if len(mac) > 0:
-        #     mac = mac[0].replace('-', ':')
-        # else:
-        #     mac = None
-
         # create the network interface
         network = build_network_interface(ips=[ip], mac=mac)
 
@@ -92,7 +86,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
                 for k, v in value.items():
                     custom_attrs[k] = CustomAttribute(str(v)[:1023])
             else:
-               custom_attrs[key] = CustomAttribute(str(value))
+               custom_attrs[key] = CustomAttribute(str(value)[:1023])
 
         # Build assets for import
         assets.append(
@@ -153,20 +147,6 @@ def import_data_to_runzero(assets: List[ImportAsset]):
         print(f'unable to find requested site')
         return
 
-
-    # (Optional)
-    # Check for custom integration source in runZero and create new one if it doesn't exist
-    # You can create one manually within the UI and hardcode RUNZERO_CUSTOM_SOURCE_ID
-    '''
-    custom_source_mgr = CustomSourcesAdmin(c)
-    my_asset_source = custom_source_mgr.get(name='Zabbix')
-    if my_asset_source:
-        source_id = my_asset_source.id
-    else:
-        my_asset_source = custom_source_mgr.create(name='Zabbix')
-        source_id = my_asset_source.id
-    '''
-
     # create the import manager to upload custom assets
     import_mgr = CustomAssets(c)
     import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=RUNZERO_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=RUNZERO_IMPORT_TASK_NAME))
@@ -179,10 +159,8 @@ def main():
     response = requests.get(ZABBIX_API_URL, headers=ZABBIX_HEADERS, data=ZABBIX_PAYLOAD)
     hosts_json_raw = response.json()
     hosts_json = hosts_json_raw["result"]
-
     # Format asset list for import into runZero
     import_assets = build_assets_from_json(hosts_json)
-
     # Import assets into runZero
     import_data_to_runzero(assets=import_assets)
 
