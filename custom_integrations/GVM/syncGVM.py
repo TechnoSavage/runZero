@@ -76,7 +76,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         if 'OS' in val_list:
             osPos = val_list.index('best_os_txt')
             osKey = key_list[osPos]
-            os = item.get(osKey.replace('_name', '_value')).replace('/', ' ')
+            os_name = item.get(osKey.replace('_name', '_value')).replace('/', ' ')
 
         #  # if multiple mac addresses, take the first one
         # if len(mac) > 0:
@@ -102,7 +102,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
             ImportAsset(
                 id=asset_id,
                 hostnames=[hostname],
-                os=os,
+                os=os_name,
                 networkInterfaces=[network],
                 customAttributes=custom_attrs,
             )
