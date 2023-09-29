@@ -25,10 +25,10 @@ RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
 RUNZERO_CLIENT_SECRET = os.environ['RUNZERO_CLIENT_SECRET']
 RUNZERO_ACCOUNT_TOKEN = os.environ['RUNZERO_ACCOUNT_TOKEN']
 RUNZERO_ORG_ID = os.environ['RUNZERO_ORG_ID']
-RUNZERO_CUSTOM_SOURCE_ID = os.environ['RUNZERO_CUSTOM_SOURCE_ID']
+RUNZERO_CUSTOM_SOURCE_ID = '363f7746-1027-47e2-a10d-3c311c659f28' #os.environ['RUNZERO_CUSTOM_SOURCE_ID']
 RUNZERO_SITE_NAME = os.environ['RUNZERO_SITE_NAME']
 RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
-RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
+RUNZERO_IMPORT_TASK_NAME = 'Zabbix' #os.environ['RUNZERO_IMPORT_TASK_NAME']
 RUNZERO_HEADER = {'Authorization': f'Bearer {RUNZERO_ACCOUNT_TOKEN}'}
 
 # Configure Zabbix variables
@@ -61,13 +61,13 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         #If custom fields created in Zabbix align to asset fields in r0 SDK docs
         #additional attributes can be added here following the pattern
         item = flatten(item)
-
+    
         asset_id = item.get('hostid', uuid.uuid4)
         ip = item.get('interfaces_0_ip')
         mac = item.get('inventory_macaddress_a')
-        os = item.get('inventory_os', '')
+        os_name = item.get('inventory_os_short', '')
         model = item.get('inventory_model')
-        name = item.get('host', '')
+        name = item.get('host', '').upper()
         deviceType = item.get('inventory_hardware_full')
         man = item.get('inventory_vendor')
 
@@ -98,7 +98,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         assets.append(
             ImportAsset(
                 id=asset_id,
-                os=os,
+                os=os_name,
                 networkInterfaces=[network],
                 hostnames=[name],
                 model=model,
