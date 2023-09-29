@@ -57,12 +57,6 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         model = item.get('model_name', '')
         deviceType = item.get('category_name', '')
         man = item.get('manufacturer_name', '')
-        
-        #  # if multiple mac addresses, take the first one
-        # if len(mac) > 0:
-        #    mac = mac[0].replace('-', ':')
-        # else:
-        #    mac = None
 
         # create the network interface
         network = build_network_interface(ips=[], mac=mac)
@@ -133,20 +127,6 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     if not site:
         print(f'unable to find requested site')
         return
-
-
-    # (Optional)
-    # Check for custom integration source in runZero and create new one if it doesn't exist
-    # You can create one manually within the UI and hardcode RUNZERO_CUSTOM_SOURCE_ID
-    '''
-    custom_source_mgr = CustomSourcesAdmin(c)
-    my_asset_source = custom_source_mgr.get(name='Snipe-IT')
-    if my_asset_source:
-        source_id = my_asset_source.id
-    else:
-        my_asset_source = custom_source_mgr.create(name='Snipe-IT')
-        source_id = my_asset_source.id
-    '''
 
     # create the import manager to upload custom assets
     import_mgr = CustomAssets(c)
