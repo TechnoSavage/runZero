@@ -6,6 +6,7 @@
 # Prerequisite: pip install runzero-sdk
 # Prerequisite: pip install python-gvm
 
+import itertools
 import os
 import runzero
 import uuid
@@ -84,7 +85,11 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # *** Should not need to touch this ***
         # handle any additional values and insert into custom_attrs
         custom_attrs: Dict[str, CustomAttribute] = {}
-        for key, value in item.items():
+        # Depending on log retention in GVM, custom attributes can easily exceed 1024 entries.
+        # Most attributes are redundant from one log to the next hence the much lower limit;
+        # adjust to suit your needs
+        limit = dict(itertools.islice(item.items(), 64))
+        for key, value in limit.items():
             if isinstance(value, dict):
                 for k, v in value.items():
                     custom_attrs[k] = CustomAttribute(str(v)[:1023])
