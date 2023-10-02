@@ -55,29 +55,29 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # grab known API attributes from the json dict that are always present
         #If custom fields created in GVM align to asset fields in r0 SDK docs
         #additional attributes can be added here following the pattern
-        item = flatten(item)
-        key_list = list(item.keys())
-        val_list = list(item.values())
+        baseAttr = flatten(item)
+        key_list = list(baseAttr.keys())
+        val_list = list(baseAttr.values())
 
         asset_id = item.get('@id', uuid.uuid4)  
-        ip = hostname = os = ''
+        ip = hostname = os_name = ''
         mac = None
         if 'ip' in val_list:
             ipPos = val_list.index('ip')
             ipKey = key_list[ipPos]
-            ip = item.get(ipKey.replace('_name', '_value'))
+            ip = baseAttr.get(ipKey.replace('_name', '_value'))
         if 'MAC' in val_list:
             macPos = val_list.index('MAC')
             macKey = key_list[macPos]
-            mac = item.get(macKey.replace('_name', '_value'))
+            mac = baseAttr.get(macKey.replace('_name', '_value'))
         if 'hostname' in val_list:
             hostPos = val_list.index('hostname')
             hostKey = key_list[hostPos]
-            hostname = item.get(hostKey.replace('_name', '_value')).upper()
+            hostname = baseAttr.get(hostKey.replace('_name', '_value')).upper()
         if 'OS' in val_list:
             osPos = val_list.index('best_os_txt')
             osKey = key_list[osPos]
-            os_name = item.get(osKey.replace('_name', '_value')).replace('/', ' ')
+            os_name = baseAttr.get(osKey.replace('_name', '_value')).replace('/', ' ')
 
         # create the network interface
         network = build_network_interface(ips=[ip], mac=mac)
@@ -87,18 +87,16 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # remap json key, value pairs generated from XML to cleaner, more useful pairs
         remap = {}
         for key, value in item.items():
+            if not isinstance(value, dict):
+                remap[key] = value
+        item = flatten(item)
+        for key, value in item.items():
             if '_name' in key and 'source_name' not in key:
                 remap[value] = item.get(key.replace('_name', '_value'))
-        # Depending on log retention in GVM, custom attributes can easily exceed 1024 entries
-        # though less likely with remapped attributes handled above.
-        # Most attributes are redundant from one log to the next; adjust to suit your needs
-        limit = dict(itertools.islice(remap.items(), 128))
-        for key, value in limit.items():
-            if isinstance(value, dict):
-                for k, v in value.items():
-                    custom_attrs[k] = CustomAttribute(str(v)[:1023])
-            else:
-               custom_attrs[key] = CustomAttribute(str(value))
+            if 'severity' in key:
+                remap['severity'] = value
+        for key, value in remap.items():
+               custom_attrs[key] = CustomAttribute(str(value)[:1023])
 
         # Build assets for import
         assets.append(
