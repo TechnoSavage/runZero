@@ -32,10 +32,10 @@ Requirements (Global)
 `RUNZERO_SITE_NAME` - Name of the site to which the integration will send data\
 `RUNZERO_SITE_ID` - UUID of the Site to which integration will send data. Found in the console URL after navigating to Sites and clicking site name \
 `RUNZERO_CUSTOM_SOURCE_ID` - UUID of the Custom Integration Source. Found in the console URL after navigating to Accounts -> Custom Integrations and clicking the integration name \
-`RUNZERO_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under Accounts -> Custom Integrations \
+`RUNZERO_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under Accounts -> Custom Integrations
 
 `SNIPE_BASE_URL` - The domain or IP of the Snipe-IT instance, minus any resource path e.g. http://mycompany.snipeit \
-`SNIPE_API_KEY` - The API token for the Snipe instance. Created in user account dropdown -> Manage API Keys \
+`SNIPE_API_KEY` - The API token for the Snipe instance. Created in user account dropdown -> Manage API Keys
 
 ## Getting Started
 
