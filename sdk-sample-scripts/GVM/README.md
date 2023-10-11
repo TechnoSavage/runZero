@@ -24,22 +24,22 @@ Requirements (Global)
 - You will clone this file and create one called .env where you actually input all of your secrets (API Keys + Access Key Pairs)
 - Parameters - explanations of what you see in .env_sample
 
-`RUNZERO_BASE_URL` - The domain or IP of the runZero console, minus any resource path e.g. "https://console.runzero.com"
-`RUNZERO_ACCOUNT_TOKEN` - The account API token for the console instance. Found in the console under Account -> Account Settings -> Account API keys
-`RUNZERO_CLIENT_ID` - runZero API client ID. Created in the console under Account -> API clients
-`RUNZERO_CLIENT_SECRET` - Associated API client secret to the above ID. Displayed when creating an new API client
-`RUNZERO_ORG_ID` - UUID of the Organization to which integration will send data. Found in the console URL after navigating to Organizations and clicking organization name
-`RUNZERO_SITE_NAME` - Name of the site to which the integration will send data.  
-`RUNZERO_SITE_ID` - UUID of the Site to which integration will send data. Found in the console URL after navigating to Sites and clicking site name.
-`RUNZERO_CUSTOM_SOURCE_ID` - UUID of the Custom Integration Source. Found in the console URL after navigating to Accounts -> Custom Integrations and clicking the integration name.
-`RUNZERO_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under Accounts -> Custom Integrations.
+`RUNZERO_BASE_URL` - The domain or IP of the runZero console, minus any resource path e.g. "https://console.runzero.com"\
+`RUNZERO_ACCOUNT_TOKEN` - The account API token for the console instance. Found in the console under Account -> Account Settings -> Account API keys\
+`RUNZERO_CLIENT_ID` - runZero API client ID. Created in the console under Account -> API clients\
+`RUNZERO_CLIENT_SECRET` - Associated API client secret to the above ID. Displayed when creating an new API client\
+`RUNZERO_ORG_ID` - UUID of the Organization to which integration will send data. Found in the console URL after navigating to Organizations and clicking organization name\
+`RUNZERO_SITE_NAME` - Name of the site to which the integration will send data\
+`RUNZERO_SITE_ID` - UUID of the Site to which integration will send data. Found in the console URL after navigating to Sites and clicking site name\
+`RUNZERO_CUSTOM_SOURCE_ID` - UUID of the Custom Integration Source. Found in the console URL after navigating to Accounts -> Custom Integrations and clicking the integration name\
+`RUNZERO_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under Accounts -> Custom Integrations\
 
-`GVM_BASE_URL` - The domain or IP of the GVM instance, minus any resource path e.g. "https://my.gvm.instance" (see Connection Method 3 below)
-`GVM_PORT` - The port the GVM web interface is running on (see Connection Method 3 below)
-`GVM_USERNAME` - Username for an account with sufficient privileges to call Gmp.get_hosts()
-`GVM_PASSWORD` - Password for the account
-`GVM_SOCKET_PATH` - Path to GVM Unix socket (see Connection Method 1 below)
-`GVM_CONN_METHOD` - 'socket', 'ssh', or 'tls'. Determines the connection method used to access GVM API (currently only socket is supported)
+`GVM_BASE_URL` - The domain or IP of the GVM instance, minus any resource path e.g. "https://my.gvm.instance" (see Connection Method 3 below)\
+`GVM_PORT` - The port the GVM web interface is running on (see Connection Method 3 below)\
+`GVM_USERNAME` - Username for an account with sufficient privileges to call Gmp.get_hosts()\
+`GVM_PASSWORD` - Password for the account\
+`GVM_SOCKET_PATH` - Path to GVM Unix socket (see Connection Method 1 below)\
+`GVM_CONN_METHOD` - 'socket', 'ssh', or 'tls'. Determines the connection method used to access GVM API (currently only socket is supported)\
 
 ## GVM Configuration
 
