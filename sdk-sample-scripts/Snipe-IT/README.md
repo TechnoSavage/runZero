@@ -29,7 +29,7 @@ Requirements (Global)
 `RUNZERO_CLIENT_ID` - runZero API client ID. Created in the console under Account -> API clients \
 `RUNZERO_CLIENT_SECRET` - Associated API client secret to the above ID. Displayed when creating an new API client \
 `RUNZERO_ORG_ID` - UUID of the Organization to which integration will send data. Found in the console URL after navigating to Organizations and clicking organization name \
-`RUNZERO_SITE_NAME` - Name of the site to which the integration will send data\
+`RUNZERO_SITE_NAME` - Name of the site to which the integration will send data \
 `RUNZERO_SITE_ID` - UUID of the Site to which integration will send data. Found in the console URL after navigating to Sites and clicking site name \
 `RUNZERO_CUSTOM_SOURCE_ID` - UUID of the Custom Integration Source. Found in the console URL after navigating to Accounts -> Custom Integrations and clicking the integration name \
 `RUNZERO_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under Accounts -> Custom Integrations
