@@ -414,10 +414,14 @@ not @qualys.dev.host.trackingMethod:="AGENT" and (type:server or type:laptop or 
 
 ## Search ESSID for authentication exceptions:
 ```
-essid:"TheHUB" AND NOT authentication:"wpa2-enterprise"
+essid:<ssid name> AND NOT authentication:<wifi security standard>
+```
+e.g.
+```
+essid:"Corporate_network" AND NOT authentication:"wpa2-enterprise"
 ```
 
 ## Find unknown BSSIDs broadcasting known ESSID (exclude known BSSIDs in query for gap analysis)
 ```
-essid:="2WIRE640" AND NOT bssid:"14:ed:bb:e0:99:1d"
+essid:="2WIRE640" AND NOT (bssid:"14:ed:bb:e0:99:1d" OR bssid:"15:ea:cd:e4:78:2f")
 ```
