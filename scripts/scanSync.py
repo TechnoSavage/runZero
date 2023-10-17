@@ -55,7 +55,7 @@ def getTasks(url, token):
         raise error
 
 def parseIDs(data, taskNo=1000):
-    """ Extract relevant fields from task data and tally new assets. 
+    """ Extract task IDs from supplied task data. 
     
             :param data: JSON object, runZero task data.
             :param taskNo: an Integer, number of tasks to process.
