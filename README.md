@@ -1,5 +1,5 @@
 # runZero
-Scripts and projects using runZero
+Scripts utilizing the runzero API
 
 ## Background
 
@@ -35,6 +35,12 @@ Requirements (Global)
 
 ```
 git clone https://github.com/TechnoSavage/runZero.git
+```
+
+- Change to "api_scripts" folder
+
+```
+cd api_scripts
 ```
 
 - Clone .env_sample to .env under the same directory
