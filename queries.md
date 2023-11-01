@@ -156,6 +156,11 @@ NOT miradore.name:"%" AND (type:desktop OR type:laptop OR type:mobile)
 (alive:t OR scanned:f) AND has:"@sentinelone.dev.appsVulnerabilityStatus" AND @sentinelone.dev.appsVulnerabilityStatus:"=patch_required"
 ```
 
+## Assets that have the Tenable agent installed
+```
+@tenable.dev.hasAgent:="true"
+```
+
 ## Assets that have been scanned by Tenable over 2 weeks ago
 ```
 @tenable.dev.lastScanTimeTS:>"2weeks"
