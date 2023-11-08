@@ -1,10 +1,9 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    vuln_kpi.py, version 2.0
-    Updated version of kpi script with additional functionality. Proof of concept to illustrate use of runZero API to generate
-    KPI reports. This script focuses on generating a report for a provided time period that reports all assets discovered within
-    the specified time as well as assets with vulnerabilies discovered within the same time period. Report states what percentage
-    of vulnerable assets are compared to the total asset count for the time period and then calculates a compliance metric based on
-    weighted scoring of vulnerability criticality."""
+    vuln_kpi.py, version 3.0
+    Proof of concept to illustrate use of runZero API to generate KPI reports. This script focuses on generating a report for 
+    a provided time period that reports all assets discovered within the specified time as well as assets with vulnerabilies 
+    discovered within the same time period. Report states what percentage of vulnerable assets are compared to the total asset 
+    count for the time period and then calculates a compliance metric based on weighted scoring of vulnerability criticality."""
 
 import argparse
 import csv
@@ -26,7 +25,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 2.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.0')
     return parser.parse_args()
 
 def getAssets(url, token, filter):
@@ -146,10 +145,10 @@ def metrics(assetCounts):
     except KeyError as error:
         raise error
     except ZeroDivisionError as error:
-        report.append({'Info':'Zero assets were discovered that match the intial query; nothing to process'})
+        report.append({'Info':'Zero assets were discovered that match the initial query; nothing to process'})
         return report
     
-def writeCSV(fileName, contents):
+def writeCSV(fileName, contents, timeRange):
     """ Write contents to output file. 
     
         :param filename: a string, name for file including.
@@ -157,10 +156,10 @@ def writeCSV(fileName, contents):
         :raises: IOError: if unable to write to file. """
     try:
         with open(f'{fileName}', 'w') as o:
-            fieldNames = ['Systems Discovered within the Last 8months', 
-                          'Systems within the Last 8months with Critical Vulnerabilities',
-                          'Systems within the Last 8months with High Vulnerabilities', 
-                          'Systems within the Last 8months with Medium Vulnerabilities', 
+            fieldNames = [f'Systems Discovered within the Last {timeRange}', 
+                          f'Systems within the Last {timeRange} with Critical Vulnerabilities',
+                          f'Systems within the Last {timeRange} with High Vulnerabilities', 
+                          f'Systems within the Last {timeRange} with Medium Vulnerabilities', 
                           'percent_of_total', 'percent_in_compliance', 'weight', 'weighted_total', 
                           'Total Compliance KPI', 'vs normal average of all figures', 'Info']
             csv_writer = csv.DictWriter(o, fieldNames)
@@ -222,7 +221,7 @@ def main():
         writeFile(fileName, textFile)
     elif args.output == 'csv':
         fileName = f'{fileName}.csv'
-        writeCSV(fileName, report)  
+        writeCSV(fileName, report, args.timeRange)  
     else:
         for line in report:
             print(json.dumps(line, indent=4))
