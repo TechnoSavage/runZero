@@ -4,7 +4,6 @@
     output of all attributes describing the physical hardware of the asset."""
 
 import argparse
-import csv
 import json
 import os
 import pandas as pd
