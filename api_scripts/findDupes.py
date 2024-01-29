@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    findDupes.py, version 3.0
+    findDupes.py, version 3.1
     Query runZero API for all assets found within an Organization (tied to Export API key provided) and sort out assets with
     same MAC, Hostname, and IP but different asset ID. Optionally, an output file format can be specified to write to.
     
@@ -7,9 +7,9 @@
     identification of potential duplicate assets directly in the console making the functionality of this script redundant."""
 
 import argparse
-import csv
 import json
 import os
+import pandas as pd
 import requests
 from datetime import datetime
 from getpass import getpass
@@ -25,8 +25,8 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_EXPORT_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.0')
+    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
     return parser.parse_args()
     
 def getAssets(url, token, filter='', fields=''):
@@ -117,22 +117,19 @@ def findDupes(data):
     else:
         return({"Msg": "No potential duplicate assets found."})
     
-def writeCSV(fileName, contents):
+def writeDF(fileName, format, data):
     """ Write contents to output file. 
     
         :param filename: a string, name for file including.
         :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file. """
+        :raises: IOError: if unable to write to file.  """
+    
+    df = pd.DataFrame(data)
     try:
-        with open(fileName, 'w') as o:
-            csv_writer = csv.writer(o)
-            count = 0
-            for item in contents:
-                if count == 0:
-                    header = item.keys()
-                    csv_writer.writerow(header)
-                    count += 1
-                csv_writer.writerow(item.values())
+        if format == "excel":
+            df.to_excel(f'{fileName}.xlsx')
+        else:
+            df.to_csv(f'{fileName}.csv', encoding='utf-8')
     except IOError as error:
         raise error
     
@@ -169,9 +166,8 @@ def main():
             stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
         writeFile(fileName, textFile)
-    elif args.output == 'csv':
-        fileName = f'{fileName}.csv'
-        writeCSV(fileName, dupes)  
+    elif args.output in ('csv', 'excel'):
+        writeDF(fileName, args.output, dupes)  
     else:
         for line in dupes:
             print(json.dumps(line, indent=4))
