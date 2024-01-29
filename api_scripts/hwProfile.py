@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    hwProfile.py, version 3.0
+    hwProfile.py, version 3.1
     Query runZero API for physical assets found within an Organization (tied to Export API key provided) and generate JSON
     output of all attributes describing the physical hardware of the asset."""
 
@@ -7,8 +7,8 @@ import argparse
 import csv
 import json
 import os
+import pandas as pd
 import requests
-import sys
 from datetime import datetime
 from flatten_json import flatten
 from getpass import getpass
@@ -22,8 +22,8 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_EXPORT_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.0')
+    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
     return parser.parse_args()
 
 def getAssets(url, token, filter=" ", fields=" "):
@@ -108,6 +108,22 @@ def writeCSV(fileName, contents):
     except IOError as error:
         raise error
     
+def writeDF(fileName, format, data):
+    """ Write contents to output file. 
+    
+        :param filename: a string, name for file including.
+        :param contents: json data, file contents.
+        :raises: IOError: if unable to write to file.  """
+    
+    df = pd.DataFrame(data)
+    try:
+        if format == "excel":
+            df.to_excel(f'{fileName}.xlsx')
+        else:
+            df.to_csv(f'{fileName}.csv', encoding='utf-8')
+    except IOError as error:
+        raise error
+    
 def writeFile(fileName, contents):
     """ Write contents to output file. 
     
@@ -143,9 +159,10 @@ def main():
             stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
         writeFile(fileName, textFile)
-    elif args.output == 'csv':
+    elif args.output in ('csv', 'excel'):
         fileName = f'{fileName}.csv'
-        writeCSV(fileName, parsed)  
+        writeCSV(fileName, parsed)
+        #writeDF(fileName, args.output, parsed)  
     else:
         for line in parsed:
             print(json.dumps(line, indent=4))
