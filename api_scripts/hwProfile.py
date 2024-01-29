@@ -89,25 +89,6 @@ def parseHW(data):
     except TypeError as error:
         raise error
     
-def writeCSV(fileName, contents):
-    """ Write contents to output file. 
-    
-        :param filename: a string, name for file including.
-        :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file. """
-    try:
-        with open(fileName, 'w') as o:
-            csv_writer = csv.writer(o)
-            count = 0
-            for item in contents:
-                if count == 0:
-                    header = item.keys()
-                    csv_writer.writerow(header)
-                    count += 1
-                csv_writer.writerow(item.values())
-    except IOError as error:
-        raise error
-    
 def writeDF(fileName, format, data):
     """ Write contents to output file. 
     
@@ -160,9 +141,7 @@ def main():
         textFile = '\n'.join(stringList)
         writeFile(fileName, textFile)
     elif args.output in ('csv', 'excel'):
-        fileName = f'{fileName}.csv'
-        writeCSV(fileName, parsed)
-        #writeDF(fileName, args.output, parsed)  
+        writeDF(fileName, args.output, parsed)  
     else:
         for line in parsed:
             print(json.dumps(line, indent=4))
