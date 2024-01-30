@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    findDupes.py, version 3.1
+    findDupes.py, version 3.2
     Query runZero API for all assets found within an Organization (tied to Export API key provided) and sort out assets with
     same MAC, Hostname, and IP but different asset ID. Optionally, an output file format can be specified to write to.
     
@@ -26,7 +26,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.2')
     return parser.parse_args()
     
 def getAssets(url, token, filter='', fields=''):
