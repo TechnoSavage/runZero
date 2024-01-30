@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    hwProfile.py, version 3.1
+    hwProfile.py, version 3.2
     Query runZero API for physical assets found within an Organization (tied to Export API key provided) and generate JSON
     output of all attributes describing the physical hardware of the asset."""
 
@@ -22,13 +22,13 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.2')
     return parser.parse_args()
 
 def getAssets(url, token, filter=" ", fields=" "):
     """ Retrieve assets using supplied query filter from Console and restrict to fields supplied.
         
-        :param uri: A string, URI of runZero console.
+        :param url: A string, URL of runZero console.
         :param token: A string, Export API Key.
         :param filter: A string, query to filter returned assets(" " returns all).
         :param fields: A string, comma separated string of fields to return(" " returns all).
@@ -92,6 +92,7 @@ def writeDF(fileName, format, data):
     """ Write contents to output file. 
     
         :param filename: a string, name for file including.
+        :param format: a string, excel or csv
         :param contents: json data, file contents.
         :raises: IOError: if unable to write to file.  """
     
