@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    createScan.py, version 3.0
+    createScan.py, version 3.1
     Sample python script to set up and perform a scan task through the runZero API."""
 
 import argparse
@@ -24,7 +24,7 @@ def parseArgs():
     parser.add_argument('-n', '--name', help='Name for the scan task.', required=False, default='API Scan')
     parser.add_argument('-d', '--description', help='Description for scan task.', required=False)
     parser.add_argument('-r', '--rate', help='Scan rate for task.', required=False, default='1000')
-    parser.add_argument('--version', action='version', version='%(prog)s 3.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
     return parser.parse_args()
     
 def readTargets(targetFile):
@@ -51,8 +51,14 @@ def readTargets(targetFile):
 def createScan(url, token, siteID, explorer, targetList, name, description, rate): 
     """ Create new scan task.
            
-           :param uri: A string, URL of the runZero console.
+           :param url: A string, URL of the runZero console.
            :param token: A string, Organization API Key.
+           :param siteID: A string, UID of site to scan.
+           :param explorer: A string, UID of explorer.
+           :param targetList: A list, list of scan targets.
+           :param name: A string, name for scan task.
+           :param description: A string, description for scan task.
+           :param rate: A string, scan rate (packets per second).
            :returns: A JSON object, scan creation results.
            :raises: ConnectionError: if unable to successfully make PUT request to console."""
     
