@@ -275,7 +275,7 @@ product:php OR banner:"%php%" OR cookie:phpsessid OR html.forms:"%.php" OR http.
 
 ## RDP Authentication detected on external or v6 IP:
 ```
-protocol:rdp and (rdp.auth.rdp:supported or rdp.auth.ssl:supported or rdp.auth.sspeua:supported or rdp.auth.tls:supported) and (has_public:t or has_ipv6:t)
+protocol:rdp AND (rdp.auth.rdp:supported OR rdp.auth.ssl:supported OR rdp.auth.sspeua:supported OR rdp.auth.tls:supported OR rdp.auth.nla:supported) AND(has_public:t OR has_ipv6:t)
 ```
 
 ## Cisco devices with loopback interface configured:
