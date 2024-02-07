@@ -273,6 +273,11 @@ _service.product:="OpenSSL:OpenSSL:3.0"
 product:php OR banner:"%php%" OR cookie:phpsessid OR html.forms:"%.php" OR http.body:"%php%" OR http.head.location:"%.php" OR http.head.setCookie:"%phpsessid%" OR last.http.uri:"%.php" OR last.http.body:"%php%" OR last.html.forms:"%.php"
 ```
 
+## RDP Authentication detected on external or v6 IP:
+```
+protocol:rdp and (rdp.auth.rdp:supported or rdp.auth.ssl:supported or rdp.auth.sspeua:supported or rdp.auth.tls:supported) and (has_public:t or has_ipv6:t)
+```
+
 ## Cisco devices with loopback interface configured:
 ```
 snmp.arpcache.ports:"lo"
