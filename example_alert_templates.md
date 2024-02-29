@@ -4,6 +4,8 @@
 
 [HTML offline asset template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-offline-asset-alerts)
 
+[HTML assets back online template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-alert-template-for-assets-that-are-back-online)
+
 [HTML asset query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-asset-query-alerts)
 
 [HTML service query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-service-query-alerts)
@@ -71,6 +73,44 @@
 {{^report.offline}}
 <li>No assets were offline at the time of the last scan.</li>
 {{/report.offline}}
+</ul>
+
+<p><a href="{{search.url}}">View offline assets in console</a></p>
+<p><a href="{{task.url}}">View the scan results</a></p>
+```
+
+# HTML alert template for assets that are back online
+
+## Subject
+
+```
+{{assets_offline}} asset(s) were offline during the last scan of {{rule.name}}
+```
+
+## Body
+
+```
+<h1>{{site.name}}</h1>
+
+
+<h2>Scan Results</h2>
+{{#scan}}
+<ul>
+<li>{{assets_online}} online assets</li>
+<li>{{assets_offline}} offline assets</li>
+<li>{{assets_changed}} modified assets</li>
+</ul>
+{{/scan}}
+
+
+<h2>Offline assets are back online</h2>
+<ul>
+{{#report.online}}
+<li>{{names}} IP(s):{{addresses}} OS:{{os}} HW:{{hw}} Type:{{type}}</li>
+{{/report.online}}
+{{^report.online}}
+<li>No offline devices have come online since last scan.</li>
+{{/report.online}}
 </ul>
 
 <p><a href="{{search.url}}">View offline assets in console</a></p>
