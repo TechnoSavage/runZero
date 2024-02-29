@@ -1,3 +1,14 @@
+[Query documentation](https://www.runzero.com/docs/querying-your-data/)
+[Query syntax](https://www.runzero.com/docs/search-query-syntax/)
+[Query examples](https://www.runzero.com/docs/search-query-examples/)
+[Inventory keywords](https://www.runzero.com/docs/search-query-inventory/)
+
+[Asset queries](https://github.com/TechnoSavage/runZero/blob/main/queries.md#asset-queries)
+[Service queries](https://github.com/TechnoSavage/runZero/blob/main/queries.md#service-queries)
+[Software queries](https://github.com/TechnoSavage/runZero/blob/main/queries.md#software-queries)
+[Vulnerability queries](https://github.com/TechnoSavage/runZero/blob/main/queries.md#vulnerability-queries)
+[Wireless queries](https://github.com/TechnoSavage/runZero/blob/main/queries.md#wireless-queries)
+
 # Asset Queries:
 
 ## Assets where both OS support and extended support are expired
