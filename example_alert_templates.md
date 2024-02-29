@@ -1,9 +1,20 @@
-# HTML template for new device discovery
+[Alert object and field reference](https://www.runzero.com/docs/creating-alert-templates/#objects-and-fields-reference)
+
+[HTML new asset template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-new-asset-alerts)
+
+[HTML offline asset template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-offline-asset-alerts)
+
+[HTML asset query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-asset-query-alerts)
+
+[HTML service query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-service-query-alerts)
+
+
+# HTML template for new asset alerts
 
 ## Subject
 
 ```
-{{assets_new}} new devices were detected during the last scan of {{rule.name}}
+{{assets_new}} new asset(s) found during the last scan of {{rule.name}}
 ```
 
 ## Body
@@ -29,6 +40,40 @@
 </ul>
 
 <p><a href="{{search.url}}">View assets in console</a></p>
+<p><a href="{{task.url}}">View the scan results</a></p>
+```
+
+# HTML template for offline asset alerts
+
+## Subject
+
+```
+{{assets_offline}} asset(s) were offline during the last scan of {{rule.name}}
+```
+
+## Body
+
+```
+<h1>{{site.name}}</h1>
+
+<h2>Scan Results</h2>
+{{#scan}}
+<ul>
+<li>{{assets_offline}} offline assets</li>
+</ul>
+{{/scan}}
+
+<h2>assets offline</h2>
+<ul>
+{{#report.offline}}
+<li>{{names}} IP(s):{{addresses}} OS:{{os}} HW:{{hw}} Type:{{type}}</li>
+{{/report.offline}}
+{{^report.offline}}
+<li>No assets were offline at the time of the last scan.</li>
+{{/report.offline}}
+</ul>
+
+<p><a href="{{search.url}}">View offline assets in console</a></p>
 <p><a href="{{task.url}}">View the scan results</a></p>
 ```
 
@@ -81,3 +126,4 @@
 <p><a href="{{search.url}}">View services in console</a></p>
 <p><a href="{{task.url}}">View the scan results</a></p>
 ```
+
