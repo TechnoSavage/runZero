@@ -9,22 +9,27 @@ Custom integration designed to pull asset information from FileWave MDM and crea
 Requirements (Global)
 
 - Python 3.8+
+
 - pipenv - https://pypi.org/project/pipenv/
 
 ## runZero Custom Integration Docs
 
 - Inbound Integrations - https://www.runzero.com/docs/integrations-inbound/#custom-integrations
+
 - SDK Docs- https://runzeroinc.github.io/runzero-sdk-py/index.html
 
 ## FileWave API Docs
 
 - FileWave API Reference: https://kb.filewave.com/books/application-programming-interface-api
+
 - FileWave Docs: https://FileWave.readme.io/docs
 
 ## Configuration Explained
 
 - There is a sample environment variables file called .env_sample under the root folder of this project
+
 - You will clone this file and create one called .env where you actually input all of your secrets (API Keys + Access Key Pairs)
+
 - Parameters - explanations of what you see in .env_sample
 
 `RUNZERO_BASE_URL` - The domain or IP of the runZero console, minus any resource path e.g. https://console.runzero.com
@@ -33,19 +38,19 @@ Requirements (Global)
 
 `RUNZERO_CLIENT_ID` - runZero API client ID. Created in the console under Account -> API clients
 
-`RUNZERO_CLIENT_SECRET` - Associated API client secret to the above ID. Displayed when creating an new API client
+`RUNZERO_CLIENT_SECRET` - Associated API client secret to the above ID. Displayed when creating a new API client
 
-`RUNZERO_ORG_ID` - UUID of the Organization to which integration will send data. Found in the console URL after navigating to Organizations and clicking organization name
+`RUNZERO_ORG_ID` - UUID of the Organization to which the integration will report data. Found in the console URL after navigating to "Organizations" and clicking on an organization name
 
-`RUNZERO_SITE_NAME` - Name of the site to which the integration will send data
+`RUNZERO_SITE_NAME` - Name of the site to which the integration will create new assets
 
-`RUNZERO_SITE_ID` - UUID of the Site to which integration will send data. Found in the console URL after navigating to Sites and clicking site name
+`RUNZERO_SITE_ID` - UUID of the Site to which the integration will create new assts. Found in the console URL after navigating to "Sites" and clicking on a site name
 
-`RUNZERO_CUSTOM_SOURCE_ID` - UUID of the Custom Integration Source. Found in the console URL after navigating to Accounts -> Custom Integrations and clicking the integration name
+`RUNZERO_CUSTOM_SOURCE_ID` - UUID of the Custom Integration Source. Found in the console URL after navigating to "Accounts" -> "Custom Integrations" and clicking on an  integration name
 
-`RUNZERO_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under Accounts -> Custom Integrations
+`RUNZERO_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under "Accounts" -> "Custom Integrations"
 
-`FW_BASE_URL` - The domain or IP of the FileWave instance, minus any resource path e.g. http://mycompany.snipeit
+`FW_BASE_URL` - The domain or IP of the FileWave instance, minus any resource path e.g. http(s)://my-filewave-instance
 
 `FW_API_KEY` - The API token for the FileWave instance.
 
@@ -64,7 +69,7 @@ cd runZero/custom_integrations/FileWave
 cp .env_sample .env
 ```
 
-- Update all of the secrets in the `.env` needed based on the script you'd like to run (NOTE: you need to rerun pipenv shell anytime you update these  values to reload them)
+- Update all of the necessary secrets in the `.env` file (NOTE: you need to rerun pipenv shell anytime you update these  values to reload them)
 
 - Install dependancies
 
