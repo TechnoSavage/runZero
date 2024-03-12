@@ -62,15 +62,8 @@ def parseIDs(data, taskNo=1000):
             :returns: A List, list of task IDs.
             :raises: TypeError: if data variable passed is not JSON format."""
     
-    iters = 0
-    taskIDs = []
     try:
-        for item in data:
-            if iters >= taskNo:
-                break
-            else:
-                taskIDs.append(item.get('id'))
-                iters += 1
+        taskIDs = [item.get('id') for counter, item in enumerate(data) if counter <= taskNo - 1]
         return taskIDs
     except TypeError as error:
         raise error
