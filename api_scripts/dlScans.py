@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    dlScans.py, version 2.0
+    dlScans.py, version 2.1
     This script will download the scan data from the last 'n' processed tasks in an organization, 
     as specified by the user."""
 
@@ -20,7 +20,7 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('--version', action='version', version='%(prog)s 2.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.1')
     return parser.parse_args()
     
 def getTasks(url, token): 
@@ -47,7 +47,7 @@ def getTasks(url, token):
         raise error
 
 def parseIDs(data, taskNo=1000):
-    """ Extract relevant fields from task data and tally new assets. 
+    """ Extract task IDs from supplied recent task data. 
     
             :param data: JSON object, runZero task data.
             :param taskNo: an Integer, number of tasks to process.
@@ -55,15 +55,8 @@ def parseIDs(data, taskNo=1000):
             :raises: TypeError: if data variable passed is not JSON format.
             :raises: KeyError: if dict key is incorrect or doesn't exist. """
     
-    iters = 0
-    taskIDs = []
     try:
-        for item in data:
-            if iters >= taskNo:
-                break
-            else:
-                taskIDs.append(item.get('id'))
-                iters += 1
+        taskIDs = [item.get('id') for counter, item in enumerate(data) if counter <= taskNo - 1]
         return taskIDs
     except TypeError as error:
         raise error
