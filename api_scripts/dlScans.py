@@ -52,8 +52,7 @@ def parseIDs(data, taskNo=1000):
             :param data: JSON object, runZero task data.
             :param taskNo: an Integer, number of tasks to process.
             :returns: A List, list of task IDs.
-            :raises: TypeError: if data variable passed is not JSON format.
-            :raises: KeyError: if dict key is incorrect or doesn't exist. """
+            :raises: TypeError: if data variable passed is not JSON format. """
     
     try:
         taskIDs = [item.get('id') for counter, item in enumerate(data) if counter <= taskNo - 1]
