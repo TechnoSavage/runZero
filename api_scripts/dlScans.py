@@ -60,8 +60,6 @@ def parseIDs(data, taskNo=1000):
         return taskIDs
     except TypeError as error:
         raise error
-    except KeyError as error:
-        raise error
 
 def getData(url, token, taskID, path):
     """ Download and write scan data (.json.gz) for each task ID provided.
