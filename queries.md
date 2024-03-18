@@ -387,7 +387,7 @@ _asset.protocol:tls AND tls.notAfterTS:<6weeks AND not tls.notAfterTS:<now
 ## Identify Fortra FileCatalyst services
 
 ```
-_asset.protocol:http AND protocol:http AND (_service.last.http.body:"%FileCatalyst%" OR _service.last.html.title:"FileCatalyst" OR _service.last.http.url:"%/workflow/jsp/logon.jsp%" OR _service.last.http.uri:"%/workflow/jsp/logon.jsp%")
+_asset.protocol:http AND protocol:http AND (_service.last.http.body:="%FileCatalyst%" OR _service.last.html.title:="%FileCatalyst%" OR _service.last.http.url:="%/workflow/jsp/logon.jsp%" OR _service.last.http.uri:="%/workflow/jsp/logon.jsp%" OR _service.last.http.head.contentSecurityPolicy:="%filecatalyst%")
 ```
 
 # Software Queries:
