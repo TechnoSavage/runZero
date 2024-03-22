@@ -10,6 +10,9 @@
 
 [HTML service query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-service-query-alerts)
 
+[JSON service query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#json-template-for-service-query-alerts-and-webhooks)
+)
+
 
 # HTML template for new asset alerts
 
@@ -206,5 +209,37 @@
 
 <p><a href="{{search.url}}">View services in console</a></p>
 <p><a href="{{task.url}}">View the scan results</a></p>
+```
+
+# JSON template for service query alerts and webhooks
+
+
+## Body
+
+```
+{
+  "organization": {
+    "name": "{{organization.name}}",
+    "id": "{{organization.id}}"
+  },
+  "site": {
+    "name": "{{site.name}}",
+    "id": "{{site.id}}"
+  },
+  "rule": {
+    "action": "{{rule.action}}",
+    "event": "{{rule.event}}",
+    "id": "{{rule.id}}",
+    "name": "{{rule.name}}"
+  },
+  "query": {
+    "count": "{{query.count}}",
+    "services": "{{query.services}}"
+  }
+  "search": {
+    "url": "{{search.url}}",
+    "found": "{{search.found}}"
+  }
+}
 ```
 
