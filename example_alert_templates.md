@@ -34,7 +34,14 @@
 <h2>New assets</h2>
 <ul>
 {{#report.new}}
-<li>{{names}} IP(s):{{addresses}} OS:{{os}} HW:{{hw}} Type:{{type}} Services:{{service_count}}</li>
+<li>{{names}}<br>
+    IP(s): {{addresses}}<br>
+    OS: {{os}}<br>
+    HW: {{hw}}<br>
+    Type: {{type}}<br>
+    Services: {{service_count}}<br>
+    Site: {{site}}<br>
+</li>
 {{/report.new}}
 {{^report.new}}
 <li>No new assets were discovered.</li>
@@ -68,7 +75,14 @@
 <h2>assets offline</h2>
 <ul>
 {{#report.offline}}
-<li>{{names}} IP(s):{{addresses}} OS:{{os}} HW:{{hw}} Type:{{type}}</li>
+<li>{{names}}<br>
+    IP(s): {{addresses}}<br>
+    OS: {{os}}<br>
+    HW: {{hw}}<br>
+    Type: {{type}}<br>
+    Services: {{service_count}}<br>
+    Site: {{site}}<br>
+</li>
 {{/report.offline}}
 {{^report.offline}}
 <li>No assets were offline at the time of the last scan.</li>
@@ -106,7 +120,14 @@
 <h2>Offline assets are back online</h2>
 <ul>
 {{#report.online}}
-<li>{{names}} IP(s):{{addresses}} OS:{{os}} HW:{{hw}} Type:{{type}}</li>
+<li>{{names}}<br>
+    IP(s): {{addresses}}<br>
+    OS: {{os}}<br>
+    HW: {{hw}}<br>
+    Type: {{type}}<br>
+    Services: {{service_count}}<br>
+    Site: {{site}}<br>
+</li>
 {{/report.online}}
 {{^report.online}}
 <li>No offline devices have come online since last scan.</li>
@@ -134,7 +155,15 @@
 <h2>Detected assets</h2>
 <ul>
 {{#query.assets}}
-<li>Asset ID:{{id}} Hostname:{{names}} IP:{{address}} OS:{{os}} Open Ports:{{port}} Protocol:{{protocol}} HW:{{hw}} Type:{{type}}</li>
+<li>Asset ID: {{id}}<br>
+    Hostname: {{names}}<br>
+    IP: {{address}}<br>
+    OS: {{os}}<br>
+    HW: {{hw}}<br>
+    Type: {{type}}<br>
+    Service count: {{service_count}}<br>
+    Site: {{site}}<br>
+</li>
 {{/query.assets}}
 </ul>
 
@@ -159,7 +188,19 @@
 <h2>Detected assets and services</h2>
 <ul>
 {{#query.services}}
-<li>Asset ID:{{id}} Hostname:{{names}} IP:{{address}} Summary:{{summary}} Port:{{port}} OS:{{os}} HW:{{hw}} Type:{{type}}</li>
+<li>Asset ID: {{id}}<br>
+    Hostname: {{names}}<br>
+    IP: {{address}}<br>
+    VHost: {{vhost}}<br>
+    Port: {{port}}<br>
+    Transport: {{transport}}<br>
+    Protocol: {{protocol}}<br>
+    Summary: {{summary}}<br>
+    OS: {{os}}<br>
+    HW: {{hw}}<br>
+    Type: {{type}}<br>
+    Site: {{site}}<br>
+    </li>
 {{/query.services}}
 </ul>
 
