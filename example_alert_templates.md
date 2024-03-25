@@ -2,16 +2,19 @@
 
 [HTML new asset template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-new-asset-alerts)
 
+[HTML changed asset template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-changed-asset-alerts)
+
 [HTML offline asset template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-offline-asset-alerts)
 
 [HTML assets back online template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-alert-template-for-assets-that-are-back-online)
 
 [HTML asset query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-asset-query-alerts)
 
+[JSON asset query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#json-template-for-asset-query-alerts-and-webhooks)
+
 [HTML service query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-service-query-alerts)
 
 [JSON service query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#json-template-for-service-query-alerts-and-webhooks)
-)
 
 
 # HTML template for new asset alerts
@@ -49,6 +52,45 @@
 {{^report.new}}
 <li>No new assets were discovered.</li>
 {{/report.new}}
+</ul>
+
+<p><a href="{{search.url}}">View assets in console</a></p>
+<p><a href="{{task.url}}">View the scan results</a></p>
+```
+
+# HTML template for changed asset alerts
+
+## Subject
+```
+{{assets_changed}} asset(s) have changed since the last scan {{rule.name}}
+```
+
+## Body
+```
+<h1>{{site.name}}</h1>
+
+<h2>Scan Results</h2>
+{{#scan}}
+<ul>
+<li>{{assets_chaged}} changed assets</li>
+</ul>
+{{/scan}}
+
+<h2>Changed assets</h2>
+<ul>
+{{#report.changed}}
+<li>{{names}}<br>
+    IP(s): {{addresses}}<br>
+    OS: {{os}}<br>
+    HW: {{hw}}<br>
+    Type: {{type}}<br>
+    Services: {{service_count}}<br>
+    Site: {{site}}<br>
+</li>
+{{/report.changed}}
+{{^report.changed}}
+<li>No new assets have changed configuration since the last scan.</li>
+{{/report.changed}}
 </ul>
 
 <p><a href="{{search.url}}">View assets in console</a></p>
@@ -172,6 +214,37 @@
 
 <p><a href="{{search.url}}">View assets in console</a></p>
 <p><a href="{{task.url}}">View the scan results</a></p>
+```
+
+# JSON template for asset query alerts and webhooks
+
+## body
+
+```
+{
+  "organization": {
+    "name": "{{organization.name}}",
+    "id": "{{organization.id}}"
+  },
+  "site": {
+    "name": "{{site.name}}",
+    "id": "{{site.id}}"
+  },
+  "rule": {
+    "action": "{{rule.action}}",
+    "event": "{{rule.event}}",
+    "id": "{{rule.id}}",
+    "name": "{{rule.name}}"
+  },
+  "query": {
+    "count": "{{query.count}}",
+    "assets": "{{query.assets}}"
+  }
+  "search": {
+    "url": "{{search.url}}",
+    "found": "{{search.found}}"
+  }
+}
 ```
 
 # HTML template for service query alerts
