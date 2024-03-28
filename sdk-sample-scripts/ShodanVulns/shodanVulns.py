@@ -42,13 +42,11 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
 
     assets: List[ImportAsset] = []
     for item in json_input:
-        # grab known API attributes from the json dict that are always present
-        #If custom fields created in FileWave align to asset fields in r0 SDK docs
-        #additional attributes can be added here following the pattern
+        # Map vulnerabilities to asset using existing asset UID
         asset_id = item.get('id')
 
         # *** Should not need to touch this ***
-        # handle any additional values and insert into custom_attrs
+        # Map data from NVD query to runZero vulnerability fields
         vulnerability: Dict[str, Vulnerability] = {}
         for vuln in item['vuln']:
             vuln = flatten(vuln)
