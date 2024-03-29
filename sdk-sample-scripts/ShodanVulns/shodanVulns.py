@@ -11,7 +11,7 @@ import requests
 import runzero
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
-from runzero.types import (ImportAsset, ImportTask, Vulnerability)
+from runzero.types import (ImportAsset,ImportTask,Vulnerability)
 from typing import Any, Dict, List
 
 # Configure runZero variables
@@ -45,31 +45,46 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # Map vulnerabilities to asset using existing asset UID
         asset_id = item.get('id')
 
-        # *** Should not need to touch this ***
-        # Map data from NVD query to runZero vulnerability fields
-        vulnerability: Dict[str, Vulnerability] = {}
+        # create the vulnerabilities
+        vulnerabilities = []
         for vuln in item['vuln']:
-            vuln = flatten(vuln)
-            vulnerability['cve'] = item.get(vuln['vulnerabilities_0_cve_id'])
-            vulnerability['name'] = item.get(vuln['vulnerabilities_0_cve_cisaVulnerabilityName'])
-            vulnerability['description'] = item.get(vuln['vulnerabilities_0_cve_descriptions_0_value'])
-            vulnerability['service_address'] = item.get(vuln['address'])
-            vulnerability['service_port'] = ', '.join(item.get(vuln['ports']))
-            # vulnerability['service_transport'] = item.get()
-            vulnerability['cvss2_base_score'] = item.get(vuln['vulnerabilities_0_cve_metrics_cvssMetricV2_baseScore'])
-            vulnerability['cvss3_base_score'] = item.get(vuln['vulnerabilities_0_cve_metrics_cvssMetricV31_baseScore'])
-            # vulnerability['risk_score'] = item.get()
-            # vulnerability['risk_rank'] = item.get()
-            # vulnerability['severity_score'] = item.get()
-            vulnerability['severity_rank'] = item.get(vuln['vulnerabilities_0_cve_metrics_baseSeverity'])
-            # vulnerability['solution'] = item.get()
+            vulnerability = build_vuln(vuln)
+            vulnerabilities.append(vulnerability)
 
         # Build assets for import
         assets.append(ImportAsset(id=asset_id,
-                                  vulnerabilities=vulnerability))
+                                  vulnerabilities=vulnerabilities))
 
     return assets
 
+def build_vuln(vuln):
+    '''
+    '''
+    vuln = flatten(vuln)
+    print(vuln.get('vulnerabilities_0_cve_id'))
+    identifier = vuln.get('vulnerabilities_0_cve_id')
+    #cve_id = vuln.get('vulnerabilities_0_cve_id')
+    vuln_name = vuln.get('vulnerabilities_0_cve_cisaVulnerabilityName')
+    vuln_description = vuln.get('vulnerabilities_0_cve_descriptions_0_value')
+    service_address = vuln.get('address')
+    service_port = vuln.get('ports')
+    #service_transport = vuln.get()
+    cvss2_base_score = vuln.get('vulnerabilities_0_cve_metrics_cvssMetricV2_baseScore')
+    cvss3_base_score = vuln.get('vulnerabilities_0_cve_metrics_cvssMetricV31_baseScore')
+    # risk_score = vuln.get()
+    # risk_rank = vuln.get()
+    # severity_score = vuln.get()
+    severity_rank = vuln.get('vulnerabilities_0_cve_metrics_baseSeverity')
+    # solution = vuln.get()
+    return Vulnerability(id=identifier,
+                         #cve=cve_id,
+                         name=vuln_name,
+                         description=vuln_description,
+                         serviceAddress=service_address,
+                         servicePort=service_port,
+                         cvss2BaseScore=cvss2_base_score,
+                         cvss3BaseScore=cvss3_base_score,
+                         severityRank=severity_rank)
 
 def import_data_to_runzero(assets: List[ImportAsset]):
     '''
@@ -140,9 +155,9 @@ def parse_assets(data):
         for item in data:
             item = flatten(item)
             asset['id'] = item.get('id')
-            asset['address'] = item.get('foreign_attributes_@shodan.dev_host.ipStr')
-            asset['ports'] = item.get('foreign_attributes_@shodan.dev_host.ports').split('/t')
-            asset['cves'] = item.get('foreign_attributes_@shodan.dev_host.vulns').split('/t')
+            asset['address'] = item.get('foreign_attributes_@shodan.dev_0_host.ipStr', '')
+            asset['ports'] = item.get('foreign_attributes_@shodan.dev_0_host.ports', '').split('\t')
+            asset['cves'] = item.get('foreign_attributes_@shodan.dev_0_host.vulns', '').split('\t')
             assets.append(asset)        
         return assets
     except TypeError as error:
@@ -157,7 +172,6 @@ def match_nvd(url, data):
         :returns: a dict, JSON object of assets.
         :raises: ConnectionError: if unable to successfully make GET request to NVD API.
     '''
-
     vulns = []
     try:
         for asset in data:
@@ -165,23 +179,26 @@ def match_nvd(url, data):
             record['id'] = asset['id']
             record['vuln'] = []
             for cve in asset['cves']:
-                params = {'cveId': cve}
+                params = {'cveId': cve.upper()}
                 headers = {'Accept': 'application/json'}
                 response = requests.get(url, headers=headers, params=params)
                 cve_details = json.loads(response.content)
                 record['vuln'].append(cve_details)
             vulns.append(record)
+        return vulns
     except ConnectionError as error:
         content = "No Response"
         raise error
 
 def main():
-    assets = get_assets(RUNZERO_BASE_URL, RUNZERO_EXPORT_TOKEN)
+    #assets = get_assets(RUNZERO_BASE_URL, RUNZERO_EXPORT_TOKEN)
+    with open('test_data.json', 'r') as o:
+        assets = json.loads(o.read())
     parsed = parse_assets(assets)
-    vulnData = match_nvd(NVD_API_URL, parsed)
+    vuln_data = match_nvd(NVD_API_URL, parsed)
     
     # Format asset list for import into runZero
-    import_assets = build_assets_from_json(vulnData)
+    import_assets = build_assets_from_json(vuln_data)
 
     # Import assets into runZero
     import_data_to_runzero(assets=import_assets)
