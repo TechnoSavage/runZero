@@ -12,7 +12,7 @@ import requests
 import runzero
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
-from runzero.types import (ImportAsset,ImportTask,IPv4Address,Vulnerability)
+from runzero.types import (ImportAsset,ImportTask,IPv4Address,IPv6Address,NetworkInterface,Vulnerability)
 from typing import Any, Dict, List
 
 # Configure runZero variables
@@ -45,6 +45,11 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
     for item in json_input:
         # Map vulnerabilities to asset using existing asset UID
         asset_id = item.get('id')
+        mac = None
+        ip = item.get('address')
+
+        # create the network interface
+        network = build_network_interface(ips=[ip], mac=mac)
 
         # create the vulnerabilities
         vulnerabilities = []
@@ -54,9 +59,30 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
 
         # Build assets for import
         assets.append(ImportAsset(id=asset_id,
+                                  networkInterfaces=[network],
                                   vulnerabilities=vulnerabilities))
 
     return assets
+
+def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface:
+    ''' 
+    This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
+    is accepted in the ImportAsset
+    '''
+    ip4s: List[IPv4Address] = []
+    ip6s: List[IPv6Address] = []
+    for ip in ips[:99]:
+        ip_addr = ip_address(ip)
+        if ip_addr.version == 4:
+            ip4s.append(ip_addr)
+        elif ip_addr.version == 6:
+            ip6s.append(ip_addr)
+        else:
+            continue
+    if mac is None:
+        return NetworkInterface(ipv4Addresses=ip4s, ipv6Addresses=ip6s)
+    else:
+        return NetworkInterface(macAddress=mac, ipv4Addresses=ip4s, ipv6Addresses=ip6s)
 
 def build_vuln(address, ports, detail):
     '''
@@ -73,11 +99,11 @@ def build_vuln(address, ports, detail):
     vuln_name = detail.get('vulnerabilities_0_cve_cisaVulnerabilityName')
     if vuln_name == '' or vuln_name == None:
         vuln_name = identifier
-    vuln_description = detail.get('vulnerabilities_0_cve_descriptions_0_value')
+    vuln_description = detail.get('vulnerabilities_0_cve_descriptions_0_value')[:1023]
     service_address = IPv4Address(ip_address(address))
     service_port = ports[0]
     #exploit = detail.get()
-    #service_transport = detail.get()
+    #service_transport = detail.get()[:255]
     cvss2_base_score = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV2_0_cvssData_baseScore')
     if cvss2_base_score and cvss2_base_score != '':
         cvss2_base_score = float(cvss2_base_score)
@@ -91,11 +117,11 @@ def build_vuln(address, ports, detail):
     if severity_rank and severity_rank == '':
         severity_rank = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV2_0_cvssData_baseSeverity')
     severity_rank = ranking[severity_rank]
-    # solution = detail.get()
+    remedy = detail.get('vulnerabilities_0_cve_cisaRequiredAction', '')[:1023]
     custom_attrs: Dict[str] = {}
     for key, value in detail.items():
         custom_attrs[key] = str(value)[:1023]
-        
+
     return Vulnerability(id=identifier,
                          #cve=cve_id,
                          name=vuln_name,
@@ -106,6 +132,7 @@ def build_vuln(address, ports, detail):
                          cvss2BaseScore=cvss2_base_score,
                          cvss3BaseScore=cvss3_base_score,
                          severityRank=severity_rank,
+                         solution=remedy,
                          customAttributes=custom_attrs
                          )
 
