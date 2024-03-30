@@ -5,13 +5,14 @@
 # Prerequisite: pip install runzero-sdk
 
 from flatten_json import flatten
+from ipaddress import ip_address
 import json
 import os
 import requests
 import runzero
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
-from runzero.types import (ImportAsset,ImportTask,Vulnerability)
+from runzero.types import (ImportAsset,ImportTask,IPv4Address,Vulnerability)
 from typing import Any, Dict, List
 
 # Configure runZero variables
@@ -47,8 +48,8 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
 
         # create the vulnerabilities
         vulnerabilities = []
-        for vuln in item['vuln']:
-            vulnerability = build_vuln(vuln)
+        for detail in item['cve_details']:
+            vulnerability = build_vuln(address=item.get('address'), ports=item.get('ports'), detail=detail)
             vulnerabilities.append(vulnerability)
 
         # Build assets for import
@@ -57,34 +58,56 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
 
     return assets
 
-def build_vuln(vuln):
+def build_vuln(address, ports, detail):
     '''
     '''
-    vuln = flatten(vuln)
-    print(vuln.get('vulnerabilities_0_cve_id'))
-    identifier = vuln.get('vulnerabilities_0_cve_id')
-    #cve_id = vuln.get('vulnerabilities_0_cve_id')
-    vuln_name = vuln.get('vulnerabilities_0_cve_cisaVulnerabilityName')
-    vuln_description = vuln.get('vulnerabilities_0_cve_descriptions_0_value')
-    service_address = vuln.get('address')
-    service_port = vuln.get('ports')
-    #service_transport = vuln.get()
-    cvss2_base_score = vuln.get('vulnerabilities_0_cve_metrics_cvssMetricV2_baseScore')
-    cvss3_base_score = vuln.get('vulnerabilities_0_cve_metrics_cvssMetricV31_baseScore')
-    # risk_score = vuln.get()
-    # risk_rank = vuln.get()
-    # severity_score = vuln.get()
-    severity_rank = vuln.get('vulnerabilities_0_cve_metrics_baseSeverity')
-    # solution = vuln.get()
+    ranking = {'NONE': 0,
+               'LOW': 1,
+               'MEDIUM': 2,
+               'HIGH': 3,
+               'CRITICAL': 4}
+
+    detail = flatten(detail)
+    identifier = detail.get('vulnerabilities_0_cve_id')
+    cve_id = detail.get('vulnerabilities_0_cve_id')
+    vuln_name = detail.get('vulnerabilities_0_cve_cisaVulnerabilityName')
+    if vuln_name == '' or vuln_name == None:
+        vuln_name = identifier
+    vuln_description = detail.get('vulnerabilities_0_cve_descriptions_0_value')
+    service_address = IPv4Address(ip_address(address))
+    service_port = ports[0]
+    #exploit = detail.get()
+    #service_transport = detail.get()
+    cvss2_base_score = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV2_0_cvssData_baseScore')
+    if cvss2_base_score and cvss2_base_score != '':
+        cvss2_base_score = float(cvss2_base_score)
+    cvss3_base_score = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV31_0_cvssData_baseScore')
+    if cvss3_base_score and cvss3_base_score != '':
+        cvss3_base_score = float(cvss3_base_score)
+    # risk_score = detail.get()
+    # risk_rank = detail.get()
+    # severity_score = detail.get()
+    severity_rank = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV31_0_cvssData_baseSeverity')
+    if severity_rank and severity_rank == '':
+        severity_rank = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV2_0_cvssData_baseSeverity')
+    severity_rank = ranking[severity_rank]
+    # solution = detail.get()
+    custom_attrs: Dict[str] = {}
+    for key, value in detail.items():
+        custom_attrs[key] = str(value)[:1023]
+        
     return Vulnerability(id=identifier,
                          #cve=cve_id,
                          name=vuln_name,
                          description=vuln_description,
                          serviceAddress=service_address,
                          servicePort=service_port,
+                         #exploitable=exploit,
                          cvss2BaseScore=cvss2_base_score,
                          cvss3BaseScore=cvss3_base_score,
-                         severityRank=severity_rank)
+                         severityRank=severity_rank,
+                         customAttributes=custom_attrs
+                         )
 
 def import_data_to_runzero(assets: List[ImportAsset]):
     '''
@@ -177,13 +200,15 @@ def match_nvd(url, data):
         for asset in data:
             record = {}
             record['id'] = asset['id']
-            record['vuln'] = []
+            record['address'] = asset['address']
+            record['ports'] = asset['ports']
+            record['cve_details'] = []
             for cve in asset['cves']:
                 params = {'cveId': cve.upper()}
                 headers = {'Accept': 'application/json'}
                 response = requests.get(url, headers=headers, params=params)
                 cve_details = json.loads(response.content)
-                record['vuln'].append(cve_details)
+                record['cve_details'].append(cve_details)
             vulns.append(record)
         return vulns
     except ConnectionError as error:
