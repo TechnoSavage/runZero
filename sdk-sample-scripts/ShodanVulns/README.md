@@ -1,4 +1,7 @@
-# Shodan vulnerabilites custom integration for runZero (Work in Progress)
+# Shodan vulnerabilites custom integration for runZero
+
+***THIS IS CURRENTLY A WORK IN PROGRESS***
+
 This integration is designed to populate vulnerabilities found from an existing Shodan integration by using the NVD to enrich vulnerability information from CVEs reported by Shodan in the @shodan.dev.host.vulns attribute
 
 ## Background
