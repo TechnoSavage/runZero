@@ -1,4 +1,4 @@
-# runZero Custom Integration with Snipe-IT
+# runZero Custom Integration with XYZ platform
 # Docs: https://www.runzero.com/docs/integrations-inbound/
 # Docs: https://pypi.org/project/runzero-sdk/ 
 # Docs: 
