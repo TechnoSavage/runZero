@@ -117,7 +117,7 @@ def build_vuln(address, ports, detail):
     if severity_rank and severity_rank == '':
         severity_rank = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV2_0_cvssData_baseSeverity')
     severity_rank = ranking[severity_rank]
-    remedy = detail.get('vulnerabilities_0_cve_cisaRequiredAction', '')[:1023]
+    solution = detail.get('vulnerabilities_0_cve_cisaRequiredAction', '')[:1023]
     custom_attrs: Dict[str] = {}
     for key, value in detail.items():
         custom_attrs[key] = str(value)[:1023]
@@ -132,7 +132,7 @@ def build_vuln(address, ports, detail):
                          cvss2BaseScore=cvss2_base_score,
                          cvss3BaseScore=cvss3_base_score,
                          severityRank=severity_rank,
-                         solution=remedy,
+                         solution=solution,
                          customAttributes=custom_attrs
                          )
 
