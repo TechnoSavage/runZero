@@ -135,9 +135,9 @@ def build_vuln(vuln_details):
     vuln_name = vuln_detail.get('vulnerability_name')
     if vuln_name and vuln_name != '':
         vuln_name = identifier
-    vuln_description = vuln_detail.get('vulnerabilities_0_cve_descriptions_0_value')
+    vuln_description = vuln_detail.get('vulnerabilities_0_cve_descriptions_0_value')[:1023]
     service_address = IPv4Address(ip_address('address'))
-    service_port = ports[0]
+    service_port = vuln_detail('ports')
     exploit = vuln_detail.get()
     service_transport = vuln_detail.get()
     cvss2_base_score = vuln_detail.get('cvssV2_baseScore')
@@ -153,7 +153,7 @@ def build_vuln(vuln_details):
     if severity_rank and severity_rank == '':
         severity_rank = vuln_detail.get('cvssV2_baseSeverity')
     severity_rank = ranking[severity_rank]
-    solution = vuln_detail.get('solution')
+    solution = vuln_detail.get('solution')[:1023]
     custom_attrs: Dict[str] = {}
     for key, value in vuln_detail.items():
         custom_attrs[key] = str(value)[:1023]
