@@ -176,7 +176,7 @@ def get_assets(url, token):
     '''
 
     url = f"{url}/api/v1.0/export/org/assets.json"
-    params = {'search': 'source:shodan and not @shodan.dev.host.hostnames:=""',
+    params = {'search': 'source:shodan and not @shodan.dev.host.vulns:=""',
               'fields': 'id, foreign_attributes'}
     payload = ''
     headers = {'Accept': 'application/json',
@@ -192,7 +192,7 @@ def get_assets(url, token):
     
 def parse_assets(data):
     '''
-    Extract asset IDs and Shodan CVEs from supplied asset data. 
+    Extract asset ID and Shodan reported IP, Ports, and CVEs from supplied asset data. 
     
             :param data: JSON object, runZero asset data.
             :returns: A Dict, asset IDs and CVE numbers.
