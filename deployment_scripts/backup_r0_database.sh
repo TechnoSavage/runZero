@@ -1,12 +1,14 @@
 #!/bin/bash -x
 
+PROGNAME=$(basename $0)
+
 #Check for root privileges, exit if not run as root user
 if [[ $(id -u) != 0 ]]; then
     cat << EOM
 
 This script must be run as root!
 Please rerun with sudo e.g.
-sudo ./backup_r0_database.sh
+sudo ./$PROGNAME
 
 EOM
 exit 1
