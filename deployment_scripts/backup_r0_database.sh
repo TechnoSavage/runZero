@@ -15,7 +15,7 @@ else
 fi
 
 tar zcvf runzero-backup-fs.tar.gz /etc/runzero/ /opt/runzero/ /lib/systemd/system/runzero-console.service /etc/systemd/system/multi-user.target.wants/runzero-console.service /usr/bin/runzeroctl
-su -c "pg_dumpall -f runzero.sql && gzip runzero.sql" postgres
+su -c "pg_dumpall -f /var/lib/postgres/runzero.sql && gzip /var/lib/postgres/runzero.sql" postgres
 mv /var/lib/postgresql/runzero.sql.gz $(pwd)
 
 echo "Backup complete!"
