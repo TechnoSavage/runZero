@@ -51,8 +51,7 @@ if [[ ! -e $filesystem ]] || [[ ! -e $database ]]; then
 else
     runzeroctl stop
     tar -C -zxvf $filesystem
-    su - postgres
-    dropdb rumble; gzip -dc $database | psql
+    su -c "dropdb runzero; gzip -dc $database | psql" postgres
     runzeroctl start
     echo "Restore complete!"
 fi
