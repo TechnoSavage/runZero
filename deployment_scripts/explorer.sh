@@ -11,6 +11,10 @@ sudo ./explorer.sh
 EOM
 exit 1
 
+else
+    echo "Beginning installation..."
+fi
+
 dltok=
 console='console.runzero.com'
 bin='runzero-explorer-linux-amd64'
