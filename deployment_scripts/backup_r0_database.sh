@@ -6,7 +6,7 @@ if [[ $(id -u) != 0 ]]; then
 
 This script must be run as root!
 Please rerun with sudo e.g.
-sudo ./explorer.sh
+sudo ./backup_r0_database.sh
 
 EOM
 exit 1
