@@ -52,10 +52,10 @@ Requirements (Global)
 git clone https://github.com/TechnoSavage/runZero.git
 ```
 
-- Clone runZero/custom_integrations/shodanVulns/.env_sample to .env under the same directory
+- Clone runZero/sdk-sample-scripts/ShodanVulns/.env_sample to .env under the same directory
 
 ```
-cd runZero/custom_integrations/ShodanVulns
+cd runZero/sdk-sample-scripts/ShodanVulns
 cp .env_sample .env
 ```
 
