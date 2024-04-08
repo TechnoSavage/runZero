@@ -62,10 +62,10 @@ Requirements (Global)
 git clone https://github.com/TechnoSavage/runZero.git
 ```
 
-- Clone runZero/custom_integrations/FileWave/.env_sample to .env under the same directory
+- Clone runZero/sdk-sample-scripts/FileWave/.env_sample to .env under the same directory
 
 ```
-cd runZero/custom_integrations/FileWave
+cd runZero/sdk-sample-scripts/FileWave
 cp .env_sample .env
 ```
 

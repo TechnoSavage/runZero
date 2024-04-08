@@ -60,10 +60,10 @@ Requirements (Global)
 git clone https://github.com/TechnoSavage/runZero.git
 ```
 
-- Clone runZero/custom_integrations/Zabbix/.env_sample to .env under the same directory
+- Clone runZero/sdk-sample-scripts/Zabbix/.env_sample to .env under the same directory
 
 ```
-cd runZero/custom_integrations/Zabbix
+cd runZero/sdk-sample-scripts/Zabbix
 cp .env_sample .env
 ```
 

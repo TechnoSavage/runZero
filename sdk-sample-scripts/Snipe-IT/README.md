@@ -54,10 +54,10 @@ Requirements (Global)
 git clone https://github.com/TechnoSavage/runZero.git
 ```
 
-- Clone runZero/custom_integrations/Snipe-IT/.env_sample to .env under the same directory
+- Clone runZero/sdk-sample-scripts/Snipe-IT/.env_sample to .env under the same directory
 
 ```
-cd runZero/custom_integrations/Snipe-IT
+cd runZero/sdk-sample-scripts/Snipe-IT
 cp .env_sample .env
 ```
 
