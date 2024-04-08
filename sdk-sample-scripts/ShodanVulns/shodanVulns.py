@@ -4,12 +4,14 @@
 # Docs: https://nvd.nist.gov/developers/vulnerabilities
 # Prerequisite: pip install runzero-sdk
 
-from flatten_json import flatten
-from ipaddress import ip_address
+
 import json
 import os
 import requests
 import runzero
+import uuid
+from flatten_json import flatten
+from ipaddress import ip_address
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
 from runzero.types import (ImportAsset,ImportTask,IPv4Address,IPv6Address,NetworkInterface,Vulnerability)
@@ -44,7 +46,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
     assets: List[ImportAsset] = []
     for item in json_input:
         # Map vulnerabilities to asset using existing asset UID
-        asset_id = item.get('id')
+        asset_id = item.get('id', uuid.uuid4)
         mac = None
         ip = item.get('address')
 
@@ -101,6 +103,8 @@ def build_vuln(address, ports, detail):
         vuln_name = identifier
     vuln_description = detail.get('vulnerabilities_0_cve_descriptions_0_value')[:1023]
     service_address = IPv4Address(ip_address(address))
+    #develop better logic for assigning port to CVE
+    # likely a different function to parse CVE details and assign likely port from provided list
     service_port = ports[0]
     #exploit = detail.get()
     #service_transport = detail.get()[:255]
@@ -123,7 +127,7 @@ def build_vuln(address, ports, detail):
         custom_attrs[key] = str(value)[:1023]
 
     return Vulnerability(id=identifier,
-                         #cve=cve_id,
+                         cve=cve_id,
                          name=vuln_name,
                          description=vuln_description,
                          serviceAddress=service_address,
@@ -243,9 +247,7 @@ def match_nvd(url, data):
         raise error
 
 def main():
-    #assets = get_assets(RUNZERO_BASE_URL, RUNZERO_EXPORT_TOKEN)
-    with open('test_data.json', 'r') as o:
-        assets = json.loads(o.read())
+    assets = get_assets(RUNZERO_BASE_URL, RUNZERO_EXPORT_TOKEN)
     parsed = parse_assets(assets)
     vuln_data = match_nvd(NVD_API_URL, parsed)
     
