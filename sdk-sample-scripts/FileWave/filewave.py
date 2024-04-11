@@ -17,7 +17,6 @@ from typing import Any, Dict, List
 import uuid
 
 # Configure runZero variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
 RUNZERO_BASE_URL = f'{RUNZERO_BASE_URL}/api/v1.0'
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
@@ -29,7 +28,6 @@ RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
 RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
 
 # Configure FileWave variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 FILEWAVE_BASE_URL = os.environ['FW_BASE_URL']
 FILEWAVE_API_URL = f'{FILEWAVE_BASE_URL}/api/inv/api/v1/' # curl -s  -H "Authorization: $auth" https://$server_dns:/api/inv/api/v1/query_result/191
 FILEWAVE_API_KEY = os.environ['FW_API_KEY']
@@ -49,7 +47,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # grab known API attributes from the json dict that are always present
         #If custom fields created in FileWave align to asset fields in r0 SDK docs
         #additional attributes can be added here following the pattern
-        asset_id = item.get('Client_device_id', uuid.uuid4)
+        asset_id = item.get('Client_device_id', uuid.uuid4().urn)
         ip = item.get('Client_current_ip_address', '')
         macs = item.get('NetworkInterface_mac_address', [])
         os_name = item.get('OperatingSystem_name', '')
@@ -63,7 +61,6 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
             network = build_network_interface(ips=[ip], mac=mac)
             networks.append(network)
 
-        # *** Should not need to touch this ***
         # handle any additional values and insert into custom_attrs
         custom_attrs: Dict[str, CustomAttribute] = {}
         for key, value in item.items():
@@ -87,7 +84,6 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         )
     return assets
 
-# *** Should not need to touch this ***
 def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface:
     ''' 
     This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
@@ -138,16 +134,38 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     if import_task:
         print(f'task created! view status here: {RUNZERO_BASE_URL}/tasks?task={import_task.id}')
 
-def getAssets():
-    """ """
-    pass
+def get_assets(url, token, report):
+    '''
+    Retrieve asset data from specified Filewave report.
+        
+        :param url: A string, URL of Filewave instance.
+        :param token: A string, Filewave API Key.
+        :returns: a dict, JSON object of assets.
+        :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
 
-def reformatResponse(raw_json):
-    """ Function to reformat the API response by mapping the fields
-        to the corresponding values for each asset in values.
+    url = f"{url}/api/inv/api/v1/query_rexsult/{report}"
+    params = ''
+    payload = ''
+    headers = {'Accept': 'application/json',
+               'Authorization': f'Bearer {token}'}
+    try:
+        response = requests.get(url, headers=headers, params=params, data=payload)
+        content = response.content
+        data = json.loads(content)
+        return data
+    except ConnectionError as error:
+        content = "No Response"
+        raise error
+
+def reformat_response(raw_json):
+    '''
+    Function to reformat the API response by mapping the fields
+    to the corresponding values for each asset in values.
          
         :param raw_json: a dict, FileWave API response
-        :returns: a list of dictionaries """
+        :returns: a list of dictionaries. 
+    '''
     
     # assign reported fields as keys to all reported value sets
     mapped_keys = []
@@ -187,7 +205,9 @@ def main():
     with open('filewave_raw.json', 'r') as input:
         asset_json_raw = json.load(input)
 
-    asset_json_formatted = reformatResponse(asset_json_raw)
+    # asset_json_raw = getAssets(FILEWAVE_API_URL, FILEWAVE_API_KEY)
+
+    asset_json_formatted = reformat_response(asset_json_raw)
     
     # Format asset list for import into runZero
     import_assets = build_assets_from_json(asset_json_formatted)
