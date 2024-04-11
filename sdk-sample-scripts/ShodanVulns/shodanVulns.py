@@ -18,7 +18,6 @@ from runzero.types import (ImportAsset,ImportTask,IPv4Address,IPv6Address,Networ
 from typing import Any, Dict, List
 
 # Configure runZero variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
 RUNZERO_BASE_URL = f'{RUNZERO_BASE_URL}/api/v1.0'
 RUNZERO_EXPORT_TOKEN = os.environ['RUNZERO_EXPORT_TOKEN']
@@ -31,7 +30,6 @@ RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
 RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
 
 # Configure NVD variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 NVD_API_URL = 'https://services.nvd.nist.gov/rest/json/cves/2.0?'
 NVD_HEADERS = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
@@ -46,7 +44,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
     assets: List[ImportAsset] = []
     for item in json_input:
         # Map vulnerabilities to asset using existing asset UID
-        asset_id = item.get('id', uuid.uuid4)
+        asset_id = item.get('id', uuid.uuid4().urn)
         mac = None
         ip = item.get('address')
 
@@ -88,6 +86,8 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
 
 def build_vuln(address, ports, detail):
     '''
+    This function maps vulnerability information to runZero attribute fields and assigns all key, value pairs to
+    vulnerability custom attributes
     '''
     ranking = {'NONE': 0,
                'LOW': 1,
@@ -127,7 +127,7 @@ def build_vuln(address, ports, detail):
         custom_attrs[key] = str(value)[:1023]
 
     return Vulnerability(id=identifier,
-                         cve=cve_id,
+                         #cve=cve_id,   #runZero-sdk regex check is too restrictive for updated CVE ID formats (as few a 4 final digits to 7 or more)
                          name=vuln_name,
                          description=vuln_description,
                          serviceAddress=service_address,
@@ -257,6 +257,5 @@ def main():
     # Import assets into runZero
     import_data_to_runzero(assets=import_assets)
 
-# *** Should not need to touch this ***
 if __name__ == '__main__':
     main()
