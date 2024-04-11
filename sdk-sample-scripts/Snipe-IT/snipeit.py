@@ -14,10 +14,9 @@ from typing import Any, Dict, List
 import runzero
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
-from runzero.types import (CustomAttribute,ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask)
+from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask)
 
 # Configure runZero variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
 RUNZERO_BASE_URL = f'{RUNZERO_BASE_URL}/api/v1.0'
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
@@ -31,7 +30,6 @@ RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
 RUNZERO_HEADER = {'Authorization': f'Bearer {RUNZERO_ACCOUNT_TOKEN}'}
 
 # Configure Snipe-IT variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 SNIPE_BASE_URL = os.environ['SNIPE_BASE_URL']
 SNIPE_API_URL = f'{SNIPE_BASE_URL}/api/v1/hardware'
 SNIPE_API_KEY = os.environ['SNIPE_API_KEY']
@@ -52,7 +50,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         #If custom fields created in Snipe-IT align to asset fields in r0 SDK docs
         #additional attributes can be added here following the pattern
         item = flatten(item)
-        asset_id = item.get('id', uuid.uuid4)
+        asset_id = item.get('id', uuid.uuid4().urn)
         mac = item.get('custom_fields_MAC Address_value', None)
         model = item.get('model_name', '')
         deviceType = item.get('category_name', '')
@@ -61,15 +59,14 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # create the network interface
         network = build_network_interface(ips=[], mac=mac)
 
-        # *** Should not need to touch this ***
         # handle any additional values and insert into custom_attrs
-        custom_attrs: Dict[str, CustomAttribute] = {}
+        custom_attrs: Dict[str] = {}
         for key, value in item.items():
             if isinstance(value, dict):
                 for k, v in value.items():
-                    custom_attrs[k] = CustomAttribute(str(v)[:1023])
+                    custom_attrs[k] = str(v)[:1023]
             else:
-               custom_attrs[key] = CustomAttribute(str(value))
+               custom_attrs[key] = str(value)
 
         # Build assets for import
         assets.append(
@@ -84,7 +81,6 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         )
     return assets
 
-# *** Should not need to touch this ***
 def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface:
     ''' 
     This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
@@ -147,6 +143,5 @@ def main():
     # Import assets into runZero
     import_data_to_runzero(assets=import_assets)
 
-# *** Should not need to touch this ***
 if __name__ == '__main__':
     main()
