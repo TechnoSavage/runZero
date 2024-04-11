@@ -15,24 +15,22 @@ from flatten_json import flatten
 from typing import Any, Dict, List
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
-from runzero.types import (CustomAttribute,ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask)
+from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask)
 
 # Configure runZero variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
 RUNZERO_BASE_URL = f'{RUNZERO_BASE_URL}/api/v1.0'
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
 RUNZERO_CLIENT_SECRET = os.environ['RUNZERO_CLIENT_SECRET']
 RUNZERO_ACCOUNT_TOKEN = os.environ['RUNZERO_ACCOUNT_TOKEN']
 RUNZERO_ORG_ID = os.environ['RUNZERO_ORG_ID']
-RUNZERO_CUSTOM_SOURCE_ID = os.environ['RUNZERO_CUSTOM_SOURCE_ID']
+RUNZERO_CUSTOM_SOURCE_ID = '96d36f62-1b37-45cf-af0b-7fd451cb7043' #os.environ['RUNZERO_CUSTOM_SOURCE_ID']
 RUNZERO_SITE_NAME = os.environ['RUNZERO_SITE_NAME']
 RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
-RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
+RUNZERO_IMPORT_TASK_NAME = 'Zabbix' #os.environ['RUNZERO_IMPORT_TASK_NAME']
 RUNZERO_HEADER = {'Authorization': f'Bearer {RUNZERO_ACCOUNT_TOKEN}'}
 
 # Configure Zabbix variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 ZABBIX_BASE_URL = os.environ['ZABBIX_BASE_URL']
 ZABBIX_API_KEY = os.environ['ZABBIX_API_KEY']
 ZABBIX_API_URL = f'{ZABBIX_BASE_URL}/zabbix/api_jsonrpc.php'
@@ -62,7 +60,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         #additional attributes can be added here following the pattern
         item = flatten(item)
     
-        asset_id = item.get('hostid', uuid.uuid4)
+        asset_id = item.get('hostid', uuid.uuid4().urn)
         ip = item.get('interfaces_0_ip')
         mac = item.get('inventory_macaddress_a')
         os_name = item.get('inventory_os_short', '')
@@ -78,15 +76,14 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # create the network interface
         network = build_network_interface(ips=[ip], mac=mac)
 
-        # *** Should not need to touch this ***
         # handle any additional values and insert into custom_attrs
-        custom_attrs: Dict[str, CustomAttribute] = {}
+        custom_attrs: Dict[str] = {}
         for key, value in item.items():
             if isinstance(value, dict):
                 for k, v in value.items():
-                    custom_attrs[k] = CustomAttribute(str(v)[:1023])
+                    custom_attrs[k] = str(v)[:1023]
             else:
-               custom_attrs[key] = CustomAttribute(str(value)[:1023])
+               custom_attrs[key] = str(value)[:1023]
 
         # Build assets for import
         assets.append(
@@ -103,7 +100,6 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         )
     return assets
 
-# *** Should not need to touch this ***
 def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface:
     ''' 
     This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
@@ -164,6 +160,5 @@ def main():
     # Import assets into runZero
     import_data_to_runzero(assets=import_assets)
 
-# *** Should not need to touch this ***
 if __name__ == '__main__':
     main()
