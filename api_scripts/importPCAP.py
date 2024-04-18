@@ -1,11 +1,12 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    importPCAP.py, version 1.0
+    importPCAP.py, version 1.1
     Bulk import all packet capture files in a specified folder via the runZero API."""
 
 import argparse
 import csv
 import json
 import os
+import pandas as pd
 import re
 import requests
 import subprocess
@@ -26,8 +27,8 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write log files. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-c', '--clean', help='Enable file clean up. Automatically delete capture files that are successfully uploaded', action='store_true', required=False)
-    parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv', 'excel'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 1.1')
     return parser.parse_args()
 
 def importPCAP(url, token, siteID, capture):
@@ -53,7 +54,7 @@ def importPCAP(url, token, siteID, capture):
     except ConnectionError as error:
         raise error
     
-def fileUpload(url, token, site, dir):
+def fileUpload(url, token, siteID, dir):
     """Identify packet capture in a directory and pass them
        to importPCAP function. 
     
@@ -72,7 +73,7 @@ def fileUpload(url, token, site, dir):
                 fileType = subprocess.check_output([f'file', dir + fileName.group(1)])
                 fileDescription = re.search("(: (.*))", str(fileType))
                 if 'pcap' in str(fileDescription) or 'pcapng' in str(fileDescription):
-                    response = importPCAP(url, token, site, f'{dir}{fileName.group(1)}')
+                    response = importPCAP(url, token, siteID, f'{dir}{fileName.group(1)}')
                     entry = {}
                     if response[0] == 200 and response[1]['error'] == '':
                         entry['File Name'] = fileName.group(1) 
@@ -103,20 +104,21 @@ def cleanUp(dir, log):
                 print(error)
         else:
             pass
-
-def writeCSV(fileName, contents):
+    
+def writeDF(fileName, format, data):
     """ Write contents to output file. 
     
         :param filename: a string, name for file including.
+        :param format: a string, excel or csv
         :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file. """
+        :raises: IOError: if unable to write to file.  """
+    
+    df = pd.DataFrame(data)
     try:
-        with open(f'{fileName}', 'w') as o:
-            fieldNames = ['File Name', 'Status']
-            csv_writer = csv.DictWriter(o, fieldNames)
-            csv_writer.writeheader()
-            for entry in contents:
-                csv_writer.writerow(entry)
+        if format == "excel":
+            df.to_excel(f'{fileName}.xlsx')
+        else:
+            df.to_csv(f'{fileName}.csv', encoding='utf-8')
     except IOError as error:
         raise error
     
@@ -150,9 +152,8 @@ def main():
                 stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
             textFile = '\n'.join(stringList)
             writeFile(fileName, textFile)
-        elif args.log == 'csv':
-            fileName = f'{fileName}.csv'
-            writeCSV(fileName, uploadLog)
+        elif args.log in ('csv', 'excel'):
+            writeDF(fileName, args.log, uploadLog)
     else:
         print(json.dumps(uploadLog, indent=4))
     if args.clean:
