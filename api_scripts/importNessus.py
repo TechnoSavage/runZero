@@ -3,7 +3,6 @@
     Bulk import all .nessus files in a specified folder via the runZero API."""
 
 import argparse
-import csv
 import json
 import os
 import pandas as pd
