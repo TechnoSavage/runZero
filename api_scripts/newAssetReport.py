@@ -1,13 +1,13 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    newAssetReport.py, version 3.0
+    newAssetReport.py, version 3.1
     Query runZero API for all assets found within an Organization (tied to Export API key provided) first seen within the specified 
     time period and return select fields. Default behavior will be to print assets to stdout in JSON format. Optionally, an output 
     file and format can be specified."""
 
 import argparse
-import csv
 import json
 import os
+import pandas as pd
 import requests
 from datetime import datetime
 from getpass import getpass
@@ -23,14 +23,14 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_EXPORT_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.0')
+    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
     return parser.parse_args()
     
 def getAssets(url, token, filter=" ", fields=" "):
     """ Retrieve assets using supplied query filter from Console and restrict to fields supplied.
         
-        :param uri: A string, URI of runZero console.
+        :param url: A string, URL of runZero console.
         :param token: A string, Export API Key.
         :param filter: A string, query to filter returned assets(" " returns all).
         :param fields: A string, comma separated string of fields to return(" " returns all).
@@ -52,22 +52,20 @@ def getAssets(url, token, filter=" ", fields=" "):
         content = "No Response"
         raise error
     
-def writeCSV(fileName, contents):
+def writeDF(fileName, format, data):
     """ Write contents to output file. 
     
         :param filename: a string, name for file including.
+        :param format: a string, excel or csv
         :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file. """
+        :raises: IOError: if unable to write to file.  """
+    
+    df = pd.DataFrame(data)
     try:
-        with open(fileName, 'w') as o:
-            csv_writer = csv.writer(o)
-            count = 0
-            for item in contents:
-                if count == 0:
-                    header = item.keys()
-                    csv_writer.writerow(header)
-                    count += 1
-                csv_writer.writerow(item.values())
+        if format == "excel":
+            df.to_excel(f'{fileName}.xlsx')
+        else:
+            df.to_csv(f'{fileName}.csv', encoding='utf-8')
     except IOError as error:
         raise error
     
@@ -106,9 +104,8 @@ def main():
             stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
         writeFile(fileName, textFile)
-    elif args.output == 'csv':
-        fileName = f'{fileName}.csv'
-        writeCSV(fileName, results)  
+    elif args.output in ('csv', 'excel'):
+            writeDF(fileName, args.output, results)  
     else:
         for line in results:
             print(json.dumps(line, indent=4))
