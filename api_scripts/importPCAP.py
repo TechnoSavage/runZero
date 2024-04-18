@@ -3,7 +3,6 @@
     Bulk import all packet capture files in a specified folder via the runZero API."""
 
 import argparse
-import csv
 import json
 import os
 import pandas as pd
