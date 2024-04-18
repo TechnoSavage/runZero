@@ -1,11 +1,11 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    orgIDs.py, version 4.0
+    orgIDs.py, version 4.1
     Script to retrieve all Organization IDs and 'friendly' names for a given account. """
 
 import argparse
-import csv
 import json
 import os
+import pandas as pd
 import requests
 from datetime import datetime
 from getpass import getpass
@@ -19,13 +19,14 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ACCOUNT_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 4.0')
+    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 4.1')
     return parser.parse_args()
 
 def getOIDs(url, token):
     """ Retrieve Organizational IDs from Console.
 
+           :param url: A string, URL of runZero console.
            :param token: A string, Account API Key.
            :returns: A JSON object, runZero Org data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
@@ -54,7 +55,7 @@ def parseOIDs(data):
         for item in data:
             orgs = {}
             orgs["name"] = item.get('name', '')
-            orgs["oid"] = item.get('id')
+            orgs["id"] = item.get('id')
             orgs["is_project"] = item.get('project')
             orgs["is_inactive"] = item.get('inactive')
             orgs["is_demo"] = item.get('demo')
@@ -63,22 +64,20 @@ def parseOIDs(data):
     except TypeError as error:
         raise error
     
-def writeCSV(fileName, contents):
+def writeDF(fileName, format, data):
     """ Write contents to output file. 
     
         :param filename: a string, name for file including.
+        :param format: a string, excel or csv
         :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file. """
+        :raises: IOError: if unable to write to file.  """
+    
+    df = pd.DataFrame(data)
     try:
-        with open(fileName, 'w') as o:
-            csv_writer = csv.writer(o)
-            count = 0
-            for item in contents:
-                if count == 0:
-                    header = item.keys()
-                    csv_writer.writerow(header)
-                    count += 1
-                csv_writer.writerow(item.values())
+        if format == "excel":
+            df.to_excel(f'{fileName}.xlsx')
+        else:
+            df.to_csv(f'{fileName}.csv', encoding='utf-8')
     except IOError as error:
         raise error
 
@@ -113,9 +112,8 @@ def main():
             stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
         writeFile(fileName, textFile)
-    elif args.output == 'csv':
-        fileName = f'{fileName}.csv'
-        writeCSV(fileName, orgOIDs)  
+    elif args.output in ('csv', 'excel'):
+            writeDF(fileName, args.output, orgOIDs)  
     else:
         for line in orgOIDs:
             print(json.dumps(line, indent=4))
