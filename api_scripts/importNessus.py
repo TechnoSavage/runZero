@@ -1,11 +1,12 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    importNessus.py, version 4.1
+    importNessus.py, version 4.2
     Bulk import all .nessus files in a specified folder via the runZero API."""
 
 import argparse
 import csv
 import json
 import os
+import pandas as pd
 import re
 import requests
 import subprocess
@@ -26,14 +27,14 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write log files. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-c', '--clean', help='Enable file clean up. Automatically delete .nessus files that are successfully uploaded', action='store_true', required=False)
-    parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 4.1')
+    parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv', 'excel'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 4.2')
     return parser.parse_args()
 
 def importScan(url, token, siteID, scan):
     """ Upload a .nessus scan file . 
     
-        :param uri: A string, URL of the runZero console.
+        :param url: A string, URL of the runZero console.
         :param token: A string, Organization API key
         :param siteID: A string, the site ID of the Site to apply scan to.
         :param scan: A .nessus file, Nessus scan file to upload (including path).
@@ -54,7 +55,7 @@ def importScan(url, token, siteID, scan):
     except ConnectionError as error:
         raise error
     
-def fileUpload(url, token, site, dir):
+def fileUpload(url, token, siteID, dir):
     """Identify nessus files in a directory and pass them
        to importScan function. 
     
@@ -72,7 +73,7 @@ def fileUpload(url, token, site, dir):
             if fileName is not None:
                 fileType = subprocess.check_output(['file', dir + fileName.group(1)])
                 if fileName.group(3) == "nessus" and 'XML' in str(fileType):
-                    response = importScan(url, token, site, f'{dir}{fileName.group(1)}')
+                    response = importScan(url, token, siteID, f'{dir}{fileName.group(1)}')
                     entry = {}
                     if response[0] == 200 and response[1]['error'] == '':
                         entry['File Name'] = fileName.group(1) 
@@ -120,6 +121,23 @@ def writeCSV(fileName, contents):
     except IOError as error:
         raise error
     
+def writeDF(fileName, format, data):
+    """ Write contents to output file. 
+    
+        :param filename: a string, name for file including.
+        :param format: a string, excel or csv
+        :param contents: json data, file contents.
+        :raises: IOError: if unable to write to file.  """
+    
+    df = pd.DataFrame(data)
+    try:
+        if format == "excel":
+            df.to_excel(f'{fileName}.xlsx')
+        else:
+            df.to_csv(f'{fileName}.csv', encoding='utf-8')
+    except IOError as error:
+        raise error
+    
 def writeFile(fileName, contents):
     """ Write contents to output file in plaintext. 
     
@@ -150,9 +168,8 @@ def main():
                 stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
             textFile = '\n'.join(stringList)
             writeFile(fileName, textFile)
-        elif args.log == 'csv':
-            fileName = f'{fileName}.csv'
-            writeCSV(fileName, uploadLog)
+        elif args.log in ('csv', 'excel'):
+            writeDF(fileName, args.log, uploadLog)
     else:
         print(json.dumps(uploadLog, indent=4))
     if args.clean:
