@@ -104,22 +104,6 @@ def cleanUp(dir, log):
                 print(error)
         else:
             pass
-
-def writeCSV(fileName, contents):
-    """ Write contents to output file. 
-    
-        :param filename: a string, name for file including.
-        :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file. """
-    try:
-        with open(f'{fileName}', 'w') as o:
-            fieldNames = ['File Name', 'Status']
-            csv_writer = csv.DictWriter(o, fieldNames)
-            csv_writer.writeheader()
-            for entry in contents:
-                csv_writer.writerow(entry)
-    except IOError as error:
-        raise error
     
 def writeDF(fileName, format, data):
     """ Write contents to output file. 
