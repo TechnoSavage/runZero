@@ -60,7 +60,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         #additional attributes can be added here following the pattern
         item = flatten(item)
     
-        asset_id = item.get('hostid', uuid.uuid4().urn)
+        asset_id = item.get('hostid', str(uuid.uuid4()))
         ip = item.get('interfaces_0_ip')
         mac = item.get('inventory_macaddress_a')
         os_name = item.get('inventory_os_short', '')

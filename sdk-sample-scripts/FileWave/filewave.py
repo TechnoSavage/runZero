@@ -47,7 +47,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # grab known API attributes from the json dict that are always present
         #If custom fields created in FileWave align to asset fields in r0 SDK docs
         #additional attributes can be added here following the pattern
-        asset_id = item.get('Client_device_id', uuid.uuid4().urn)
+        asset_id = item.get('Client_device_id', str(uuid.uuid4()))
         ip = item.get('Client_current_ip_address', '')
         macs = item.get('NetworkInterface_mac_address', [])
         os_name = item.get('OperatingSystem_name', '')

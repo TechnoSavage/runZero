@@ -44,7 +44,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
     assets: List[ImportAsset] = []
     for item in json_input:
         # Map vulnerabilities to asset using existing asset UID
-        asset_id = item.get('id', uuid.uuid4().urn)
+        asset_id = item.get('id', str(uuid.uuid4()))
         mac = None
         ip = item.get('address')
 
@@ -247,7 +247,9 @@ def match_nvd(url, data):
         raise error
 
 def main():
-    assets = get_assets(RUNZERO_BASE_URL, RUNZERO_EXPORT_TOKEN)
+    # assets = get_assets(RUNZERO_BASE_URL, RUNZERO_EXPORT_TOKEN)
+    with open('test_data.json', 'r') as o:
+        assets = json.loads(o.read())
     parsed = parse_assets(assets)
     vuln_data = match_nvd(NVD_API_URL, parsed)
     
