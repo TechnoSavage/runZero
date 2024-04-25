@@ -1,4 +1,4 @@
-# runZero Custom Integration with XYZ platform
+# runZero Custom Integration with Kismet
 # Docs: https://www.runzero.com/docs/integrations-inbound/
 # Docs: https://pypi.org/project/runzero-sdk/ 
 # Docs: https://www.kismetwireless.net/docs/readme/intro/kismet/
@@ -15,10 +15,9 @@ from typing import Any, Dict, List
 import runzero
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
-from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask,Software,Vulnerability)
+from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask)
 
 # Configure runZero variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
 RUNZERO_BASE_URL = f'{RUNZERO_BASE_URL}/api/v1.0'
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
@@ -29,8 +28,7 @@ RUNZERO_SITE_NAME = os.environ['RUNZERO_SITE_NAME']
 RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
 RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
 
-# Configure Integration API variables (examples provided)
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
+# Configure Integration API variables
 KISMET_URL = os.environ['KISMET_URL']
 KISMET_PORT = os.environ['KISMET_PORT']
 KISMET_PHY = os.environ['KISMET_PHY']
@@ -80,6 +78,7 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
     This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
     is accepted in the ImportAsset
     '''
+
     ip4s: List[IPv4Address] = []
     ip6s: List[IPv6Address] = []
     for ip in ips[:99]:
@@ -100,6 +99,7 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     The code below gives an example of how to create a custom source and upload valid assets to a site using
     the new custom source.
     '''
+
     # create the runzero client
     c = runzero.Client()
 
@@ -135,6 +135,7 @@ def get_kismet_assets(cookie=KISMET_KEY, uri=KISMET_URL, port=KISMET_PORT, phy=K
             :returns: A dict, Kismet asset data from given source.
             :raises: ConnectionError: if unable to successfully make GET request to Kismet webserver.
     '''
+    
     url = f"{uri}:{port}/devices/views/seenby-{phy}/devices.json"
     headers = {'Cookie': f"KISMET={cookie}",
                'Content-Type': 'application/json',
