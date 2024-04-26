@@ -40,9 +40,9 @@ Requirements (Global)
 
 `RUNZERO_SITE_ID` - UUID of the Site to which integration will send data. Found in the console URL after navigating to Sites and clicking site name
 
-`RUNZERO_CUSTOM_SOURCE_ID` - UUID of the Custom Integration Source. Found in the console URL after navigating to Accounts -> Custom Integrations and clicking the integration name
+`SHODAN_VULNS_CUSTOM_SOURCE_ID` - UUID of the Custom Integration Source. Found in the console URL after navigating to Accounts -> Custom Integrations and clicking the integration name
 
-`RUNZERO_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under Accounts -> Custom Integrations
+`SHODAN_VULNS_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under Accounts -> Custom Integrations
 
 ## Getting Started
 
@@ -73,6 +73,5 @@ pipenv install -r requirements.txt
 pipenv shell
 ```
 - In your runZero console, navigate to Account -> Custom Integrations -> Add custom integration. Name the integration consistent to the parameter RUNZERO_IMPORT_TASK_NAME in the .env file. Optionally upload an image for the source. 
-(This step is optional; the script will create the source if it doesn't already exist.)
 
 - run the script to sync assets. Sync can be scheduled with a job scheduler such as cron
