@@ -24,12 +24,13 @@ RUNZERO_EXPORT_TOKEN = os.environ['RUNZERO_EXPORT_TOKEN']
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
 RUNZERO_CLIENT_SECRET = os.environ['RUNZERO_CLIENT_SECRET']
 RUNZERO_ORG_ID = os.environ['RUNZERO_ORG_ID']
-RUNZERO_CUSTOM_SOURCE_ID = os.environ['RUNZERO_CUSTOM_SOURCE_ID']
 RUNZERO_SITE_NAME = os.environ['RUNZERO_SITE_NAME']
 RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
-RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
+SHODAN_VULNS_CUSTOM_SOURCE_ID = os.environ['SHODAN_VULNS_CUSTOM_SOURCE_ID']
+SHODAN_VULNS_IMPORT_TASK_NAME = os.environ['SHODAN_VULNS_IMPORT_TASK_NAME']
 
 # Configure NVD variables
+
 NVD_API_URL = 'https://services.nvd.nist.gov/rest/json/cves/2.0?'
 NVD_HEADERS = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
@@ -146,25 +147,25 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     the new custom source.
     '''
     # create the runzero client
-    c = runzero.Client()
+    client = runzero.Client()
 
     # try to log in using OAuth credentials
     try:
-        c.oauth_login(RUNZERO_CLIENT_ID, RUNZERO_CLIENT_SECRET)
-    except AuthError as e:
-        print(f'login failed: {e}')
+        client.oauth_login(RUNZERO_CLIENT_ID, RUNZERO_CLIENT_SECRET)
+    except AuthError as error:
+        print(f'login failed: {error}')
         return
 
     # create the site manager to get our site information; set site ID for any new hosts
-    site_mgr = Sites(c)
+    site_mgr = Sites(client)
     site = site_mgr.get(RUNZERO_ORG_ID, RUNZERO_SITE_NAME)
     if not site:
         print(f'unable to find requested site')
         return
 
     # create the import manager to upload custom assets
-    import_mgr = CustomAssets(c)
-    import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=RUNZERO_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=RUNZERO_IMPORT_TASK_NAME))
+    import_mgr = CustomAssets(client)
+    import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=SHODAN_VULNS_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=SHODAN_VULNS_IMPORT_TASK_NAME))
 
     if import_task:
         print(f'task created! view status here: {RUNZERO_BASE_URL}/tasks?task={import_task.id}')
@@ -247,9 +248,7 @@ def match_nvd(url, data):
         raise error
 
 def main():
-    # assets = get_assets(RUNZERO_BASE_URL, RUNZERO_EXPORT_TOKEN)
-    with open('test_data.json', 'r') as o:
-        assets = json.loads(o.read())
+    assets = get_assets(RUNZERO_BASE_URL, RUNZERO_EXPORT_TOKEN)
     parsed = parse_assets(assets)
     vuln_data = match_nvd(NVD_API_URL, parsed)
     
