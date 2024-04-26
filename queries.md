@@ -412,13 +412,13 @@ product:sql OR product:mariadb OR product:oracledb
 test.pciComplianceStatus:"fail"
 ```
 
-## Tenable - High and Critical severity vulnerabilities that are on CISA's Known Exploited list
+## Tenable - High and Critical severity vulnerabilities that are on CISA's Known Exploited Vulnerability (KEV) list
 
 ```
 plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" AND (severity:high OR severity:critical)
 ```
 
-## Tenable - Critical severity vulnerabilities where exploits are avaialable
+## Tenable - Critical severity vulnerabilities where exploits are available
 
 ```
 plugin.exploitabilityEase:"Exploits are available" AND severity:critical
