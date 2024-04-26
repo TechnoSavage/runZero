@@ -18,35 +18,27 @@ import uuid
 
 # Configure runZero variables
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
-RUNZERO_BASE_URL = f'{RUNZERO_BASE_URL}/api/v1.0'
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
 RUNZERO_CLIENT_SECRET = os.environ['RUNZERO_CLIENT_SECRET']
 RUNZERO_ORG_ID = os.environ['RUNZERO_ORG_ID']
-RUNZERO_CUSTOM_SOURCE_ID = os.environ['RUNZERO_CUSTOM_SOURCE_ID']
 RUNZERO_SITE_NAME = os.environ['RUNZERO_SITE_NAME']
 RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
-RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
+FW_CUSTOM_SOURCE_ID = os.environ['FW_CUSTOM_SOURCE_ID']
+FW_IMPORT_TASK_NAME = os.environ['FW_IMPORT_TASK_NAME']
 
 # Configure FileWave variables
-FILEWAVE_BASE_URL = os.environ['FW_BASE_URL']
-FILEWAVE_API_URL = f'{FILEWAVE_BASE_URL}/api/inv/api/v1/' # curl -s  -H "Authorization: $auth" https://$server_dns:/api/inv/api/v1/query_result/191
-FILEWAVE_API_KEY = os.environ['FW_API_KEY']
-FILEWAVE_HEADERS = {'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': f'Bearer {FILEWAVE_API_KEY}'}
+FW_BASE_URL = os.environ['FW_BASE_URL']
+FW_API_URL = f'{FW_BASE_URL}/api/inv/api/v1/' # curl -s  -H "Authorization: $auth" https://$server_dns:/api/inv/api/v1/query_result/191
+FW_API_KEY = os.environ['FW_API_KEY']
+FW_REPORT = os.environ['FW_REPORT']
 
 def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset]:
-    '''
-    This is an example function to highlight how to handle converting data from an API into the ImportAsset format that
-    is required for uploading to the runZero platform. This function assumes that the json has been converted into a list 
-    of dictionaries using `json.loads()` (or any similar functions).
-    '''
 
     assets: List[ImportAsset] = []
     for item in json_input:
-        # grab known API attributes from the json dict that are always present
-        #If custom fields created in FileWave align to asset fields in r0 SDK docs
-        #additional attributes can be added here following the pattern
+        # assign known API attributes from the json dict that are always present
+        # if custom fields created in FileWave align to asset fields in r0 SDK docs
+        # additional attributes can be added here following the pattern
         asset_id = item.get('Client_device_id', str(uuid.uuid4()))
         ip = item.get('Client_current_ip_address', '')
         macs = item.get('NetworkInterface_mac_address', [])
@@ -111,30 +103,30 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     the new custom source.
     '''
     # create the runzero client
-    c = runzero.Client()
+    client = runzero.Client()
 
     # try to log in using OAuth credentials
     try:
-        c.oauth_login(RUNZERO_CLIENT_ID, RUNZERO_CLIENT_SECRET)
-    except AuthError as e:
-        print(f'login failed: {e}')
+        client.oauth_login(RUNZERO_CLIENT_ID, RUNZERO_CLIENT_SECRET)
+    except AuthError as error:
+        print(f'login failed: {error}')
         return
 
     # create the site manager to get our site information; set site ID for any new hosts
-    site_mgr = Sites(c)
+    site_mgr = Sites(client)
     site = site_mgr.get(RUNZERO_ORG_ID, RUNZERO_SITE_NAME)
     if not site:
         print(f'unable to find requested site')
         return
 
     # create the import manager to upload custom assets
-    import_mgr = CustomAssets(c)
-    import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=RUNZERO_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=RUNZERO_IMPORT_TASK_NAME))
+    import_mgr = CustomAssets(client)
+    import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=FW_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=FW_IMPORT_TASK_NAME))
 
     if import_task:
-        print(f'task created! view status here: {RUNZERO_BASE_URL}/tasks?task={import_task.id}')
+        print(f'task created! view status here: {RUNZERO_BASE_URL}/api/v1.0/tasks?task={import_task.id}')
 
-def get_assets(url, token, report):
+def get_assets(url=FW_API_URL, token=FW_API_KEY, report=FW_REPORT):
     '''
     Retrieve asset data from specified Filewave report.
         
@@ -144,11 +136,12 @@ def get_assets(url, token, report):
         :raises: ConnectionError: if unable to successfully make GET request to console.
     '''
 
-    url = f"{url}/api/inv/api/v1/query_rexsult/{report}"
+    url = f"{url}/api/inv/api/v1/query_result/{report}"
     params = ''
     payload = ''
     headers = {'Accept': 'application/json',
-               'Authorization': f'Bearer {token}'}
+                    'Content-Type': 'application/json',
+                    'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
         content = response.content
@@ -205,7 +198,7 @@ def main():
     with open('filewave_raw.json', 'r') as input:
         asset_json_raw = json.load(input)
 
-    # asset_json_raw = getAssets(FILEWAVE_API_URL, FILEWAVE_API_KEY)
+    # asset_json_raw = getAssets()
 
     asset_json_formatted = reformat_response(asset_json_raw)
     
