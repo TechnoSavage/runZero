@@ -19,16 +19,13 @@ from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,
 
 # Configure runZero variables
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
-RUNZERO_BASE_URL = f'{RUNZERO_BASE_URL}/api/v1.0'
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
 RUNZERO_CLIENT_SECRET = os.environ['RUNZERO_CLIENT_SECRET']
-RUNZERO_ACCOUNT_TOKEN = os.environ['RUNZERO_ACCOUNT_TOKEN']
 RUNZERO_ORG_ID = os.environ['RUNZERO_ORG_ID']
-RUNZERO_CUSTOM_SOURCE_ID = '96d36f62-1b37-45cf-af0b-7fd451cb7043' #os.environ['RUNZERO_CUSTOM_SOURCE_ID']
 RUNZERO_SITE_NAME = os.environ['RUNZERO_SITE_NAME']
 RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
-RUNZERO_IMPORT_TASK_NAME = 'Zabbix' #os.environ['RUNZERO_IMPORT_TASK_NAME']
-RUNZERO_HEADER = {'Authorization': f'Bearer {RUNZERO_ACCOUNT_TOKEN}'}
+ZABBIX_CUSTOM_SOURCE_ID = os.environ['ZABBIX_CUSTOM_SOURCE_ID']
+ZABBIX_IMPORT_TASK_NAME = os.environ['ZABBIX_IMPORT_TASK_NAME']
 
 # Configure Zabbix variables
 ZABBIX_BASE_URL = os.environ['ZABBIX_BASE_URL']
@@ -47,15 +44,10 @@ ZABBIX_PAYLOAD = json.dumps({"jsonrpc": "2.0", "method": "host.get",
                              "id": 1})
 
 def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset]:
-    '''
-    This is an example function to highlight how to handle converting data from an API into the ImportAsset format that
-    is required for uploading to the runZero platform. This function assumes that the json has been converted into a list 
-    of dictionaries using `json.loads()` (or any similar functions).
-    '''
 
     assets: List[ImportAsset] = []
     for item in json_input:
-        # grab known API attributes from the json dict that are always present
+        # assign known API attributes from the json dict that are always present
         #If custom fields created in Zabbix align to asset fields in r0 SDK docs
         #additional attributes can be added here following the pattern
         item = flatten(item)
@@ -127,28 +119,28 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     the new custom source.
     '''
     # create the runzero client
-    c = runzero.Client()
+    client = runzero.Client()
 
     # try to log in using OAuth credentials
     try:
-        c.oauth_login(RUNZERO_CLIENT_ID, RUNZERO_CLIENT_SECRET)
-    except AuthError as e:
-        print(f'login failed: {e}')
+        client.oauth_login(RUNZERO_CLIENT_ID, RUNZERO_CLIENT_SECRET)
+    except AuthError as error:
+        print(f'login failed: {error}')
         return
 
     # create the site manager to get our site information; set site ID for any new hosts
-    site_mgr = Sites(c)
+    site_mgr = Sites(client)
     site = site_mgr.get(RUNZERO_ORG_ID, RUNZERO_SITE_NAME)
     if not site:
         print(f'unable to find requested site')
         return
 
     # create the import manager to upload custom assets
-    import_mgr = CustomAssets(c)
-    import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=RUNZERO_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=RUNZERO_IMPORT_TASK_NAME))
+    import_mgr = CustomAssets(client)
+    import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=ZABBIX_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=ZABBIX_IMPORT_TASK_NAME))
 
     if import_task:
-        print(f'task created! view status here: {RUNZERO_BASE_URL}/tasks?task={import_task.id}')
+        print(f'task created! view status here: {RUNZERO_BASE_URL}/api/v1.0/tasks?task={import_task.id}')
 
 
 def main():
