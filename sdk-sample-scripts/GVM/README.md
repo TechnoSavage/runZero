@@ -34,8 +34,6 @@ Requirements (Global)
 
 `RUNZERO_BASE_URL` - The domain or IP of the runZero console, minus any resource path e.g. https://console.runzero.com
 
-`RUNZERO_ACCOUNT_TOKEN` - The account API token for the console instance. Found in the console under "Account" -> "Account Settings" -> "Account API keys"
-
 `RUNZERO_CLIENT_ID` - runZero API client ID. Created in the console under "Account" -> "API clients"
 
 `RUNZERO_CLIENT_SECRET` - Associated API client secret to the above ID. Displayed when creating an new API client
@@ -46,9 +44,9 @@ Requirements (Global)
 
 `RUNZERO_SITE_ID` - UUID of the Site to which the integration will create new assts. Found in the console URL after navigating to "Sites" and clicking on a site name
 
-`RUNZERO_CUSTOM_SOURCE_ID` - UUID of the Custom Integration Source. Found in the console URL after navigating to "Accounts" -> "Custom Integrations" and clicking on an  integration name
+`GVM_CUSTOM_SOURCE_ID` - UUID of the Custom Integration Source. Found in the console URL after navigating to "Accounts" -> "Custom Integrations" and clicking on an  integration name
 
-`RUNZERO_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under "Accounts" -> "Custom Integrations"
+`GVM_IMPORT_TASK_NAME` - Name of the Custom Integration Source. Created in the console under "Accounts" -> "Custom Integrations"
 
 `GVM_BASE_URL` - The domain or IP of the GVM instance, minus any resource path e.g. "https://my.gvm.instance" (see Connection Method 3 below)
 
@@ -163,6 +161,5 @@ pipenv shell
 ```
 
 - In your runZero console, navigate to "Account" -> "Custom Integrations" -> "Add custom integration". Name the integration consistent to the parameter RUNZERO_IMPORT_TASK_NAME in the .env file. Optionally upload an image for the source. 
-(This step is optional; the script will create the source if it doesn't already exist.)
 
 - run the script to sync assets. Sync can be scheduled with a job scheduler such as cron
