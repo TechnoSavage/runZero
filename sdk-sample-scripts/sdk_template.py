@@ -20,16 +20,14 @@ from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,
 # Configure runZero variables
 # Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
-RUNZERO_BASE_URL = f'{RUNZERO_BASE_URL}/api/v1.0'
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
 RUNZERO_CLIENT_SECRET = os.environ['RUNZERO_CLIENT_SECRET']
-RUNZERO_ACCOUNT_TOKEN = os.environ['RUNZERO_ACCOUNT_TOKEN']
 RUNZERO_ORG_ID = os.environ['RUNZERO_ORG_ID']
-RUNZERO_CUSTOM_SOURCE_ID = os.environ['RUNZERO_CUSTOM_SOURCE_ID']
 RUNZERO_SITE_NAME = os.environ['RUNZERO_SITE_NAME']
 RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
-RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
-RUNZERO_HEADER = {'Authorization': f'Bearer {RUNZERO_ACCOUNT_TOKEN}'}
+INTEGRATION_CUSTOM_SOURCE_ID = os.environ['INTEGRATION_CUSTOM_SOURCE_ID']
+INTEGRATION_IMPORT_TASK_NAME = os.environ['INTEGRATION_IMPORT_TASK_NAME']
+
 
 # Configure Integration API variables (examples provided)
 # Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
@@ -182,28 +180,28 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     the new custom source.
     '''
     # create the runzero client
-    c = runzero.Client()
+    client = runzero.Client()
 
     # try to log in using OAuth credentials
     try:
-        c.oauth_login(RUNZERO_CLIENT_ID, RUNZERO_CLIENT_SECRET)
-    except AuthError as e:
-        print(f'login failed: {e}')
+        client.oauth_login(RUNZERO_CLIENT_ID, RUNZERO_CLIENT_SECRET)
+    except AuthError as error:
+        print(f'login failed: {error}')
         return
 
     # create the site manager to get our site information; set site ID for any new hosts
-    site_mgr = Sites(c)
+    site_mgr = Sites(client)
     site = site_mgr.get(RUNZERO_ORG_ID, RUNZERO_SITE_NAME)
     if not site:
         print(f'unable to find requested site')
         return
 
     # create the import manager to upload custom assets
-    import_mgr = CustomAssets(c)
-    import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=RUNZERO_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=RUNZERO_IMPORT_TASK_NAME))
+    import_mgr = CustomAssets(client)
+    import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=INTEGRATION_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=INTEGRATION_IMPORT_TASK_NAME))
 
     if import_task:
-        print(f'task created! view status here: {RUNZERO_BASE_URL}/tasks?task={import_task.id}')
+        print(f'task created! view status here: {RUNZERO_BASE_URL}/api/v1.0/tasks?task={import_task.id}')
 
 def parse_response(json_raw):
     '''
