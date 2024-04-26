@@ -6,7 +6,6 @@
 # Prerequisite: pip install runzero-sdk
 # Prerequisite: pip install python-gvm
 
-import itertools
 import os
 import runzero
 import uuid
@@ -18,24 +17,19 @@ from gvm.protocols.gmp import Gmp
 from typing import Any, Dict, List
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
-from runzero.types import (CustomAttribute,ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask)
+from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask)
 
 # Configure runZero variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
-RUNZERO_BASE_URL = f'{RUNZERO_BASE_URL}/api/v1.0'
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
 RUNZERO_CLIENT_SECRET = os.environ['RUNZERO_CLIENT_SECRET']
-RUNZERO_ACCOUNT_TOKEN = os.environ['RUNZERO_ACCOUNT_TOKEN']
 RUNZERO_ORG_ID = os.environ['RUNZERO_ORG_ID']
-RUNZERO_CUSTOM_SOURCE_ID = os.environ['RUNZERO_CUSTOM_SOURCE_ID']
 RUNZERO_SITE_NAME = os.environ['RUNZERO_SITE_NAME']
 RUNZERO_SITE_ID = os.environ['RUNZERO_SITE_ID']
-RUNZERO_IMPORT_TASK_NAME = os.environ['RUNZERO_IMPORT_TASK_NAME']
-RUNZERO_HEADER = {'Authorization': f'Bearer {RUNZERO_ACCOUNT_TOKEN}'}
+GVM_CUSTOM_SOURCE_ID = os.environ['GVM_CUSTOM_SOURCE_ID']
+GVM_IMPORT_TASK_NAME = os.environ['GVM_IMPORT_TASK_NAME']
 
 # Configure GVM variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 GVM_BASE_URL = os.environ['GVM_BASE_URL']
 GVM_PORT = os.environ['GVM_PORT']
 GVM_USERNAME = os.environ['GVM_USERNAME']
@@ -44,17 +38,12 @@ GVM_SOCKET_PATH = os.environ['GVM_SOCKET_PATH']
 GVM_CONN_METHOD = os.environ['GVM_CONN_METHOD']
 
 def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset]:
-    '''
-    This is an example function to highlight how to handle converting data from an API into the ImportAsset format that
-    is required for uploading to the runZero platform. This function assumes that the json has been converted into a list 
-    of dictionaries using `json.loads()` (or any similar functions).
-    '''
 
     assets: List[ImportAsset] = []
     for item in json_input:
-        # grab known API attributes from the json dict that are always present
-        #If custom fields created in GVM align to asset fields in r0 SDK docs
-        #additional attributes can be added here following the pattern
+        # assign known API attributes from the json dict that are always present
+        # if custom fields created in GVM align to asset fields in r0 SDK docs
+        # additional attributes can be added here following the pattern
         baseAttr = flatten(item)
         key_list = list(baseAttr.keys())
         val_list = list(baseAttr.values())
@@ -83,7 +72,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         network = build_network_interface(ips=[ip], mac=mac)
 
         # handle any additional values and insert into custom_attrs
-        custom_attrs: Dict[str, CustomAttribute] = {}
+        custom_attrs: Dict[str] = {}
         # remap json key, value pairs generated from XML to cleaner, more useful pairs
         remap = {}
         for key, value in item.items():
@@ -96,7 +85,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
             if 'severity' in key:
                 remap['severity'] = value
         for key, value in remap.items():
-               custom_attrs[key] = CustomAttribute(str(value)[:1023])
+               custom_attrs[key] = str(value)[:1023]
 
         # Build assets for import
         assets.append(
@@ -110,7 +99,6 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         )
     return assets
 
-# *** Should not need to touch this ***
 def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface:
     ''' 
     This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
@@ -138,28 +126,28 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     the new custom source.
     '''
     # create the runzero client
-    c = runzero.Client()
+    client = runzero.Client()
 
     # try to log in using OAuth credentials
     try:
-        c.oauth_login(RUNZERO_CLIENT_ID, RUNZERO_CLIENT_SECRET)
-    except AuthError as e:
-        print(f'login failed: {e}')
+        client.oauth_login(RUNZERO_CLIENT_ID, RUNZERO_CLIENT_SECRET)
+    except AuthError as error:
+        print(f'login failed: {error}')
         return
 
     # create the site manager to get our site information; set site ID for any new hosts
-    site_mgr = Sites(c)
+    site_mgr = Sites(client)
     site = site_mgr.get(RUNZERO_ORG_ID, RUNZERO_SITE_NAME)
     if not site:
         print(f'unable to find requested site')
         return
 
     # create the import manager to upload custom assets
-    import_mgr = CustomAssets(c)
-    import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=RUNZERO_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=RUNZERO_IMPORT_TASK_NAME))
+    import_mgr = CustomAssets(client)
+    import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=GVM_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=GVM_IMPORT_TASK_NAME))
 
     if import_task:
-        print(f'task created! view status here: {RUNZERO_BASE_URL}/tasks?task={import_task.id}')
+        print(f'task created! view status here: {RUNZERO_BASE_URL}/api/v1.0/tasks?task={import_task.id}')
 
 def socketConnect():
     path = GVM_SOCKET_PATH
@@ -168,8 +156,9 @@ def socketConnect():
     with Gmp(connection=connection) as conn:
         conn.authenticate(GVM_USERNAME, GVM_PASSWORD)
         # get the response message returned as a utf-8 encoded string
-        response = conn.get_hosts()
-        return response
+        hosts = conn.get_hosts()
+        vulns = conn.get_vulnerabilities()
+        return(hosts, vulns)
     
 def sshConnect():
     pass
@@ -194,6 +183,5 @@ def main():
     # Import assets into runZero
     import_data_to_runzero(assets=import_assets)
 
-# *** Should not need to touch this ***
 if __name__ == '__main__':
     main()
