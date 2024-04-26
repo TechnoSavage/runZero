@@ -19,7 +19,6 @@ from typing import Any, Dict, List
 
 # Configure runZero variables
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
-RUNZERO_BASE_URL = f'{RUNZERO_BASE_URL}/api/v1.0'
 RUNZERO_EXPORT_TOKEN = os.environ['RUNZERO_EXPORT_TOKEN']
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
 RUNZERO_CLIENT_SECRET = os.environ['RUNZERO_CLIENT_SECRET']
@@ -168,7 +167,7 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     import_task = import_mgr.upload_assets(org_id=RUNZERO_ORG_ID, site_id=RUNZERO_SITE_ID, custom_integration_id=SHODAN_VULNS_CUSTOM_SOURCE_ID, assets=assets, task_info=ImportTask(name=SHODAN_VULNS_IMPORT_TASK_NAME))
 
     if import_task:
-        print(f'task created! view status here: {RUNZERO_BASE_URL}/tasks?task={import_task.id}')
+        print(f'task created! view status here: {RUNZERO_BASE_URL}/api/v1.0/tasks?task={import_task.id}')
 
 def get_assets(url, token):
     '''
