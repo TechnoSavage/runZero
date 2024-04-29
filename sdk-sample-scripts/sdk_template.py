@@ -49,7 +49,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
     for item in json_input:
         #Assign API attributes from the json dict that correspond to SDK
         item = flatten(item)
-        asset_id = item.get('id', uuid.uuid4)
+        asset_id = item.get('id', str(uuid.uuid4()))
         mac = item.get('custom_api_mac', None)
         model = item.get('custom_api_model_name', '')
         device_type = item.get('custom_api_device', '')
