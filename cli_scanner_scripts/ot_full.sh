@@ -71,7 +71,7 @@ if [[ ! -f $input_list ]]; then
     usage
     exit 1
 fi
-#test if values provided for OT protocol options are valid and normalize to lowercase
+#test if values provided for OT protocol options are valid, exit if invalid
 if [[ ! " ${modbus_valid[*]} " =~ [[:space:]]${modbus}[[:space:]] ]]; then
     echo "Provided modbus identification level is not a valid option ( basic, regular, or extended )."
     usage
