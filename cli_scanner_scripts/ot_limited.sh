@@ -13,8 +13,7 @@ exit 1
 fi
 
 usage () {
-  echo "$PROGNAME: Usage $PROGNAME -i  <target input list>
-  e.g. $PROGNAME -i /path/to/my_scan_targets
+  echo "$PROGNAME: Usage $PROGNAME -i  </path/to/scan_targets_file> [ -c <snmp,community,strings> ]
   -i | --input_list   Text file with list of targets to scan
   -c | --communities  Additional SNMP community strings (comma separated, no spaces)"
   return
