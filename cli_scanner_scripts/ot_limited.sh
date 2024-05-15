@@ -58,6 +58,10 @@ fi
 echo "Preparing OT Limited scan..."
 
 # define parameters to reflect OT limited scan at https://help.runzero.com/docs/playbooks/scanning-ot-networks/#step-3a-create-an-ot-limited-scan-template 
-runzero -i $input_list --host-ping -r 300 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --tcp-ports $ports --probes $probes --snmp-comms $comms
+runzero -i $input_list --host-ping -r 300 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 \
+  --tcp-ports $ports \
+  --probes $probes \
+  --snmp-comms $comms \
+  /
 
 echo "Scan complete!"
