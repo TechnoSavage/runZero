@@ -18,7 +18,7 @@ usage () {
   -c | --communities                                    Additional SNMP community strings (comma separated, no spaces)
   -m | --modbus  <basic | regular (default) | extended> Specify Modbus identification level
   -s | --s7comm  <true | false (default)>               Request s7comm extended information
-  -d | --dnp3    <require | prefer | ignore (default)>" Specify dnp3 banner address discovery
+  -d | --dnp3    <require | prefer | ignore (default)> Specify dnp3 banner address discovery"
   return
 }
 
