@@ -29,7 +29,6 @@ modbus="regular"
 s7comm="false"
 dnp3="ignore"
 probes="layer2,syn,bacnet,dahua-dhip,dns,dtls,ike,ipmi,kerberos,knxnet,l2t,l2tp,lantronix,ldap,mssql,netbios,ntp,openvpn,pca,sip,ssdp,snmp,ssh,tftp,ubnt,vmware,webmin,modbus,ethernetip,s7comm,fins,dnp3"
-cmd="runzero -i $input_list --host-ping -r 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --probes $probes"
 
 while [[ -n $1 ]]; do
     case $1 in
