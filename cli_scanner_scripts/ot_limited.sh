@@ -30,7 +30,7 @@ while [[ -n $1 ]]; do
       -i | --input_list)  shift
                           input_list=$( echo $1 )
                           ;;
-      -c | --communities)    shift
+      -c | --communities) shift
                           comms+=",$1"
                           ;;
       -h | --help)        usage
