@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PROGNAME=$(basename $0)
+
 #Check for root privileges, exit if not run as root user
 if [[ $(id -u) != 0 ]]; then
     cat << EOM
