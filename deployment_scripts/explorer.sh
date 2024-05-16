@@ -18,7 +18,8 @@ else
 fi
 
 usage () {
-  echo "$PROGNAME Usage: $PROGNAME -t  <download token> -u <console URL> -b <binary architecture>
+  echo "$PROGNAME usage: 
+  $PROGNAME -t  <download token> -u <console URL> -b <binary architecture>
   e.g. $PROGNAME -t xxxxxxxxxxxxxxx -c console.runzero.com -b runzero-explorer-linux-amd64
   -t | --token      Download token of Organization
   -u | --url        URL of runZero console
