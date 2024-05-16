@@ -61,13 +61,8 @@ while [[ -n $1 ]]; do
 done
 
 # test that input target list exists and that is a regular file, exit if either condition in not true
-if [[ ! -e $input_list ]]; then
-    echo "input list of targets does not exist; ensure target list exists and rerun script."
-    usage
-    exit 1
-fi
-if [[ ! -f $input_list ]]; then
-    echo "Specified input list is not a regular file."
+if [[ ! -e $input_list ]] || [[ ! -f $input_list ]]; then
+    echo " Provided input list of targets does not exist or is not a regular file."
     usage
     exit 1
 fi
