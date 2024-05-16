@@ -15,7 +15,8 @@ exit 1
 fi
 
 usage () {
-  echo "$PROGNAME usage: $PROGNAME -i  </path/to/scan_targets_file> [ -c <snmp,community,strings> ] [ -m <basic | regular | extended> ] [ -s <true | false> ] [ -d <require | prefer | ignore> ]
+  echo "$PROGNAME usage: 
+  $PROGNAME -i  </path/to/scan_targets_file> [ -c <snmp,community,strings> ] [ -m <basic | regular | extended> ] [ -s <true | false> ] [ -d <require | prefer | ignore> ]
   -i | --input_list                                     Text file with list of targets to scan
   -c | --communities                                    Additional SNMP community strings (comma separated, no spaces)
   -m | --modbus  <basic | regular (default) | extended> Specify Modbus identification level
