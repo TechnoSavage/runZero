@@ -17,7 +17,8 @@ else
 fi
 
 usage () {
-  echo "$PROGNAME usage: $PROGNAME -f  </path/to/filesystem_archive.tar.gz> -d </path/to/database_backup.sql.gz>
+  echo "$PROGNAME usage: 
+  $PROGNAME -f  </path/to/filesystem_archive.tar.gz> -d </path/to/database_backup.sql.gz>
   e.g. $PROGNAME -f runzero-backup-fs.tar.gz -d runzero.sql.gz
   -f | --filesystem    Filesystem backup (tar.gz file)
   -d | --database    PostgreSQL database backup (sql.gz file)"
