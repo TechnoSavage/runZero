@@ -8,7 +8,7 @@ if [[ $(id -u) != 0 ]]; then
 
 This script must be run as root!
 Please rerun with sudo e.g.
-sudo ./ot_full.sh
+sudo ./$PROGNAME
 
 EOM
 exit 1
