@@ -8,7 +8,7 @@ if [[ $(id -u) != 0 ]]; then
 
 This script must be run as root!
 Please rerun with sudo e.g.
-sudo ./$PROGNAME
+sudo ./${PROGNAME}
 
 EOM
 exit 1
@@ -17,9 +17,9 @@ else
 fi
 
 usage () {
-  echo "$PROGNAME usage: 
-  $PROGNAME -f  </path/to/filesystem_archive.tar.gz> -d </path/to/database_backup.sql.gz>
-  e.g. $PROGNAME -f runzero-backup-fs.tar.gz -d runzero.sql.gz
+  echo "${PROGNAME} usage: 
+  ${PROGNAME} -f  </path/to/filesystem_archive.tar.gz> -d </path/to/database_backup.sql.gz>
+  e.g. ${PROGNAME} -f runzero-backup-fs.tar.gz -d runzero.sql.gz
   -f | --filesystem    Filesystem backup (tar.gz file)
   -d | --database    PostgreSQL database backup (sql.gz file)"
   return
@@ -31,10 +31,10 @@ database=
 while [[ -n $1 ]]; do
     case $1 in
       -f | --filesystem)  shift
-                          filesystem=$( echo $1 )
+                          filesystem="$1"
                           ;;
       -d | --database)    shift
-                          database=$( echo $1 )
+                          database="$1"
                           ;;
       -h | --help)        usage
                           exit
@@ -46,13 +46,13 @@ while [[ -n $1 ]]; do
     shift
 done
 
-if [[ ! -e $filesystem ]] || [[ ! -e $database ]]; then
+if [[ ! -e ${filesystem} ]] || [[ ! -e ${database} ]]; then
     echo "Filesystem backup or database backup not found!"
     exit 1
 else
     runzeroctl stop
-    tar -C -zxvf $filesystem
-    su -c "dropdb runzero; gzip -dc $database | psql" postgres
+    tar -C -zxvf ${filesystem}
+    su -c "dropdb runzero; gzip -dc ${database} | psql" postgres
     runzeroctl start
     echo "Restore complete!"
 fi
