@@ -15,8 +15,8 @@ exit 1
 fi
 
 usage () {
-  echo "$PROGNAME usage: 
-  $PROGNAME -i  </path/to/scan_targets_file> [ -c <snmp,community,strings> ] [ -m <basic | regular | extended> ] [ -s <true | false> ] [ -d <require | prefer | ignore> ]
+  echo "${PROGNAME} usage: 
+  ${PROGNAME} -i  </path/to/scan_targets_file> [ -c <snmp,community,strings> ] [ -m <basic | regular | extended> ] [ -s <true | false> ] [ -d <require | prefer | ignore> ]
   -i | --input_list                                     Text file with list of targets to scan
   -c | --communities                                    Additional SNMP community strings (comma separated, no spaces)
   -m | --modbus  <basic | regular (default) | extended> Specify Modbus identification level
@@ -39,10 +39,10 @@ dnp3_valid=( "require" "prefer" "ignore" )
 while [[ -n $1 ]]; do
     case $1 in
       -i | --input_list)  shift
-                          input_list=$( echo $1 )
+                          input_list="$1"
                           ;;
       -c | --communities) shift
-                          comms=$( echo $1 )
+                          comms+=",$1"
                           ;;
       -m | --modbus)      shift
                           modbus=$( echo $1 | tr '[:upper:]' '[:lower:]' )
@@ -64,7 +64,7 @@ while [[ -n $1 ]]; do
 done
 
 # test that input target list exists and that is a regular file, exit if either condition in not true
-if [[ ! -e $input_list ]] || [[ ! -f $input_list ]]; then
+if [[ ! -e ${input_list} ]] || [[ ! -f ${input_list} ]]; then
     echo " Provided input list of targets does not exist or is not a regular file."
     usage
     exit 1
@@ -90,11 +90,11 @@ echo "Preparing OT Full scan..."
 
 # define parameters to reflect OT limited scan at https://help.runzero.com/docs/playbooks/scanning-ot-networks/#step-3b-create-an-ot-full-scan-template 
 
-runzero -i $input_list --host-ping -r 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 \
-  --modbus-identification-level $modbus \
-  --s7comm-request-extended-information $s7comm \
-  --dnp3-banner-address-discovery $dnp3 \
-  --probes $probes \
-  --snmp-comms $comms
+runzero -i ${input_list} --host-ping -r 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 \
+  --modbus-identification-level ${modbus} \
+  --s7comm-request-extended-information ${s7comm} \
+  --dnp3-banner-address-discovery ${dnp3} \
+  --probes ${probes} \
+  --snmp-comms ${comms}
 
   echo "Scan complete!"
