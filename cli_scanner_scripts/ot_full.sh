@@ -47,13 +47,13 @@ while [[ $# -ge 1 ]] && [[ -n ${1} ]]; do
                           comms+=",$1"
                           ;;
       -m | --modbus)      shift
-                          modbus=$( echo $1 | tr '[:upper:]' '[:lower:]' )
+                          modbus=$( echo ${1} | tr '[:upper:]' '[:lower:]' )
                           ;;
       -s | --s7comm)      shift
-                          s7comm=$( echo $1 | tr '[:upper:]' '[:lower:]' )
+                          s7comm=$( echo ${1} | tr '[:upper:]' '[:lower:]' )
                           ;;
       -d | --dnp3)        shift
-                          dnp3=$( echo $1 | tr '[:upper:]' '[:lower:]' )
+                          dnp3=$( echo ${1} | tr '[:upper:]' '[:lower:]' )
                           ;;
       -h | --help)        usage
                           exit
