@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 PROGNAME=$(basename $0)
 
 #Check for root privileges, exit if not run as root user
@@ -36,8 +38,8 @@ s7comm_valid=( "true" "false" )
 dnp3_valid=( "require" "prefer" "ignore" )
 
 
-while [[ -n $1 ]]; do
-    case $1 in
+while [[ $# -ge 1 ]] && [[ -n ${1} ]]; do
+    case ${1} in
       -i | --input_list)  shift
                           input_list="$1"
                           ;;
