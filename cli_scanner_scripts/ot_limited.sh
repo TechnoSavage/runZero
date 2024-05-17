@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 PROGNAME=$(basename $0)
 
 #Check for root privileges, exit if not run as root user
@@ -27,8 +29,8 @@ comms="public,private"
 ports="21,22,23,69,80,123,135,137,161,179,443,445,3389,5040,5900,7547,8080,8443,62078,65535"
 probes="layer2,syn,netbios,ntp,snmp,tftp"
 
-while [[ -n $1 ]]; do
-    case $1 in
+while [[ $# -ge 1 ]] && [[ -n ${1} ]]; do
+    case ${1} in
       -i | --input_list)  shift
                           input_list="$1"
                           ;;
