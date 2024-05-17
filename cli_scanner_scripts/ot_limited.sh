@@ -58,7 +58,6 @@ echo "Preparing OT Limited scan..."
 runzero -i $input_list --host-ping -r 300 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 \
   --tcp-ports $ports \
   --probes $probes \
-  --snmp-comms $comms \
-  /
+  --snmp-comms $comms
 
 echo "Scan complete!"

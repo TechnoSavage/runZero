@@ -95,7 +95,6 @@ runzero -i $input_list --host-ping -r 500 --max-host-rate 20 --max-ttl 64 --max-
   --s7comm-request-extended-information $s7comm \
   --dnp3-banner-address-discovery $dnp3 \
   --probes $probes \
-  --snmp-comms $comms \
-  /
+  --snmp-comms $comms
 
   echo "Scan complete!"
