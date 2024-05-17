@@ -90,7 +90,7 @@ fi
 
 echo "Preparing OT Full scan..."
 
-# define parameters to reflect OT limited scan at https://help.runzero.com/docs/playbooks/scanning-ot-networks/#step-3b-create-an-ot-full-scan-template 
+# define parameters to reflect OT full scan at https://help.runzero.com/docs/playbooks/scanning-ot-networks/#step-3b-create-an-ot-full-scan-template 
 
 runzero -i ${input_list} --host-ping -r 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 \
   --modbus-identification-level ${modbus} \
