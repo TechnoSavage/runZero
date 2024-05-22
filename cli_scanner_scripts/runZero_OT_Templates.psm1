@@ -18,7 +18,11 @@
         .PARAMETER Communities
         [Optional] Additional SNMP v2 community strings to use during the scan provided as comma-separated strings with no spaces.
         'public' and 'private' community strings are specified by default.
-            
+        
+        .PARAMETER Output_Path
+        [Optional] Path to the runZero CLI scanner output directory. If this parameter is not set the output directory
+        set to the present working directory
+        
         .EXAMPLE
         PS> Invoke-LimitedOTScan -Input_List \path\to\my\targets.txt -Scanner_Path \path\to\runzero-scanner.exe -Communities foo,bar   
     #>
@@ -26,7 +30,8 @@ function Invoke-LimitedOTScan {
     param (
         [Parameter(Mandatory=$true)][string]$Input_List,
         [Parameter(mandatory=$false)][string]$Scanner_Path,
-        [Parameter(mandatory=$false)][string]$Communities)
+        [Parameter(mandatory=$false)][string]$Communities,
+        [Parameter(mandatory=$false)][string]$Output_Path)
 
     $Comms = "public,private"
     $Ports = "21,22,23,69,80,123,135,137,161,179,443,445,3389,5040,5900,7547,8080,8443,62078,65535"
@@ -44,10 +49,22 @@ function Invoke-LimitedOTScan {
         $Scanner_Path = "$PWD\runzero-scanner.exe"
     }
 
+    # Set path to runzero CLI scanner output folder to current working directory if not otherwise specified
+    If ( ! $Output_Path ) {
+        $Output_Path = "$PWD"
+    }
+
     # test that the path to the scanner binary exists
     $Exists = Test-Path $Scanner_Path
     If (! ($Exists)) {
         Write-Host "`nProvided path to CLI scanner .exe does not exist."
+        Exit
+    }
+
+    # test that the path to the output folder exists
+    $Exists = Test-Path $Output_Path
+    If (! ($Exists)) {
+        Write-Host "`nProvided path to CLI scanner output does not exist."
         Exit
     }
 
@@ -58,7 +75,7 @@ function Invoke-LimitedOTScan {
     
     Write-Host "`nPreparing OT Limited scan..."
 
-    & $Scanner_Path -i $Input_List --host-ping -r 300 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --tcp-ports $Ports --probes $Probes --snmp-comms $Comms
+    & $Scanner_Path -i $Input_List --host-ping -r 300 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --tcp-ports $Ports --probes $Probes --snmp-comms $Comms -o $Output_Path
 
     Write-Host "`nScan complete!"
 }
@@ -79,9 +96,14 @@ function Invoke-LimitedOTScan {
         [Optional] Path to the runZero CLI scanner executable. If this parameter is not set the location of the scanner
         executable is assumed to be in the same directory as this module and is named "runzero-scanner.exe"
 
+        .PARAMETER Output_Path
+        [Optional] Path to the runZero CLI scanner output directory. If this parameter is not set the output directory
+        set to the present working directory
+
         .PARAMETER Communities
         [Optional] Additional SNMP v2 community strings to use during the scan.
         'public' and 'private' community strings are specified by default.   
+        
         .PARAMETER Modbus
         [Optional] Specify Modbus identification level.
         Options are basic, regular, or extended.
@@ -105,6 +127,7 @@ function Invoke-FullOTScan {
         [Parameter(Mandatory=$true)][string]$Input_List,
         [Parameter(mandatory=$false)][string]$Scanner_Path,
         [Parameter(mandatory=$false)][string]$Communities,
+        [Parameter(mandatory=$false)][string]$Output_Path,
         [Parameter(mandatory=$false)][ValidateSet('basic', 'regular', 'default')][string]$Modbus,
         [Parameter(mandatory=$false)][ValidateSet('true', 'false')][string]$S7comm,
         [Parameter(mandatory=$false)][ValidateSet('require', 'prefer', 'ignore')][string]$Dnp3)
@@ -135,10 +158,22 @@ function Invoke-FullOTScan {
         $Scanner_Path = "$PWD\runzero-scanner.exe"
     }
 
+    # Set path to runzero CLI scanner output folder to current working directory if not otherwise specified
+    If ( ! $Output_Path ) {
+        $Output_Path = "$PWD"
+    }
+
     # test that the path to the scanner binary exists
     $Exists = Test-Path $Scanner_Path
     If (! ($Exists)) {
         Write-Host "`nProvided path to CLI scanner .exe does not exist."
+        Exit
+    }
+
+    # test that the path to the output folder exists
+    $Exists = Test-Path $Output_Path
+    If (! ($Exists)) {
+        Write-Host "`nProvided path to CLI scanner output does not exist."
         Exit
     }
 
@@ -149,7 +184,7 @@ function Invoke-FullOTScan {
 
     Write-Host "`nPreparing OT Full scan..."
 
-    & $Scanner_Path -i $Input_List --host-ping -r 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --modbus-identification-level $Modbus --s7comm-request-extended-information $S7comm --dnp3-banner-address-discovery $Dnp3 --probes $Probes --snmp-comms $Comms
+    & $Scanner_Path -i $Input_List --host-ping -r 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --modbus-identification-level $Modbus --s7comm-request-extended-information $S7comm --dnp3-banner-address-discovery $Dnp3 --probes $Probes --snmp-comms $Comms -o $Output_Path
 
     Write-Host "`nScan complete!"
 }
