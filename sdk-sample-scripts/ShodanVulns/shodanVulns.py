@@ -127,7 +127,7 @@ def build_vuln(address, ports, detail):
         custom_attrs[key] = str(value)[:1023]
 
     return Vulnerability(id=identifier,
-                         #cve=cve_id,   #runZero-sdk regex check is too restrictive for updated CVE ID formats (as few a 4 final digits to 7 or more)
+                         cve=cve_id,
                          name=vuln_name,
                          description=vuln_description,
                          serviceAddress=service_address,
