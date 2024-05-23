@@ -8,7 +8,7 @@
         Details for the scan template can be found at:
         https://help.runzero.com/docs/playbooks/scanning-ot-networks/#step-3a-create-an-ot-limited-scan-template 
 
-        .PARAMETER Input_List
+        .PARAMETER Input_Targets
         [Required] Path to a text file containing a list of subnets, IPs, ASNs, and/or Domains to define the scan scope.
 
         .PARAMETER Scanner_Path
@@ -24,11 +24,11 @@
         set to the present working directory
         
         .EXAMPLE
-        PS> Invoke-LimitedOTScan -Input_List \path\to\my\targets.txt -Scanner_Path \path\to\runzero-scanner.exe -Communities foo,bar   
+        PS> Invoke-LimitedOTScan -Input_Targets \path\to\my\targets.txt -Scanner_Path \path\to\runzero-scanner.exe -Communities foo,bar   
     #>
 function Invoke-LimitedOTScan {
     param (
-        [Parameter(Mandatory=$true)][string]$Input_List,
+        [Parameter(Mandatory=$true)][string]$Input_Targets,
         [Parameter(mandatory=$false)][string]$Scanner_Path,
         [Parameter(mandatory=$false)][string]$Communities,
         [Parameter(mandatory=$false)][string]$Output_Path)
@@ -38,7 +38,7 @@ function Invoke-LimitedOTScan {
     $Probes = "connect,layer2,syn,netbios,ntp,snmp,tftp"
     
     # test that input target list exists
-    $Exists = Test-Path $Input_List
+    $Exists = Test-Path $Input_Targets
     If (! ($Exists)) {
         Write-Host "`nProvided path to CLI scanner .exe does not exist."
         Exit
@@ -75,7 +75,7 @@ function Invoke-LimitedOTScan {
     
     Write-Host "`nPreparing OT Limited scan..."
 
-    & $Scanner_Path -i $Input_List --host-ping -r 300 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --tcp-ports $Ports --probes $Probes --snmp-comms $Comms -o $Output_Path
+    & $Scanner_Path --input-targets $Input_Targets --host-ping --rate 300 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --tcp-ports $Ports --probes $Probes --snmp-comms $Comms --output $Output_Path
 
     Write-Host "`nScan complete!"
 }
@@ -89,7 +89,7 @@ function Invoke-LimitedOTScan {
         Details for the scan template can be found at:
         https://help.runzero.com/docs/playbooks/scanning-ot-networks/#step-3b-create-an-ot-full-scan-template
 
-        .PARAMETER Input_List
+        .PARAMETER Input_Targets
         [Required] Path to a text file containing a list of subnets, IPs, ASNs, and/or Domains to define the scan scope.
 
         .PARAMETER Scanner_Path
@@ -120,11 +120,11 @@ function Invoke-LimitedOTScan {
         Defaults to ignore if left unspecified. 
 
         .EXAMPLE
-        PS> Invoke-LimitedOTScan -Input_List \path\to\my\targets.txt -Scanner_Path \path\to\runzero-scanner.exe -Communities foo,bar -Modbus extended -S7comm true -Dnp3 prefer
+        PS> Invoke-LimitedOTScan -Input_Targets \path\to\my\targets.txt -Scanner_Path \path\to\runzero-scanner.exe -Communities foo,bar -Modbus extended -S7comm true -Dnp3 prefer
     #>
 function Invoke-FullOTScan {
     param (
-        [Parameter(Mandatory=$true)][string]$Input_List,
+        [Parameter(Mandatory=$true)][string]$Input_Targets,
         [Parameter(mandatory=$false)][string]$Scanner_Path,
         [Parameter(mandatory=$false)][string]$Communities,
         [Parameter(mandatory=$false)][string]$Output_Path,
@@ -147,7 +147,7 @@ function Invoke-FullOTScan {
     $Probes = "connect,layer2,syn,bacnet,dahua-dhip,dns,dtls,ike,ipmi,kerberos,knxnet,l2t,l2tp,lantronix,ldap,mssql,netbios,ntp,openvpn,pca,sip,ssdp,snmp,ssh,tftp,ubnt,vmware,webmin,modbus,ethernetip,s7comm,fins,dnp3"
 
     # test that input target list exists
-    $Exists = Test-Path $Input_List
+    $Exists = Test-Path $Input_Targets
     If ( ! ($Exists)) {
         Write-Host "`nProvided input list of targets does not exist."
         Exit
@@ -184,7 +184,7 @@ function Invoke-FullOTScan {
 
     Write-Host "`nPreparing OT Full scan..."
 
-    & $Scanner_Path -i $Input_List --host-ping -r 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --modbus-identification-level $Modbus --s7comm-request-extended-information $S7comm --dnp3-banner-address-discovery $Dnp3 --probes $Probes --snmp-comms $Comms -o $Output_Path
+    & $Scanner_Path --input-targets $Input_Targets --host-ping --rate 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --modbus-identification-level $Modbus --s7comm-request-extended-information $S7comm --dnp3-banner-address-discovery $Dnp3 --probes $Probes --snmp-comms $Comms --output $Output_Path
 
     Write-Host "`nScan complete!"
 }
