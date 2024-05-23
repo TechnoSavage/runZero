@@ -18,12 +18,13 @@ fi
 
 usage () {
   echo "${PROGNAME} usage: 
-  ${PROGNAME} -i  </path/to/scan_targets_file> [ -c <snmp,community,strings> ] [ -m <basic | regular | extended> ] [ -s <true | false> ] [ -d <require | prefer | ignore> ]
+  ${PROGNAME} -i  </path/to/scan_targets_file> [ -c <snmp,community,strings> ] [ -m <basic | regular | extended> ] [ -s <true | false> ] [ -d <require | prefer | ignore> ] [ -o <path/to/output/directory> ]
   -i | --input_list                                     Text file with list of targets to scan
   -c | --communities                                    Additional SNMP community strings (comma separated, no spaces)
   -m | --modbus  <basic | regular (default) | extended> Specify Modbus identification level
   -s | --s7comm  <true | false (default)>               Request s7comm extended information
-  -d | --dnp3    <require | prefer | ignore (default)> Specify dnp3 banner address discovery"
+  -d | --dnp3    <require | prefer | ignore (default)>  Specify dnp3 banner address discovery
+  -o | --output                                         Path to output directory for scan results"
   return
 }
 
@@ -36,6 +37,7 @@ probes="layer2,syn,bacnet,dahua-dhip,dns,dtls,ike,ipmi,kerberos,knxnet,l2t,l2tp,
 modbus_valid=( "basic" "regular" "default" )
 s7comm_valid=( "true" "false" )
 dnp3_valid=( "require" "prefer" "ignore" )
+output=${PWD}
 
 
 while [[ $# -ge 1 ]] && [[ -n ${1} ]]; do
@@ -55,6 +57,9 @@ while [[ $# -ge 1 ]] && [[ -n ${1} ]]; do
       -d | --dnp3)        shift
                           dnp3=$( echo ${1} | tr '[:upper:]' '[:lower:]' )
                           ;;
+      -o | --output)      shift
+                          output="$1"
+                          ;;
       -h | --help)        usage
                           exit
                           ;;
@@ -71,6 +76,14 @@ if [[ ! -e ${input_list} ]] || [[ ! -f ${input_list} ]]; then
     usage
     exit 1
 fi
+
+# test that output directory exists and that is a directory, exit if either condition in not true
+if [[ ! -e ${output} ]] || [[ ! -d ${output} ]]; then
+    echo " Provided output directory does not exist or is not a directory."
+    usage
+    exit 1
+fi
+
 #test if values provided for OT protocol options are valid, exit if invalid
 if [[ ! " ${modbus_valid[*]} " =~ [[:space:]]${modbus}[[:space:]] ]]; then
     echo "Provided modbus identification level is not a valid option ( basic, regular, or extended )."
@@ -97,6 +110,7 @@ runzero -i ${input_list} --host-ping -r 500 --max-host-rate 20 --max-ttl 64 --ma
   --s7comm-request-extended-information ${s7comm} \
   --dnp3-banner-address-discovery ${dnp3} \
   --probes ${probes} \
-  --snmp-comms ${comms}
+  --snmp-comms ${comms} \
+  --output ${output}
 
   echo "Scan complete!"
