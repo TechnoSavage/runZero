@@ -1,0 +1,3 @@
+
+pandas>=2.1.2
+runzero-sdk>=0.8.2
