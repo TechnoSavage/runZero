@@ -48,7 +48,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         # example values, adjust as needed
         asset_id = str(uuid.uuid4())
         ip = item.get('IP address')
-        mac = item.get('MAC address')
+        mac = item.get('MAC address', '')
         name = item.get('hostname', '')
 
         # create the network interfaces
