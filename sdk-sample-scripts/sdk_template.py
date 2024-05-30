@@ -137,7 +137,10 @@ def build_vuln(vuln_details):
     vuln_description = vuln_detail.get('vulnerabilities_0_cve_descriptions_0_value')[:1023]
     service_address = IPv4Address(ip_address('address'))
     service_port = vuln_detail('ports')
-    exploit = vuln_detail.get()
+    exploitability = vuln_detail.get('cvssMetricV31_exploitabilityScore')
+    if not exploitability:
+        exploitability = vuln_detail.get('cvssMetricV2_exploitabilityScore')
+    exploitable = True if float(exploitability) >= 5.0 else False
     service_transport = vuln_detail.get()
     cvss2_base_score = vuln_detail.get('cvssV2_baseScore')
     if cvss2_base_score and cvss2_base_score != '':
@@ -164,7 +167,7 @@ def build_vuln(vuln_details):
                          serviceAddress=service_address,
                          servicePort=service_port,
                          serviceTransport=service_transport,
-                         exploitable=exploit,
+                         exploitable=exploitable,
                          cvss2BaseScore=cvss2_base_score,
                          cvss3BaseScore=cvss3_base_score,
                          riskScore=risk_score,
