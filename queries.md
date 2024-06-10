@@ -257,13 +257,13 @@ NOT miradore.name:"%" AND (type:desktop OR type:laptop OR type:mobile)
 ### Linux VMs
 
 ```
-os:Linux AND (source:VMware or attribute:virtual)
+os:Linux AND (source:VMware OR attribute:virtual)
 ```
 
 ### Windows VMs
 
 ```
-os:Windows AND (source:VMware or attribute:virtual)
+os:Windows AND (source:VMware OR attribute:virtual)
 ```
 
 ### VMs not syncing time with host
@@ -313,7 +313,7 @@ type:"IP Camera" OR type:"thermostat" OR type:"Amazon Device" OR hw:"Google Chro
 ### Building management & HVAC
 
 ```
-type:bacnet or protocol:bacnet or os:"%liebert%" or os:"%avtech%" or os:ebmgr or type:thermostat
+type:bacnet OR protocol:bacnet OR os:"%liebert%" OR os:"%avtech%" OR os:ebmgr OR type:thermostat
 ```
 
 ### Access controls
@@ -325,13 +325,13 @@ type:"access control"
 ### Audio equipment
 
 ```
-type:"network audio" or type:"ip phone" or type:"voice assistant" or type:"SIP gateway"
+type:"network audio" OR type:"ip phone" OR type:"voice assistant" OR type:"SIP gateway"
 ```
 
 ### Ethernet converter (serial or other)
 
 ```
-type:"ethernet io module" or os.vendor:"lantronix" or os:"%adam%" or hw:"advantech"
+type:"ethernet io module" OR os.vendor:"lantronix" OR os:"%adam%" OR hw:"advantech"
 ```
 
 ### Video related assets
@@ -399,23 +399,23 @@ snmp.arpcache.ports:"lo"
 ### Cisco device with specific IP assigned to loopback interface:
 
 ```
-snmp.arpcache.ports:"lo" and snmp.interfaceAddrs:"<loopback IP>"
+snmp.arpcache.ports:"lo" AND snmp.interfaceAddrs:"<loopback IP>"
 ```
 
 e.g.
 
 ```
-snmp.arpcache.ports:"lo" and snmp.interfaceAddrs:"192.168.100.1"
+snmp.arpcache.ports:"lo" AND snmp.interfaceAddrs:"192.168.100.1"
 ```
 
 ```
-snmp.arpcache.ports:"lo" and snmp.interfaceAddrs:"192.168.100.1/255.255.255.0"
+snmp.arpcache.ports:"lo" AND snmp.interfaceAddrs:"192.168.100.1/255.255.255.0"
 ```
 
 ### Soon to expire TLS certs but not already expired certs
 
 ```
-_asset.protocol:tls AND tls.notAfterTS:<6weeks AND not tls.notAfterTS:<now
+_asset.protocol:tls AND tls.notAfterTS:<6weeks AND NOT tls.notAfterTS:<now
 ```
 
 ### Identify Fortra FileCatalyst services
@@ -567,7 +567,7 @@ vulnerability.threatIntel:"%Cisa_Known_Exploited_Vulns%"
 ### Qualys - Reported by Qualys but do not have the endpoint agent installed
 
 ```
-source:qualys and not @qualys.dev.host.trackingMethod:="AGENT"
+source:qualys AND NOT @qualys.dev.host.trackingMethod:="AGENT"
 ```
 
 ### Qualys - Reported by qualys and found via vuln scan
@@ -579,7 +579,7 @@ source:qualys and not @qualys.dev.host.trackingMethod:="AGENT"
 ### Qualys - Endpoints that could host a Qualys endpoint agent but do not have one installed
 
 ```
-not @qualys.dev.host.trackingMethod:="AGENT" and (type:server or type:laptop or type:desktop)
+NOT @qualys.dev.host.trackingMethod:="AGENT" AND (type:server OR type:laptop OR type:desktop)
 ```
 
 # Wireless Queries:
