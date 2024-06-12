@@ -315,7 +315,7 @@ type:bacnet
 type:dvr AND os:hikvision
 ```
 
-### smart home IoT devices
+### Smart home IoT devices
 
 ```
 type:"IP Camera" OR type:"thermostat" OR type:"Amazon Device" OR hw:"Google Chromecast" OR type:"Game Console" OR type:"Robotic Cleaner" OR type:"Nest Device" OR type:"Network Audio" OR type:"Smart TV" OR type:"VR Headset" OR type:"Voice Assistant"
