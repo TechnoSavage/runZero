@@ -19,6 +19,11 @@
 
 # Asset Queries:
 
+###  Assets where standard support is expired
+```
+os_eol_expired:true
+```
+
 ### Assets where both OS support and extended support are expired
 
 ```
@@ -29,6 +34,12 @@ os_eol:<now AND os_eol_extended:<now
 
 ```
 os_eol:<now AND os_eol_extended:>now
+```
+
+### Assets where support ends within 6 months
+
+```
+(os_eol:>now AND and os_eol:<6months) OR (os_eol:<now AND os_eol_extended:>now AND os_eol_extended:<6months)
 ```
 
 ### EOL Linux operating systems
