@@ -469,6 +469,24 @@ test.pciComplianceStatus:"fail"
 plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" AND (severity:high OR severity:critical)
 ```
 
+### Tenable - Newly reported critical severity vulns on the KEV with 15 days to remediate per CISA guidance
+
+```
+source:tenable AND plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" AND severity:critical AND firstFoundTS:<24hours
+```
+
+### Tenable - Newly reported high severity vulns on the KEV with 30 days to rememdiate
+
+```
+source:tenable AND plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" AND severity:high AND firstFoundTS:<24hours
+```
+
+### Tenable - Newly reported KEV vulns with 6 months to remediate per BOD 22-01
+
+```
+plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" AND firstFoundTS:<24hours
+```
+
 ### Tenable - Critical severity vulnerabilities where exploits are available
 
 ```
