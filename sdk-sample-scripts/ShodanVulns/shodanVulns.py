@@ -9,6 +9,7 @@ import json
 import os
 import requests
 import runzero
+import time
 import uuid
 from flatten_json import flatten
 from ipaddress import ip_address
@@ -89,11 +90,11 @@ def build_vuln(address, ports, detail):
     This function maps vulnerability information to runZero attribute fields and assigns all key, value pairs to
     vulnerability custom attributes
     '''
-    ranking = {'NONE': 0,
-               'LOW': 1,
-               'MEDIUM': 2,
-               'HIGH': 3,
-               'CRITICAL': 4}
+    ranking_map = {'NONE': 0,
+                   'LOW': 1,
+                   'MEDIUM': 2,
+                   'HIGH': 3,
+                   'CRITICAL': 4}
 
     detail = flatten(detail)
     identifier = detail.get('vulnerabilities_0_cve_id')
@@ -106,7 +107,10 @@ def build_vuln(address, ports, detail):
     #develop better logic for assigning port to CVE
     # likely a different function to parse CVE details and assign likely port from provided list
     service_port = ports[0]
-    #exploit = detail.get()
+    exploitability = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV31_0_exploitabilityScore')
+    if not exploitability:
+        exploitability = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV2_0_exploitabilityScore')
+    exploitable = True if float(exploitability) >= 5.0 else False
     #service_transport = detail.get()[:255]
     cvss2_base_score = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV2_0_cvssData_baseScore')
     if cvss2_base_score and cvss2_base_score != '':
@@ -118,9 +122,9 @@ def build_vuln(address, ports, detail):
     # risk_rank = detail.get()
     # severity_score = detail.get()
     severity_rank = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV31_0_cvssData_baseSeverity')
-    if severity_rank and severity_rank == '':
-        severity_rank = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV2_0_cvssData_baseSeverity')
-    severity_rank = ranking[severity_rank]
+    if not severity_rank or severity_rank and severity_rank == '':
+        severity_rank = detail.get('vulnerabilities_0_cve_metrics_cvssMetricV2_0_cvssData_baseSeverity', 'NONE')
+    severity_rank = ranking_map[severity_rank]
     solution = detail.get('vulnerabilities_0_cve_cisaRequiredAction', '')[:1023]
     custom_attrs: Dict[str] = {}
     for key, value in detail.items():
@@ -132,7 +136,7 @@ def build_vuln(address, ports, detail):
                          description=vuln_description,
                          serviceAddress=service_address,
                          servicePort=service_port,
-                         #exploitable=exploit,
+                         exploitable=exploitable,
                          cvss2BaseScore=cvss2_base_score,
                          cvss3BaseScore=cvss3_base_score,
                          severityRank=severity_rank,
@@ -217,16 +221,22 @@ def parse_assets(data):
     except TypeError as error:
         raise error
     
-def match_nvd(url, data):
+def match_nvd(url, data, retries=3, delay=5, rate_limit=5, window=30):
     '''
     Retrieve CVE details from NVD.
         
         :param url: A string, API URL of NVD.
-        :param data: A Dict, containing the CVEs to retrieve details for
+        :param data: A Dict, containing the CVEs to retrieve details for.
+        :param retries: An integer, number of retry attempts for 403 errors.
+        :param delay: An integer, delay in seconds between retry attempts.
+        :param rate_limit: An integer, maximum number of requests in a rolling window.
+        :param window: An integer, rolling window duration in seconds.
         :returns: a dict, JSON object of assets.
         :raises: ConnectionError: if unable to successfully make GET request to NVD API.
     '''
     vulns = []
+    request_times = []
+
     try:
         for asset in data:
             record = {}
@@ -237,9 +247,35 @@ def match_nvd(url, data):
             for cve in asset['cves']:
                 params = {'cveId': cve.upper()}
                 headers = {'Accept': 'application/json'}
-                response = requests.get(url, headers=headers, params=params)
-                cve_details = json.loads(response.content)
-                record['cve_details'].append(cve_details)
+
+                for attempt in range(retries):
+                    # Check the rate limit
+                    current_time = time.time()
+                    request_times = [t for t in request_times if current_time - t < window]
+                    if len(request_times) >= rate_limit:
+                        sleep_time = window - (current_time - request_times[0])
+                        print(f"Rate limit reached. Sleeping for {sleep_time:.2f} seconds.")
+                        time.sleep(sleep_time)
+                        request_times = request_times[1:]
+
+                    response = requests.get(url, headers=headers, params=params)
+                    request_times.append(time.time())
+
+                    if response.status_code == 200:
+                        cve_details = json.loads(response.content)
+                        record['cve_details'].append(cve_details)
+                        break
+                    elif response.status_code == 403:
+                        print(f"Failed to retrieve data for CVE {cve}: {response.content}")
+                        if attempt < retries - 1:
+                            print(f"Retrying in {delay} seconds...")
+                            time.sleep(delay)
+                        else:
+                            record['cve_details'].append({})
+                    else:
+                        print(f"Failed to retrieve data for CVE {cve}: {response.content}")
+                        record['cve_details'].append({})
+                        break
             vulns.append(record)
         return vulns
     except ConnectionError as error:
