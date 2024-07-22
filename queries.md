@@ -233,7 +233,7 @@ NOT miradore.name:"%" AND (type:desktop OR type:laptop OR type:mobile)
 @tenable.dev.lastScanTimeTS:>"2weeks"
 ```
 
-### Assets scanned by Tenable over an 8 ACR (asset cirticality rating) score:
+### Assets scanned by Tenable over an 8 ACR (asset criticality rating) score:
 
 ```
 (alive:t OR scanned:f) AND has:"@tenable.dev.acrScore" AND @tenable.dev.acrScore:"=8"
