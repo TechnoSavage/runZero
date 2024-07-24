@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    taskSearch.py, version 0.3
+    taskSearch.py, version 0.4
     This script, when provided one or more IPs as an argument or in a file, will return the first and last tasks that discovered an asset,
     with relevant attributes, as well as any other task with a scope that could potentially discover the asset."""
 
@@ -22,16 +22,18 @@ def parseArgs():
                         required=False)
     parser.add_argument('-iL', '--input-list', dest='targetFile', help='Text file with scan targets. This argument will take priority over the .env file', 
                         required=False, default=os.environ["TARGETS"])
-    parser.add_argument('-d', '--deep-search', dest='deep', help='With this option enabled the dask data for possible matches is temporarily downloaded and searched for the IP address.', 
+    parser.add_argument('-d', '--deep-search', dest='deep', help='With this option enabled the task data for possible matches is temporarily downloaded and searched for the IP address.', 
                         action='store_true', required=False)
+    parser.add_argument('-e', '--exclude', dest='exclude', help='add IP(s) as an exclusion to recurring tasks; limited excludes from first and last seen tasks, extended adds possible tasks.', 
+                        choices=['limited','extended'], required=False, default='')
     parser.add_argument('-u', '--url', dest='consoleURL', help='URL of console. This argument will take priority over the .env file', 
                         required=False, default=os.environ["RUNZERO_BASE_URL"])
     parser.add_argument('-k', '--key', dest='token', help='Prompt for Organization API key (do not enter at command line). This argument will take priority over the .env file', 
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
-    parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
+    parser.add_argument('-p', '--path', help='Path to write temporary scan file(s) downloads. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.3')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.4')
     return parser.parse_args()
 
 def assignTaskQuery(address):
@@ -98,7 +100,7 @@ def getTask(url, token, taskID):
     """ Retrieve Task from Organization corresponding to supplied task_id.
 
            :param url: A string, URL of the runZero console.
-           :param token: A string, Account API Key.
+           :param token: A string, Organization API Key.
            :param taskID: A string, UUID of runZero task.
            :returns: A JSON object, runZero task data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
@@ -176,12 +178,34 @@ def deleteTaskData(taskID, path):
         return
     except IOError as error:
         raise error
+    
+def autoExclude(url, token, address, taskID):
+    """ Apply address as exclusion to task corresponding to supplied task_id.
+
+           :param url: A string, URL of the runZero console.
+           :param token: A string, Organization API Key.
+           :param taskID: A string, UUID of runZero task.
+           :returns: NoneType.
+           :raises: ConnectionError: if unable to successfully make PATCH request to console."""
+    
+    url = f"{url}/api/v1.0/org/tasks/{taskID}" 
+    headers = {'Accept': 'application/json',
+               'Authorization': f'Bearer {token}'}
+    payload = {'params': {'excludes': address}}
+    try:
+        response = requests.patch(url, headers=headers, payload=payload)
+        if response.status_code == 200:
+            return 'success'
+        else:
+            return 'fail' 
+    except ConnectionError as error:
+        raise error
 
 def getPossibleTasks(url, token, query): 
     """ Retrieve Tasks from Organization corresponding to supplied token.
 
            :param url: A string, URL of the runZero console.
-           :param token: A string, Account API Key.
+           :param token: A string, Organization API Key.
            :returns: A JSON object, runZero task data.
            :raises: ConnectionError: if unable to successfully make GET request to console."""
     
@@ -198,7 +222,7 @@ def getPossibleTasks(url, token, query):
     except ConnectionError as error:
         raise error
     
-def buildReportEntry(url, token, address, deepDiscovery, path):
+def buildReportEntry(url, token, address, deepDiscovery, path, exclusion):
     """ Build a report of the assets and related tasks data based on IP address.
      
         :param url: A string, URL of the runZero console.
@@ -222,6 +246,9 @@ def buildReportEntry(url, token, address, deepDiscovery, path):
         firstDiscovered['task_site_id'] = firstTaskParams['site_id']
         firstDiscovered['task_site_name'] = firstTaskParams['site_name']
         firstDiscovered['task_type'] = firstTaskParams['type']
+        firstDiscovered['recurring'] = firstTaskParams['recur']
+        if exclusion in ('limited', 'extended') and firstTaskParams['recur'] == 'true':
+            firstDiscovered['excluded'] = autoExclude(url, token, address, firstTaskParams['id'])
         entry['first_discovery'] = firstDiscovered
     #Last task discovery information
     if discovered['last_task_id'] != "NA":
@@ -236,6 +263,9 @@ def buildReportEntry(url, token, address, deepDiscovery, path):
         lastDiscovered['task_site_id'] = lastTaskParams['site_id']
         lastDiscovered['task_site_name'] = lastTaskParams['site_name']
         lastDiscovered['task_type'] = lastTaskParams['type']
+        lastDiscovered['recurring'] = lastTaskParams['recur']
+        if exclusion in ('limited', 'extended') and lastTaskParams['recur'] == 'true':
+            lastDiscovered['excluded'] = autoExclude(url, token, address, lastTaskParams['id'])
         entry['last_discovery'] = lastDiscovered
     query = assignTaskQuery(address)
     #Return all tasks whose scope could enumerate the target
@@ -254,6 +284,7 @@ def buildReportEntry(url, token, address, deepDiscovery, path):
             possible['task_site_id'] = task['site_id']
             possible['task_site_name'] = task['site_name']
             possible['task_type'] = task['type']
+            possible['recurring'] = task['recur']
             if deepDiscovery:
                 writeTaskData(url, token, task['id'], path)
                 instances = searchTaskData(address, task['id'], path)
@@ -262,10 +293,13 @@ def buildReportEntry(url, token, address, deepDiscovery, path):
                     possible['task_has_seen_ip'] = 'True'
                 else:
                     possible['task_has_seen_ip'] = 'False'
+            if exclusion == 'extended' and task['recur'] == 'true':
+                possible['excluded'] = autoExclude(url, token, address, task['id'])
             possibleList.append(possible)
     entry['tasks_with_discovery_potential'] = possibleList
     return entry
 
+#Output formats require some finessing
 def outputFormat(format, fileName, data):
     if format == 'json':
         fileName = f'{fileName}.json'
@@ -320,14 +354,11 @@ def main():
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
-    deep = False
-    if args.deep:
-        deep = True
     targets = targetList(args)
     #Asset query to report last task discovery
     report = []
     for address in targets:
-        entry = buildReportEntry(args.consoleURL, token, address, deep, args.path)
+        entry = buildReportEntry(args.consoleURL, token, address, args.deep, args.path, args.exclude)
         report.append(entry)
     outputFormat(args.output, fileName, report)
 
