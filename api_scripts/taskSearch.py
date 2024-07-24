@@ -1,13 +1,15 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    taskSearch.py, version 0.2
+    taskSearch.py, version 0.3
     This script, when provided one or more IPs as an argument or in a file, will return the first and last tasks that discovered an asset,
     with relevant attributes, as well as any other task with a scope that could potentially discover the asset."""
 
 import argparse
 import datetime
+import gzip
 import json
 import os
 import re
+import subprocess
 import pandas as pd
 import requests
 from getpass import getpass
@@ -18,8 +20,10 @@ def parseArgs():
     parser = argparse.ArgumentParser(description="Retrieve all hardware specific attributes.")
     parser.add_argument('-t', '--targets', dest='targets', help='Comma separated list (no spaces) of IPs to locate.', 
                         required=False)
-    parser.add_argument('-iL', '--input-list', dest='targetFile', help='Text file with scan targets.', 
+    parser.add_argument('-iL', '--input-list', dest='targetFile', help='Text file with scan targets. This argument will take priority over the .env file', 
                         required=False, default=os.environ["TARGETS"])
+    parser.add_argument('-d', '--deep-search', dest='deep', help='With this option enabled the dask data for possible matches is temporarily downloaded and searched for the IP address.', 
+                        action='store_true', required=False)
     parser.add_argument('-u', '--url', dest='consoleURL', help='URL of console. This argument will take priority over the .env file', 
                         required=False, default=os.environ["RUNZERO_BASE_URL"])
     parser.add_argument('-k', '--key', dest='token', help='Prompt for Organization API key (do not enter at command line). This argument will take priority over the .env file', 
@@ -27,7 +31,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.2')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.3')
     return parser.parse_args()
 
 def assignTaskQuery(address):
@@ -75,7 +79,7 @@ def getAssets(url, token, address):
 
     url = f"{url}/api/v1.0/export/org/assets.jsonl"
     params = {'search': f'source:runzero and address:{address}',
-              'fields': 'id, addresses, names, os, hw, first_task_id, last_task_id, first_agent_id, last_agent_id'}
+              'fields': 'id, addresses, names, os, hw, first_task_id, last_task_id, first_agent_id, last_agent_id, agent_name, site_id, site_name'}
     payload = ''
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
@@ -109,6 +113,69 @@ def getTask(url, token, taskID):
         return data
     except ConnectionError as error:
         raise error
+    
+def writeTaskData(url, token, taskID, path):
+    """ Download and write scan data (.json.gz) for each task ID provided.
+
+           :param url: A string, URL of the runZero console.
+           :param token: A string, Organization API key.
+           :param taskID: A string, ID of scan task to download.
+           :param path: A string, path to write files to.
+           :returns: None, this function returns no data but writes files to disk.
+           :raises: ConnectionError: if unable to successfully make GET request to console.
+           :raises: IOError: if unable to write file."""
+    
+    url = f"{url}/api/v1.0/org/tasks/{taskID}/data"
+    payload = ""
+    headers = {'Accept': 'application/json',
+               'Authorization': f'Bearer {token}'}
+    try:
+        response = requests.get(url, headers=headers, data=payload, stream=True)
+        with open( f"{path}scan_{taskID}.json.gz", 'wb') as f:
+            for chunk in response.iter_content(chunk_size=128):
+                f.write(chunk)
+        return
+    except ConnectionError as error:
+        raise error
+    except IOError as error:
+        raise error
+    
+def searchTaskData(address, taskID, path):
+    """ Search task data for any matches to address. 
+    
+        :param address: A string, IP address to search for.
+        :param taskID: A String, UUID of task to identify scan file to search.
+        :param path: A String, path to scan archive location. """
+
+    with gzip.open( f'{path}scan_{taskID}.json.gz', 'rt') as f:
+        content = f.read()
+        pattern = f'"{address}"'
+        instances = re.findall( pattern, content)
+        if len(instances) > 0:
+            return True
+        else:
+            return
+
+def deleteTaskData(taskID, path):
+    """Remove task data files created by writeTaskData funtion.
+
+        :param taskID: A String, UUID of task to identify scan file to delete.
+        :param path: A String, path used in getData to create scan files.
+        :returns None: this function returns nothing but removes files from disk.
+        :raises: IOerror, if unable to delete file."""
+
+    handle = f"scan_{taskID}.json.gz"
+    try:
+        dir_contents = subprocess.check_output(['ls', path]).splitlines()
+        for item in dir_contents:
+            archiveName = re.match("b'((scan_.*)\.(json\.gz))", str(item))
+            if archiveName is not None and archiveName.group(1) == handle:
+                    os.remove(path + handle)
+            else:
+                pass
+        return
+    except IOError as error:
+        raise error
 
 def getPossibleTasks(url, token, query): 
     """ Retrieve Tasks from Organization corresponding to supplied token.
@@ -130,34 +197,8 @@ def getPossibleTasks(url, token, query):
         return data
     except ConnectionError as error:
         raise error
-
-#Modify to retrieve pertinent tasks
-def parseTaskData(url, token, taskID, path):
-    """ Download and write scan data (.json.gz) for each task ID provided.
-
-           :param url: A string, URL of the runZero console.
-           :param token: A string, Organization API key.
-           :param taskID: A string, ID of scan task to download.
-           :param path: A string, path to write files to.
-           :returns: None, this function returns no data but writes files to disk.
-           :raises: ConnectionError: if unable to successfully make GET request to console.
-           :raises: IOError: if unable to write file."""
     
-    url = f"{url}/api/v1.0/org/tasks/{taskID}/data"
-    payload = ""
-    headers = {'Accept': 'application/json',
-               'Authorization': f'Bearer {token}'}
-    try:
-        response = requests.get(url, headers=headers, data=payload, stream=True)
-        with open( f"{path}scan_{taskID}.json.gz", 'wb') as f:
-            for chunk in response.iter_content(chunk_size=128):
-                f.write(chunk)
-    except ConnectionError as error:
-        raise error
-    except IOError as error:
-        raise error
-    
-def buildReportEntry(url, token, address):
+def buildReportEntry(url, token, address, deepDiscovery, path):
     """ Build a report of the assets and related tasks data based on IP address.
      
         :param url: A string, URL of the runZero console.
@@ -201,6 +242,7 @@ def buildReportEntry(url, token, address):
     possibleDiscoveryTasks = getPossibleTasks(url, token, query)
     possibleList = []
     for task in possibleDiscoveryTasks:
+        #Condition to exclude first and last discovery task details from appearing in possible matches
         if task['id'] != entry.get('first_discovery', {}).get('task_id', '') or task['id'] != entry.get('last_discovery', {}).get('task_id', ''):
             possible = {}
             possible['task_id'] = task['id']
@@ -212,6 +254,14 @@ def buildReportEntry(url, token, address):
             possible['task_site_id'] = task['site_id']
             possible['task_site_name'] = task['site_name']
             possible['task_type'] = task['type']
+            if deepDiscovery:
+                writeTaskData(url, token, task['id'], path)
+                instances = searchTaskData(address, task['id'], path)
+                deleteTaskData(task['id'], path)
+                if instances:
+                    possible['task_has_seen_ip'] = 'True'
+                else:
+                    possible['task_has_seen_ip'] = 'False'
             possibleList.append(possible)
     entry['tasks_with_discovery_potential'] = possibleList
     return entry
@@ -270,11 +320,14 @@ def main():
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
+    deep = False
+    if args.deep:
+        deep = True
     targets = targetList(args)
     #Asset query to report last task discovery
     report = []
     for address in targets:
-        entry = buildReportEntry(args.consoleURL, token, address)
+        entry = buildReportEntry(args.consoleURL, token, address, deep, args.path)
         report.append(entry)
     outputFormat(args.output, fileName, report)
 
