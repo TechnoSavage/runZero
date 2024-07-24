@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    taskSearch.py, version 0.1
+    taskSearch.py, version 0.2
     This script, when provided one or more IPs as an argument or in a file, will return the first and last tasks that discovered an asset,
     with relevant attributes, as well as any other task with a scope that could potentially discover the asset."""
 
@@ -27,7 +27,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.2')
     return parser.parse_args()
 
 def assignTaskQuery(address):
@@ -201,7 +201,6 @@ def buildReportEntry(url, token, address):
     possibleDiscoveryTasks = getPossibleTasks(url, token, query)
     possibleList = []
     for task in possibleDiscoveryTasks:
-        possibilities = {}
         if task['id'] != entry.get('first_discovery', {}).get('task_id', '') or task['id'] != entry.get('last_discovery', {}).get('task_id', ''):
             possible = {}
             possible['task_id'] = task['id']
