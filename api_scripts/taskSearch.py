@@ -1,7 +1,9 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    taskSearch.py, version 0.4
+    taskSearch.py, version 0.5
     This script, when provided one or more IPs as an argument or in a file, will return the first and last tasks that discovered an asset,
-    with relevant attributes, as well as any other task with a scope that could potentially discover the asset."""
+    with relevant attributes, as well as any other task with a scope that could potentially discover the asset. Optionally the script can
+    search task data of possible discovery tasks to determine if a task ever discoverd the IP and IPs can be automatically applied as exclusions
+    to recurring tasks."""
 
 import argparse
 import datetime
@@ -9,15 +11,15 @@ import gzip
 import json
 import os
 import re
+import requests
 import subprocess
 import pandas as pd
-import requests
 from getpass import getpass
 from requests.exceptions import ConnectionError
 
     
 def parseArgs():
-    parser = argparse.ArgumentParser(description="Retrieve all hardware specific attributes.")
+    parser = argparse.ArgumentParser(description="Identify tasks that have or could discover provided IP(s).")
     parser.add_argument('-t', '--targets', dest='targets', help='Comma separated list (no spaces) of IPs to locate.', 
                         required=False)
     parser.add_argument('-iL', '--input-list', dest='targetFile', help='Text file with scan targets. This argument will take priority over the .env file', 
@@ -30,10 +32,10 @@ def parseArgs():
                         required=False, default=os.environ["RUNZERO_BASE_URL"])
     parser.add_argument('-k', '--key', dest='token', help='Prompt for Organization API key (do not enter at command line). This argument will take priority over the .env file', 
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
-    parser.add_argument('-p', '--path', help='Path to write temporary scan file(s) downloads. This argument will take priority over the .env file', 
+    parser.add_argument('-p', '--path', help='Path to write temporary scan file downloads. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.4')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.5')
     return parser.parse_args()
 
 def assignTaskQuery(address):
