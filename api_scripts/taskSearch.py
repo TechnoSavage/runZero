@@ -18,7 +18,7 @@ def parseArgs():
     parser = argparse.ArgumentParser(description="Retrieve all hardware specific attributes.")
     parser.add_argument('-t', '--targets', dest='targets', help='Comma separated list (no spaces) of IPs to locate.', 
                         required=False)
-    parser.add_argument('-iL', '--input-list', dest='targetFile', help='Text file with scan targets. This argument will override the .env file', 
+    parser.add_argument('-iL', '--input-list', dest='targetFile', help='Text file with scan targets.', 
                         required=False, default=os.environ["TARGETS"])
     parser.add_argument('-u', '--url', dest='consoleURL', help='URL of console. This argument will take priority over the .env file', 
                         required=False, default=os.environ["RUNZERO_BASE_URL"])
