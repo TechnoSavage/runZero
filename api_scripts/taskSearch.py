@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    taskSearch.py, version 0.5
+    taskSearch.py, version 0.6
     This script, when provided one or more IPs as an argument or in a file, will return the first and last tasks that discovered an asset,
     with relevant attributes, as well as any other task with a scope that could potentially discover the asset. Optionally the script can
     search task data of possible discovery tasks to determine if a task ever discoverd the IP and IPs can be automatically applied as exclusions
@@ -34,8 +34,8 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write temporary scan file downloads. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.5')
+    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 0.6')
     return parser.parse_args()
 
 def assignTaskQuery(address):
@@ -234,41 +234,44 @@ def buildReportEntry(url, token, address, deepDiscovery, path, exclusion):
     
     entry = {}
     discovered = getAssets(url, token, address)
-    entry['address'] = discovered
+    for key, value in discovered.items():
+        entry[key] = value
     #First task discovery information
     if discovered['first_task_id'] != "NA":
-        firstDiscovered = {}
         firstTaskParams = getTask(url, token, discovered['first_task_id'])
-        firstDiscovered['task_id'] = firstTaskParams['id']
-        firstDiscovered['task_url'] = f'{url}/tasks/search/completed?task={firstTaskParams["id"]}'
-        firstDiscovered['task_organization_id'] = firstTaskParams['organization_id']
-        firstDiscovered['task_targets'] = firstTaskParams['params']['targets']
-        firstDiscovered['task_agent_id'] = firstTaskParams['agent_id']
-        firstDiscovered['task_agent_name'] = firstTaskParams['agent_name']
-        firstDiscovered['task_site_id'] = firstTaskParams['site_id']
-        firstDiscovered['task_site_name'] = firstTaskParams['site_name']
-        firstDiscovered['task_type'] = firstTaskParams['type']
-        firstDiscovered['recurring'] = firstTaskParams['recur']
+        entry['first_discovered_task_id'] = firstTaskParams['id']
+        entry['first_discovered_task_url'] = f'{url}/tasks/search/completed?task={firstTaskParams["id"]}'
+        entry['first_discovered_task_organization_id'] = firstTaskParams['organization_id']
+        entry['first_discovered_task_targets'] = firstTaskParams['params']['targets']
+        entry['first_discovered_task_exclusions'] = firstTaskParams['params']['excludes']
+        entry['first_discovered_task_agent_id'] = firstTaskParams['agent_id']
+        entry['first_discovered_task_agent_name'] = firstTaskParams['agent_name']
+        entry['first_discovered_task_site_id'] = firstTaskParams['site_id']
+        entry['first_discovered_task_site_name'] = firstTaskParams['site_name']
+        entry['first_discovered_task_type'] = firstTaskParams['type']
+        entry['first_discovered_recurring'] = firstTaskParams['recur']
         if exclusion in ('limited', 'extended') and firstTaskParams['recur'] == 'true':
-            firstDiscovered['excluded'] = autoExclude(url, token, address, firstTaskParams['id'])
-        entry['first_discovery'] = firstDiscovered
+            entry['excluded'] = autoExclude(url, token, address, firstTaskParams['id'])
+        else:
+            entry['first_discovery_excluded'] = 'not attempted'
     #Last task discovery information
     if discovered['last_task_id'] != "NA":
-        lastDiscovered = {}
         lastTaskParams = getTask(url, token, discovered['last_task_id'])
-        lastDiscovered['task_id'] = lastTaskParams['id']
-        lastDiscovered['task_url'] = f'{url}/tasks/search/completed?task={lastTaskParams["id"]}'
-        lastDiscovered['task_organization_id'] = lastTaskParams['organization_id']
-        lastDiscovered['task_targets'] = lastTaskParams['params']['targets']
-        lastDiscovered['task_agent_id'] = lastTaskParams['agent_id']
-        lastDiscovered['task_agent_name'] = lastTaskParams['agent_name']
-        lastDiscovered['task_site_id'] = lastTaskParams['site_id']
-        lastDiscovered['task_site_name'] = lastTaskParams['site_name']
-        lastDiscovered['task_type'] = lastTaskParams['type']
-        lastDiscovered['recurring'] = lastTaskParams['recur']
+        entry['last_discovered_task_id'] = lastTaskParams['id']
+        entry['last_discovered_task_url'] = f'{url}/tasks/search/completed?task={lastTaskParams["id"]}'
+        entry['last_discovered_task_organization_id'] = lastTaskParams['organization_id']
+        entry['last_discovered_task_targets'] = lastTaskParams['params']['targets']
+        entry['last_discovered_task_exclusions'] = lastTaskParams['params']['excludes']
+        entry['last_discovered_task_agent_id'] = lastTaskParams['agent_id']
+        entry['last_discovered_task_agent_name'] = lastTaskParams['agent_name']
+        entry['last_discovered_task_site_id'] = lastTaskParams['site_id']
+        entry['last_discovered_task_site_name'] = lastTaskParams['site_name']
+        entry['last_discovered_task_type'] = lastTaskParams['type']
+        entry['last_discovered_recurring'] = lastTaskParams['recur']
         if exclusion in ('limited', 'extended') and lastTaskParams['recur'] == 'true':
-            lastDiscovered['excluded'] = autoExclude(url, token, address, lastTaskParams['id'])
-        entry['last_discovery'] = lastDiscovered
+            entry['last_discovery_excluded'] = autoExclude(url, token, address, lastTaskParams['id'])
+        else:
+            entry['last_discovery_excluded'] = 'not attempted'
     query = assignTaskQuery(address)
     #Return all tasks whose scope could enumerate the target
     possibleDiscoveryTasks = getPossibleTasks(url, token, query)
@@ -313,7 +316,7 @@ def outputFormat(format, fileName, data):
             stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
         writeFile(fileName, textFile)
-    elif format in ('csv', 'excel'):
+    elif format in ('csv', 'excel', 'html'):
         writeDF(format, fileName, data)  
     else:
         for line in data:
@@ -332,8 +335,10 @@ def writeDF(format, fileName, data):
     try:
         if format == "excel":
             df.to_excel(f'{fileName}.xlsx')
-        else:
+        elif format == 'csv':
             df.to_csv(f'{fileName}.csv', encoding='utf-8')
+        else:
+            df.to_html(f'{fileName}.html', encoding='utf-8')
     except IOError as error:
         raise error
     
