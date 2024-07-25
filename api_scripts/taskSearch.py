@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    taskSearch.py, version 0.6
+    taskSearch.py, version 0.7
     This script, when provided one or more IPs as an argument or in a file, will return the first and last tasks that discovered an asset,
     with relevant attributes, as well as any other task with a scope that could potentially discover the asset. Optionally the script can
     search task data of possible discovery tasks to determine if a task ever discoverd the IP and IPs can be automatically applied as exclusions
@@ -35,7 +35,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write temporary scan file downloads. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.6')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.7')
     return parser.parse_args()
 
 def assignTaskQuery(address):
@@ -334,11 +334,11 @@ def writeDF(format, fileName, data):
     df = pd.DataFrame(data)
     try:
         if format == "excel":
-            df.to_excel(f'{fileName}.xlsx')
+            df.to_excel(f'{fileName}.xlsx', freeze_panes=(1,0), na_rep="NA")
         elif format == 'csv':
-            df.to_csv(f'{fileName}.csv', encoding='utf-8')
+            df.to_csv(f'{fileName}.csv', na_rep="NA")
         else:
-            df.to_html(f'{fileName}.html', encoding='utf-8')
+            df.to_html(f'{fileName}.html', render_links=True, na_rep='NA')
     except IOError as error:
         raise error
     
