@@ -1,14 +1,14 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    hwProfile.py, version 3.2
+    hwProfile.py, version 3.3
     Query runZero API for physical assets found within an Organization (tied to Export API key provided) and generate JSON
     output of all attributes describing the physical hardware of the asset."""
 
 import argparse
+import datetime
 import json
 import os
 import pandas as pd
 import requests
-from datetime import datetime
 from flatten_json import flatten
 from getpass import getpass
 from requests.exceptions import ConnectionError
@@ -21,8 +21,8 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_EXPORT_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.2')
+    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 3.3')
     return parser.parse_args()
 
 def getAssets(url, token, filter=" ", fields=" "):
@@ -88,20 +88,39 @@ def parseHW(data):
     except TypeError as error:
         raise error
     
-def writeDF(fileName, format, data):
+def outputFormat(format, fileName, data):
+    if format == 'json':
+        fileName = f'{fileName}.json'
+        writeFile(fileName, json.dumps(data))
+    elif format == 'txt':
+        fileName = f'{fileName}.txt'
+        stringList = []
+        for line in data:
+            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
+        textFile = '\n'.join(stringList)
+        writeFile(fileName, textFile)
+    elif format in ('csv', 'excel', 'html'):
+        writeDF(format, fileName, data)  
+    else:
+        for line in data:
+            print(json.dumps(line, indent=4))
+    
+def writeDF(format, fileName, data):
     """ Write contents to output file. 
     
         :param filename: a string, name for file including.
-        :param format: a string, excel or csv
+        :param format: a string, excel, csv, or html
         :param contents: json data, file contents.
         :raises: IOError: if unable to write to file.  """
     
     df = pd.DataFrame(data)
     try:
         if format == "excel":
-            df.to_excel(f'{fileName}.xlsx')
+            df.to_excel(f'{fileName}.xlsx', freeze_panes=(1,0), na_rep='NA')
+        elif format == 'csv':
+            df.to_csv(f'{fileName}.csv', na_rep='NA')
         else:
-            df.to_csv(f'{fileName}.csv', encoding='utf-8')
+            df.to_html(f'{fileName}.html', render_links=True, na_rep='NA')
     except IOError as error:
         raise error
     
@@ -120,7 +139,7 @@ def writeFile(fileName, contents):
 def main():
     args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f"{args.path}Physical_Hardware_Types_{str(datetime.utcnow())}"
+    fileName = f'{args.path}Physical_Hardware_Types_{str(datetime.datetime.now(datetime.timezone.utc))}'
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
@@ -130,21 +149,7 @@ def main():
     fields = "os, os_vendor, hw, addresses, attributes, foreign_attributes"
     results = getAssets(args.consoleURL, token, query, fields)
     parsed = parseHW(results)
-    if args.output == 'json':
-        fileName = f'{fileName}.json'
-        writeFile(fileName, json.dumps(parsed))
-    elif args.output == 'txt':
-        fileName = f'{fileName}.txt'
-        stringList = []
-        for line in parsed:
-            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
-        textFile = '\n'.join(stringList)
-        writeFile(fileName, textFile)
-    elif args.output in ('csv', 'excel'):
-        writeDF(fileName, args.output, parsed)  
-    else:
-        for line in parsed:
-            print(json.dumps(line, indent=4))
+    outputFormat(args.output, fileName, parsed)
 
 if __name__ == "__main__":
     main()
