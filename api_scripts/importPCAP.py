@@ -131,7 +131,6 @@ def outputFormat(format, fileName, data):
 def writeDF(format, fileName, data):
     """ Write contents to output file. 
     
-        
         :param format: a string, excel, csv, or html
         :param filename: a string, the filename, excluding extension.
         :param contents: json data, file contents.
