@@ -1,15 +1,15 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    importNessus.py, version 4.2
+    importNessus.py, version 4.3
     Bulk import all .nessus files in a specified folder via the runZero API."""
 
 import argparse
+import datetime
 import json
 import os
 import pandas as pd
 import re
 import requests
 import subprocess
-from datetime import datetime
 from getpass import getpass
 from requests.exceptions import ConnectionError
 
@@ -26,8 +26,8 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write log files. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-c', '--clean', help='Enable file clean up. Automatically delete .nessus files that are successfully uploaded', action='store_true', required=False)
-    parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 4.2')
+    parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 4.3')
     return parser.parse_args()
 
 def importScan(url, token, siteID, scan):
@@ -104,20 +104,39 @@ def cleanUp(dir, log):
         else:
             pass
     
-def writeDF(fileName, format, data):
+def outputFormat(format, fileName, data):
+    if format == 'json':
+        fileName = f'{fileName}.json'
+        writeFile(fileName, json.dumps(data))
+    elif format == 'txt':
+        fileName = f'{fileName}.txt'
+        stringList = []
+        for line in data:
+            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
+        textFile = '\n'.join(stringList)
+        writeFile(fileName, textFile)
+    elif format in ('csv', 'excel', 'html'):
+        writeDF(format, fileName, data)  
+    else:
+        for line in data:
+            print(json.dumps(line, indent=4))
+    
+def writeDF(format, fileName, data):
     """ Write contents to output file. 
     
         :param filename: a string, name for file including.
-        :param format: a string, excel or csv
+        :param format: a string, excel, csv, or html
         :param contents: json data, file contents.
         :raises: IOError: if unable to write to file.  """
     
     df = pd.DataFrame(data)
     try:
         if format == "excel":
-            df.to_excel(f'{fileName}.xlsx')
+            df.to_excel(f'{fileName}.xlsx', freeze_panes=(1,0), na_rep='NA')
+        elif format == 'csv':
+            df.to_csv(f'{fileName}.csv', na_rep='NA')
         else:
-            df.to_csv(f'{fileName}.csv', encoding='utf-8')
+            df.to_html(f'{fileName}.html', render_links=True, na_rep='NA')
     except IOError as error:
         raise error
     
@@ -140,19 +159,8 @@ def main():
         token = getpass(prompt="Enter your Organization API Key: ")
     uploadLog = fileUpload(args.consoleURL, token, args.site, args.dir)
     if args.log is not None:
-        fileName = f'{args.path}importNessus_log_{str(datetime.now())}'
-        if args.log == 'json':
-                fileName = f'{fileName}.json'
-                writeFile(fileName, json.dumps(uploadLog))
-        elif args.log == 'txt':
-            fileName = f'{fileName}.txt'
-            stringList = []
-            for line in uploadLog:
-                stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
-            textFile = '\n'.join(stringList)
-            writeFile(fileName, textFile)
-        elif args.log in ('csv', 'excel'):
-            writeDF(fileName, args.log, uploadLog)
+        outputFormat(args.output, fileName, uploadLog)
+        fileName = f'{args.path}importNessus_log_{str(datetime.datetime.now(datetime.timezone.utc))}'
     else:
         print(json.dumps(uploadLog, indent=4))
     if args.clean:
