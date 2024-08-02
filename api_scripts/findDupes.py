@@ -121,7 +121,7 @@ def outputFormat(format, fileName, data):
     """ Determine output format and call function to write appropriate file.
         
         :param format: A String, the desired output format.
-        :param filename: A String, the filename, minus extension.
+        :param fileName: A String, the filename, minus extension.
         :para data: json data, file contents
         :returns None: Calls another function to write the file or prints the output."""
     
@@ -145,7 +145,7 @@ def writeDF(format, fileName, data):
     """ Write contents to output file. 
     
         :param format: a string, excel, csv, or html
-        :param filename: a string, the filename, excluding extension.
+        :param fileName: a string, the filename, excluding extension.
         :param contents: json data, file contents.
         :raises: IOError: if unable to write to file."""
     
@@ -163,7 +163,7 @@ def writeDF(format, fileName, data):
 def writeFile(fileName, contents):
     """ Write contents to output file in plaintext. 
     
-        :param filename: a string, name for file including (optionally) file extension.
+        :param fileName: a string, name for file including (optionally) file extension.
         :param contents: anything, file contents.
         :raises: IOError: if unable to write to file. """
     try:
