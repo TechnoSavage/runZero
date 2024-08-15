@@ -1,15 +1,15 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    newAssetReport.py, version 3.1
+    newAssetReport.py, version 3.2
     Query runZero API for all assets found within an Organization (tied to Export API key provided) first seen within the specified 
     time period and return select fields. Default behavior will be to print assets to stdout in JSON format. Optionally, an output 
     file and format can be specified."""
 
 import argparse
+import datetime
 import json
 import os
 import pandas as pd
 import requests
-from datetime import datetime
 from getpass import getpass
 from requests.exceptions import ConnectionError
     
@@ -23,8 +23,8 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_EXPORT_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
+    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 3.2')
     return parser.parse_args()
     
 def getAssets(url, token, filter=" ", fields=" "):
@@ -52,20 +52,47 @@ def getAssets(url, token, filter=" ", fields=" "):
         content = "No Response"
         raise error
     
-def writeDF(fileName, format, data):
+#Output formats require some finessing
+def outputFormat(format, fileName, data):
+    """ Determine output format and call function to write appropriate file.
+        
+        :param format: A String, the desired output format.
+        :param filename: A String, the filename, minus extension.
+        :para data: json data, file contents
+        :returns None: Calls another function to write the file or prints the output."""
+    
+    if format == 'json':
+        fileName = f'{fileName}.json'
+        writeFile(fileName, json.dumps(data))
+    elif format == 'txt':
+        fileName = f'{fileName}.txt'
+        stringList = []
+        for line in data:
+            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
+        textFile = '\n'.join(stringList)
+        writeFile(fileName, textFile)
+    elif format in ('csv', 'excel', 'html'):
+        writeDF(format, fileName, data)  
+    else:
+        for line in data:
+            print(json.dumps(line, indent=4))
+    
+def writeDF(format, fileName, data):
     """ Write contents to output file. 
     
-        :param filename: a string, name for file including.
-        :param format: a string, excel or csv
+        :param format: a string, excel, csv, or html
+        :param fileName: a string, the filename, excluding extension.
         :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file.  """
+        :raises: IOError: if unable to write to file."""
     
     df = pd.DataFrame(data)
     try:
         if format == "excel":
-            df.to_excel(f'{fileName}.xlsx')
+            df.to_excel(f'{fileName}.xlsx', freeze_panes=(1,0), na_rep='NA')
+        elif format == 'csv':
+            df.to_csv(f'{fileName}.csv', na_rep='NA')
         else:
-            df.to_csv(f'{fileName}.csv', encoding='utf-8')
+            df.to_html(f'{fileName}.html', render_links=True, na_rep='NA')
     except IOError as error:
         raise error
     
@@ -84,7 +111,7 @@ def writeFile(fileName, contents):
 def main():
     args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f"{args.path}New_Asset_Report_{str(datetime.utcnow())}"
+    fileName = f"{args.path}New_Asset_Report_{str(datetime.datetime.now(datetime.timezone.utc))}"
     #Define config file to read from
     token = args.token
     if token == None:
@@ -94,21 +121,7 @@ def main():
     #fields to return in API call; modify for more or less
     fields = "id, os, os_vendor, hw, addresses, macs, attributes"
     results = getAssets(args.consoleURL, token, query, fields)
-    if args.output == 'json':
-        fileName = f'{fileName}.json'
-        writeFile(fileName, json.dumps(results))
-    elif args.output == 'txt':
-        fileName = f'{fileName}.txt'
-        stringList = []
-        for line in results:
-            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
-        textFile = '\n'.join(stringList)
-        writeFile(fileName, textFile)
-    elif args.output in ('csv', 'excel'):
-            writeDF(fileName, args.output, results)  
-    else:
-        for line in results:
-            print(json.dumps(line, indent=4))
+    outputFormat(args.output, fileName, results)
     
 if __name__ == "__main__":
     main()
