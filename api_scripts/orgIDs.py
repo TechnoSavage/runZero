@@ -63,6 +63,9 @@ def parseOIDs(data):
         return parsed
     except TypeError as error:
         raise error
+    except AttributeError as error:
+        print("Data is not JSON object; make sure provided API key is correct")
+        exit()
     
 #Output formats require some finessing
 def outputFormat(format, fileName, data):
@@ -128,9 +131,6 @@ def main():
     if token == None:
         token = getpass(prompt="Enter your Account API Key: ")
     orgData = getOIDs(args.consoleURL, token)
-    if 'token is undefined or invalid: API key not found' in json.dumps(orgData):
-        print("The provided Account API key appears to be invalid.")
-        exit()
     orgOIDs = parseOIDs(orgData)
     outputFormat(args.output, fileName, orgOIDs)
 
