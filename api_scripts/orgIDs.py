@@ -1,13 +1,13 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    orgIDs.py, version 4.1
+    orgIDs.py, version 4.2
     Script to retrieve all Organization IDs and 'friendly' names for a given account. """
 
 import argparse
+import datetime
 import json
 import os
 import pandas as pd
 import requests
-from datetime import datetime
 from getpass import getpass
 from requests.exceptions import ConnectionError
     
@@ -20,7 +20,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 4.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 4.2')
     return parser.parse_args()
 
 def getOIDs(url, token):
@@ -64,20 +64,47 @@ def parseOIDs(data):
     except TypeError as error:
         raise error
     
-def writeDF(fileName, format, data):
+#Output formats require some finessing
+def outputFormat(format, fileName, data):
+    """ Determine output format and call function to write appropriate file.
+        
+        :param format: A String, the desired output format.
+        :param filename: A String, the filename, minus extension.
+        :para data: json data, file contents
+        :returns None: Calls another function to write the file or prints the output."""
+    
+    if format == 'json':
+        fileName = f'{fileName}.json'
+        writeFile(fileName, json.dumps(data))
+    elif format == 'txt':
+        fileName = f'{fileName}.txt'
+        stringList = []
+        for line in data:
+            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
+        textFile = '\n'.join(stringList)
+        writeFile(fileName, textFile)
+    elif format in ('csv', 'excel', 'html'):
+        writeDF(format, fileName, data)  
+    else:
+        for line in data:
+            print(json.dumps(line, indent=4))
+    
+def writeDF(format, fileName, data):
     """ Write contents to output file. 
     
-        :param filename: a string, name for file including.
-        :param format: a string, excel or csv
+        :param format: a string, excel, csv, or html
+        :param fileName: a string, the filename, excluding extension.
         :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file.  """
+        :raises: IOError: if unable to write to file."""
     
     df = pd.DataFrame(data)
     try:
         if format == "excel":
-            df.to_excel(f'{fileName}.xlsx')
+            df.to_excel(f'{fileName}.xlsx', freeze_panes=(1,0), na_rep='NA')
+        elif format == 'csv':
+            df.to_csv(f'{fileName}.csv', na_rep='NA')
         else:
-            df.to_csv(f'{fileName}.csv', encoding='utf-8')
+            df.to_html(f'{fileName}.html', render_links=True, na_rep='NA')
     except IOError as error:
         raise error
 
@@ -96,27 +123,16 @@ def writeFile(fileName, contents):
 def main():
     args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f"{args.path}Org_IDs_Report_{str(datetime.utcnow())}"
+    fileName = f"{args.path}Org_IDs_Report_{str(datetime.datetime.now(datetime.timezone.utc))}"
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Account API Key: ")
     orgData = getOIDs(args.consoleURL, token)
+    if 'token is undefined or invalid: API key not found' in json.dumps(orgData):
+        print("The provided Account API key appears to be invalid.")
+        exit()
     orgOIDs = parseOIDs(orgData)
-    if args.output == 'json':
-        fileName = f'{fileName}.json'
-        writeFile(fileName, json.dumps(orgOIDs))
-    elif args.output == 'txt':
-        fileName = f'{fileName}.txt'
-        stringList = []
-        for line in orgOIDs:
-            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
-        textFile = '\n'.join(stringList)
-        writeFile(fileName, textFile)
-    elif args.output in ('csv', 'excel'):
-            writeDF(fileName, args.output, orgOIDs)  
-    else:
-        for line in orgOIDs:
-            print(json.dumps(line, indent=4))
+    outputFormat(args.output, fileName, orgOIDs)
 
 if __name__ == "__main__":
     main()
