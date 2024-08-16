@@ -22,7 +22,7 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_EXPORT_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel'], required=False)
+    parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
     parser.add_argument('--version', action='version', version='%(prog)s 3.3')
     return parser.parse_args()
     
