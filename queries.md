@@ -251,7 +251,7 @@ NOT miradore.name:"%" AND (type:desktop OR type:laptop OR type:mobile)
 @tenable.dev.lastScanTimeTS:>"2weeks"
 ```
 
-### No authenticated scan in the last 30 days:
+### No authenticated scan has been run in the last 30 days:
 
 ```
 @tenable.dev.lastAuthenticatedScanDateTS:>30d
