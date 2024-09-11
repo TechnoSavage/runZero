@@ -245,7 +245,7 @@ NOT miradore.name:"%" AND (type:desktop OR type:laptop OR type:mobile)
 @tenable.dev.hasAgent:="true"
 ```
 
-### Assets that have been scanned by Tenable over 2 weeks ago:
+### Assets that haven't been scanned by Tenable in over 2 weeks:
 
 ```
 @tenable.dev.lastScanTimeTS:>"2weeks"
