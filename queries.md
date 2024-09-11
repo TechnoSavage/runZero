@@ -231,7 +231,7 @@ NOT miradore.name:"%" AND (type:desktop OR type:laptop OR type:mobile)
 
 ## SentinelOne
 
-### Assets with SentinelOne Agent requiring patch:
+### Assets where SentinelOne is reporting a patch is required:
 
 ```
 (alive:t OR scanned:f) AND has:"@sentinelone.dev.appsVulnerabilityStatus" AND @sentinelone.dev.appsVulnerabilityStatus:"=patch_required"
