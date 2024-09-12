@@ -1,0 +1,2 @@
+id,created_at,updated_at,created_by,type,category,severity,name,description,query,auto,alive_only,report_vuln,risk,exploitable,vid,cve,cvss2_base_score,cvss2_temporal_score,cvss3_base_score,cvss3_temporal_score,cpe23,solution,attributes
+cd86f0de-b4a0-49b1-bb8e-4967df157d34,2024-09-11,2024-09-11,salesengineering@runzero.com,assets,Maintenance,Info,SentinelOne: assets requiring a patch,,"has:""@sentinelone.dev.appsVulnerabilityStatus"" AND @sentinelone.dev.appsVulnerabilityStatus:""=patch_required""",false,true,false,None,false,,,0,0,0,0,,,{}
