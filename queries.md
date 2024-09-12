@@ -234,7 +234,7 @@ NOT miradore.name:"%" AND (type:desktop OR type:laptop OR type:mobile)
 ### Assets where SentinelOne is reporting a patch is required:
 
 ```
-(alive:t OR scanned:f) AND has:"@sentinelone.dev.appsVulnerabilityStatus" AND @sentinelone.dev.appsVulnerabilityStatus:"=patch_required"
+has:"@sentinelone.dev.appsVulnerabilityStatus" AND @sentinelone.dev.appsVulnerabilityStatus:"=patch_required"
 ```
 
 ## Tenable
