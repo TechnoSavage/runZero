@@ -561,37 +561,37 @@ test.pciComplianceStatus:"fail"
 ### Tenable - High and Critical severity vulnerabilities that are on CISA's Known Exploited Vulnerability (KEV) list:
 
 ```
-plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" AND (severity:high OR severity:critical)
+source:tenable AND (plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" OR kev:cisa) AND (severity:high OR severity:critical)
 ```
 
 ### Tenable - Newly reported critical severity vulns on the KEV with 15 days to remediate per CISA guidance:
 
 ```
-source:tenable AND plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" AND severity:critical AND firstFoundTS:<24hours
+source:tenable AND (plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" OR kev:cisa) AND severity:critical AND firstFoundTS:<24hours
 ```
 
 ### Tenable - Newly reported high severity vulns on the KEV with 30 days to remediate:
 
 ```
-source:tenable AND plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" AND severity:high AND firstFoundTS:<24hours
+source:tenable AND (plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" OR kev:cisa) AND severity:high AND firstFoundTS:<24hours
 ```
 
 ### Tenable - Newly reported KEV vulns with 6 months to remediate per BOD 22-01:
 
 ```
-plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" AND firstFoundTS:<24hours
+source:tenable AND (plugin.xrefs.type:"CISA-KNOWN-EXPLOITED" OR kev:cisa) AND firstFoundTS:<24hours
 ```
 
 ### Tenable - Critical severity vulnerabilities where exploits are available:
 
 ```
-plugin.exploitabilityEase:"Exploits are available" AND severity:critical
+source:tenable AND plugin.exploitabilityEase:"Exploits are available" AND severity:critical
 ```
 
 ### Tenable - High and Critical severity vulnerabilities where exploits are not required:
 
 ```
-plugin.exploitabilityEase:"No exploit is required" AND (severity:critical OR severity:high)
+source:tenable AND plugin.exploitabilityEase:"No exploit is required" AND (severity:critical OR severity:high)
 ```
 
 ### Tenable - Query on VPR score (equal to, greater than, or less than):
@@ -611,7 +611,7 @@ plugin.vpr.score:<"6.0"
 ### Tenable - Vulnerability has an available patch:
 
 ```
-plugin.hasPatch:"true"
+source:tenable AND plugin.hasPatch:"true"
 ```
 
 ## Qualys
