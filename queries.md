@@ -597,15 +597,15 @@ source:tenable AND plugin.exploitabilityEase:"No exploit is required" AND (sever
 ### Tenable - Query on VPR score (equal to, greater than, or less than):
 
 ```
-plugin.vpr.score:"6.0" 
+source:tenable AND plugin.vpr.score:"6.0" 
 ```
 
 ```
-plugin.vpr.score:>"6.0"
+source:tenable AND plugin.vpr.score:>"6.0"
 ```
 
 ```
-plugin.vpr.score:<"6.0"
+source:tenable AND plugin.vpr.score:<"6.0"
 ```
 
 ### Tenable - Vulnerability has an available patch:
