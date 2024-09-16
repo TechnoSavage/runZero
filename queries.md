@@ -298,6 +298,17 @@ source:tenable and ((@tenable.dev.lastAuthenticatedScanDateTS:>30d) or (not @ten
 @qualys.dev.host.lastScannedDateTimeTS:">2weeks"
 ```
 
+### Qualys - assets with Qualys endpoint agent installed:
+
+```
+source:qualys AND @qualys.dev.host.trackingMethod:="AGENT"
+```
+
+### Qualys - Reported by Qualys but do not have the endpoint agent installed:
+
+```
+source:qualys AND source:qualys AND NOT @qualys.dev.host.trackingMethod:="AGENT"
+
 ## Google Workspace
 
 ### Assets where Google Workspace reports developer options are enabled:
@@ -619,79 +630,67 @@ source:tenable AND plugin.hasPatch:"true"
 ### Qualys - Easy to exploit vulnerabilities:
 
 ```
-vulnerability.threatIntel:"%Easy_Exploit%"
+source:qualys AND vulnerability.threatIntel:"%Easy_Exploit%"
 ```
 
 ### Qualys - vulnerabilities with publicly available exploits:
 
 ```
-vulnerability.threatIntel:"%Exploit_Public%"	
+source:qualys AND vulnerability.threatIntel:"%Exploit_Public%"	
 ```
 
 ### Qualys - vulnerabilities enabling lateral movement:
 
 ```
-vulnerability.threatIntel:"%High_Lateral_Movement%"
+source:qualys AND vulnerability.threatIntel:"%High_Lateral_Movement%"
 ```
 
 ### Qualys - high data loss vulnerabilities:
 
 ```
-vulnerability.threatIntel:"%High_Data_Loss%"
+source:qualys AND vulnerability.threatIntel:"%High_Data_Loss%"
 ```
 
 ### Qualys - vulnerabilities that enable DoS:
 
 ```
-vulnerability.threatIntel:"%Denial_of_Service%"
+source:qualys AND vulnerability.threatIntel:"%Denial_of_Service%"
 ```
 
 ### Qualys - high risk vulnerabilities:
 
 ```
-vulnerability.threatIntel:"%Predicted_High_Risk%"
+source:qualys AND vulnerability.threatIntel:"%Predicted_High_Risk%"
 ```
 
 ### Qualys - vulnerabilities that allow for unauthenticated exploit:
 
 ```
-vulnerability.threatIntel:"%unauthenticated_Exploitation%"
+source:qualys AND vulnerability.threatIntel:"%unauthenticated_Exploitation%"
 ```
 
 ### Qualys - vulnerabilities that allow RCE:
 
 ```
-vulnerability.threatIntel:"%Remote_Code_Execution%"
+source:qualys AND vulnerability.threatIntel:"%Remote_Code_Execution%"
 ```
 
 ### Qualys - vulnerabilities that are wormable:
 
 ```
-vulnerability.threatIntel:"%Wormable%"
+source:qualys AND vulnerability.threatIntel:"%Wormable%"
 ```
 
 ### Qualys - Ransomware:
 
 ```
-vulnerability.threatIntel:"%Ransomware%"
+source:qualys AND vulnerability.threatIntel:"%Ransomware%"
 ```
 
 ### Qualys - High and Critical severity vulnerabilities that are on CISA's Known Exploited list:
 
 ```
-vulnerability.threatIntel:"%Cisa_Known_Exploited_Vulns%"
-```
-
-### Qualys - assets with Qualys endpoint agent installed:
-
-```
-@qualys.dev.host.trackingMethod:="AGENT"
-```
-
-### Qualys - Reported by Qualys but do not have the endpoint agent installed:
-
-```
-source:qualys AND NOT @qualys.dev.host.trackingMethod:="AGENT"
+source:qualys AND (vulnerability.threatIntel:"%Cisa_Known_Exploited_Vulns%" OR kev:cisa)
 ```
 
 ### Qualys - Reported by qualys and found via vuln scan:
