@@ -308,6 +308,19 @@ source:qualys AND @qualys.dev.host.trackingMethod:="AGENT"
 
 ```
 source:qualys AND source:qualys AND NOT @qualys.dev.host.trackingMethod:="AGENT"
+```
+
+### Qualys - Reported by qualys and found via vuln scan:
+
+```
+source:qualys AND @qualys.dev.host.trackingMethod:="IP"
+```
+
+### Qualys - Endpoints that could host a Qualys endpoint agent but do not have one installed:
+
+```
+NOT @qualys.dev.host.trackingMethod:="AGENT" AND (type:server OR type:laptop OR type:desktop)
+```
 
 ## Google Workspace
 
@@ -691,18 +704,6 @@ source:qualys AND vulnerability.threatIntel:"%Ransomware%"
 
 ```
 source:qualys AND (vulnerability.threatIntel:"%Cisa_Known_Exploited_Vulns%" OR kev:cisa)
-```
-
-### Qualys - Reported by qualys and found via vuln scan:
-
-```
-@qualys.dev.host.trackingMethod:="IP"
-```
-
-### Qualys - Endpoints that could host a Qualys endpoint agent but do not have one installed:
-
-```
-NOT @qualys.dev.host.trackingMethod:="AGENT" AND (type:server OR type:laptop OR type:desktop)
 ```
 
 # Wireless Queries:
