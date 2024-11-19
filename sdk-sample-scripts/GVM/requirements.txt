@@ -1,4 +1,4 @@
-flatten_json>=0.1.13
+flatten_json>=0.1.14
 python-gvm>=23.5.1
-xmltodict>=0.13.0
-runzero-sdk>=0.8.2
+xmltodict>=0.14.2
+runzero-sdk>=0.8.6
