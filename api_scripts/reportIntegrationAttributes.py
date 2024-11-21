@@ -123,7 +123,7 @@ def main():
     fields = 'foreign_attributes'
     assets = getAssets(args.consoleURL, token, search, fields)
     results = parseAttributes(assets, args.search)
-    outputFormat(args.output, fileName, results)
+    outputFormat(args.output, fileName, sorted(results))
     
 if __name__ == "__main__":
     main()
