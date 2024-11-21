@@ -123,7 +123,7 @@ def main():
     for item in otherResults:
         attrsSNOW.append(item)
     attrsSNOW = set(attrsSNOW)
-    outputFormat(args.output, fileName, attrsSNOW)
+    outputFormat(args.output, fileName, sorted(attrsSNOW))
     
 if __name__ == "__main__":
     main()
