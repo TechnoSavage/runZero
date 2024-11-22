@@ -70,9 +70,9 @@ cd runZero/sdk-sample-scripts/Kismet
 cp .env_sample .env
 ```
 
-- Update all of the necessary secrets in the `.env` file (NOTE: you need to rerun pipenv shell anytime you update these  values to reload them)
+- Update all of the necessary secrets in the `.env` file (NOTE: you need to rerun pipenv shell anytime you update these values to reload them)
 
-- Install dependancies
+- Install dependencies
 
 ```
 pipenv install -r requirements.txt

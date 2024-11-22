@@ -125,7 +125,7 @@ def import_data_to_runzero(assets: List[ImportAsset]):
 
 def get_kismet_assets(cookie=KISMET_KEY, uri=KISMET_URL, port=KISMET_PORT, phy=KISMET_PHY):
     '''
-        Retrieve assets using supplied query filter from Console and restrict to fields supplied.
+        Retrieve assets from Kismet collected on specified PHY interface.
             
             :param cookie: A string, Kismet session cookie.
             :param KISMET_URL: A string, URL of Kismet webserver.
