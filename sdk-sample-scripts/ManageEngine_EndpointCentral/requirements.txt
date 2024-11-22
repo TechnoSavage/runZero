@@ -1,0 +1,2 @@
+requests>=2.32.3
+runzero-sdk>=0.8.6
