@@ -5,6 +5,7 @@
 # Docs: https://snipe-it.readme.io/docs
 # Prerequisite: pip install runzero-sdk
 
+import json
 import requests
 import os
 import uuid
@@ -28,15 +29,17 @@ SNIPE_IMPORT_TASK_NAME = os.environ['SNIPE_IMPORT_TASK_NAME']
 
 
 # Configure Snipe-IT variables
-SNIPE_BASE_URL = os.environ['SNIPE_BASE_URL']
-SNIPE_API_URL = f'{SNIPE_BASE_URL}/api/v1/hardware'
+SNIPE_API_URL = f"{os.environ['SNIPE_BASE_URL']}/api/v1/hardware"
 SNIPE_API_KEY = os.environ['SNIPE_API_KEY']
-SNIPE_HEADERS = {'Accept': 'application/json',
-                 'Content-Type': 'application/json',
-                 'Authorization': f'Bearer {SNIPE_API_KEY}'}
 
 def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset]:
-    
+    '''
+    Map asset attributes from API reponse and populate custom attributes and network interfaces.
+
+    :param json_input: a dict, API JSON response of asset data.
+    :returns: a list, asset data formatted for runZero import.  
+    '''
+
     assets: List[ImportAsset] = []
     for item in json_input:
         # assign known API attributes from the json dict that are always present
@@ -78,7 +81,12 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
     ''' 
     This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
     is accepted in the ImportAsset
+
+    :param ips: A list, a list of IP addresses
+    :param mac: A string, a MAC address formatted as follows 00:11:22:AA:BB:CC
+    :returns: A list, a list of runZero network interface classes
     '''
+
     ip4s: List[IPv4Address] = []
     ip6s: List[IPv6Address] = []
     for ip in ips[:99]:
@@ -96,10 +104,13 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
 
 
 def import_data_to_runzero(assets: List[ImportAsset]):
+    ''''
+    Import assets to specified runZero Organization and Site using the specified Custom Source ID and Name.
+
+    :param assets: A list, list of assets formatted by the ImportAsset class from the runZero SDK.
+    :returns: None
     '''
-    The code below gives an example of how to create a custom source and upload valid assets to a site using
-    the new custom source.
-    '''
+
     # create the runzero client
     client = runzero.Client()
 
@@ -124,10 +135,32 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     if import_task:
         print(f'task created! view status here: {RUNZERO_BASE_URL}/api/v1.0/tasks?task={import_task.id}')
 
+def get_assets(url=SNIPE_API_URL, token=SNIPE_API_KEY):
+    '''
+    Retrieve assets from Snipe-IT API endpoint.
+    
+    :param url: A string, URL of Snipe-IT API endpoint.
+    :param token: A string, authentication token for API endpoint.
+    :returns: A dict, Snipe-IT asset data.
+    :raises: ConnectionError: if unable to successfully make GET request to Snipe-IT webserver.
+    '''
+
+    headers = {'Accept': 'application/json',
+                 'Content-Type': 'application/json',
+                 'Authorization': f'Bearer {token}'}
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            print(f"Unable to retrieve assets from Snipe-IT. Received {response.status_code}")
+            exit()
+        return json.loads(response.content)
+    except ConnectionError as error:
+        print("No Response from Manage Engine server.", error)
+        exit()    
 
 def main():
-    response = requests.get(SNIPE_API_URL, headers=SNIPE_HEADERS)
-    hardware_json_raw = response.json()
+
+    hardware_json_raw = get_assets()
     hardware_json = hardware_json_raw["rows"]
 
     # Format asset list for import into runZero
