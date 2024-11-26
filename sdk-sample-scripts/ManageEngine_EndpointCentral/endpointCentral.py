@@ -27,7 +27,7 @@ MEEC_IMPORT_TASK_NAME = os.environ['MEEC_IMPORT_TASK_NAME']
 
 
 # Configure Manage Engine API variables
-MEEC_URL = f"{os.environ['MEEC_BASE_URL']}api/1.4/inventory/scancomputers"
+MEEC_URL = f"{os.environ['MEEC_BASE_URL']}/api/1.4/inventory/scancomputers"
 MEEC_KEY = os.environ['MEEC_KEY']
 
 def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset]:
@@ -116,6 +116,7 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     :param assets: A list, list of assets formatted by the ImportAsset class from the runZero SDK.
     :returns: None
     '''
+
     # create the runzero client
     client = runzero.Client()
 
@@ -140,18 +141,17 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     if import_task:
         print(f'task created! view status here: {RUNZERO_BASE_URL}/api/v1.0/tasks?task={import_task.id}')
 
-def get_assets():
+def get_assets(url=MEEC_URL, token=MEEC_KEY):
     '''
     Retrieve assets from Manage Engine "Scan Computers" API endpoint.
             
     :returns: A dict, Manage Engine asset data.
     :raises: ConnectionError: if unable to successfully make GET request to Manage Engine webserver.
     '''
-    
-    url = MEEC_URL
+
     headers = {'Accept': 'application/json',
                  'Content-Type': 'application/json',
-                 'Authorization': f'Bearer {MEEC_KEY}'}
+                 'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
