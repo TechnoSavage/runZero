@@ -144,7 +144,9 @@ def import_data_to_runzero(assets: List[ImportAsset]):
 def get_assets(url=MEEC_URL, token=MEEC_KEY):
     '''
     Retrieve assets from Manage Engine "Scan Computers" API endpoint.
-            
+    
+    :param url: A string, URL of Manage Engine Endpoint Central API endpoint.
+    :param token: A string, authentication token for API endpoint.
     :returns: A dict, Manage Engine asset data.
     :raises: ConnectionError: if unable to successfully make GET request to Manage Engine webserver.
     '''
