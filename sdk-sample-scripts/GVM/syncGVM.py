@@ -38,6 +38,12 @@ GVM_SOCKET_PATH = os.environ['GVM_SOCKET_PATH']
 GVM_CONN_METHOD = os.environ['GVM_CONN_METHOD']
 
 def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset]:
+    '''
+    Map asset attributes from API reponse and populate custom attributes and network interfaces.
+
+    :param json_input: a dict, API JSON response of asset data.
+    :returns: a list, asset data formatted for runZero import.  
+    '''
 
     assets: List[ImportAsset] = []
     for item in json_input:
@@ -68,7 +74,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
             osKey = key_list[osPos]
             os_name = baseAttr.get(osKey.replace('_name', '_value')).replace('/', ' ')
 
-        # create the network interface
+        # create the network interfaces
         network = build_network_interface(ips=[ip], mac=mac)
 
         # handle any additional values and insert into custom_attrs
@@ -103,7 +109,12 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
     ''' 
     This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
     is accepted in the ImportAsset
+
+    :param ips: A list, a list of IP addresses
+    :param mac: A string, a MAC address formatted as follows 00:11:22:AA:BB:CC
+    :returns: A list, a list of runZero network interface classes
     '''
+
     ip4s: List[IPv4Address] = []
     ip6s: List[IPv6Address] = []
     for ip in ips[:99]:
@@ -122,9 +133,12 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
 
 def import_data_to_runzero(assets: List[ImportAsset]):
     '''
-    The code below gives an example of how to create a custom source and upload valid assets to a site using
-    the new custom source.
+    Import assets to specified runZero Organization and Site using the specified Custom Source ID and Name.
+
+    :param assets: A list, list of assets formatted by the ImportAsset class from the runZero SDK.
+    :returns: None
     '''
+
     # create the runzero client
     client = runzero.Client()
 
