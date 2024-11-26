@@ -31,18 +31,19 @@ INTEGRATION_IMPORT_TASK_NAME = os.environ['INTEGRATION_IMPORT_TASK_NAME']
 
 # Configure Integration API variables (examples provided)
 # Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
-API_BASE_URL = os.environ['API_BASE_URL']
-API_URL = f'{API_BASE_URL}/api/v1/foobar'
+API_URL = f"{os.environ['API_BASE_URL']}/api/v1/foobar"
 API_KEY = os.environ['API_KEY']
-API_HEADERS = {'Accept': 'application/json',
-                 'Content-Type': 'application/json',
-                 'Authorization': f'Bearer {API_KEY}'}
 
 def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset]:
     '''
     This is an example function to highlight how to handle converting data from an API into the ImportAsset format that
     is required for uploading to the runZero platform. This function assumes that the json has been converted into a list 
     of dictionaries using `json.loads()` (or any similar functions).
+
+    Map asset attributes from API reponse and populate custom attributes and network interfaces.
+
+    :param json_input: a dict, API JSON response of asset data.
+    :returns: a list, asset data formatted for runZero import.  
     '''
 
     assets: List[ImportAsset] = []
@@ -98,7 +99,12 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
     ''' 
     This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
     is accepted in the ImportAsset
+
+    :param ips: A list, a list of IP addresses
+    :param mac: A string, a MAC address formatted as follows 00:11:22:AA:BB:CC
+    :returns: A list, a list of runZero network interface classes
     '''
+
     ip4s: List[IPv4Address] = []
     ip6s: List[IPv6Address] = []
     for ip in ips[:99]:
@@ -179,9 +185,12 @@ def build_vuln(vuln_details):
 
 def import_data_to_runzero(assets: List[ImportAsset]):
     '''
-    The code below gives an example of how to create a custom source and upload valid assets to a site using
-    the new custom source.
+    Import assets to specified runZero Organization and Site using the specified Custom Source ID and Name.
+
+    :param assets: A list, list of assets formatted by the ImportAsset class from the runZero SDK.
+    :returns: None
     '''
+
     # create the runzero client
     client = runzero.Client()
 
@@ -206,6 +215,29 @@ def import_data_to_runzero(assets: List[ImportAsset]):
     if import_task:
         print(f'task created! view status here: {RUNZERO_BASE_URL}/api/v1.0/tasks?task={import_task.id}')
 
+def get_assets(url=API_URL, token=API_KEY):
+    '''
+    Retrieve assets from API endpoint.
+    
+    :param url: A string, URL of API endpoint.
+    :param token: A string, authentication token for API endpoint.
+    :returns: A dict, asset data.
+    :raises: ConnectionError: if unable to successfully make GET request to webserver.
+    '''
+
+    headers = {'Accept': 'application/json',
+               'Content-Type': 'application/json',
+               'Authorization': f'Bearer {token}'}
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            print(f"Unable to retrieve assets from API. Received {response.status_code}")
+            exit()
+        return json.loads(response.content)
+    except ConnectionError as error:
+        print("No Response from server.", error)
+        exit()
+
 def parse_response(json_raw):
     '''
     Dummy function placeholder for any function that needs to parse or transform the Integration API response
@@ -217,8 +249,8 @@ def main():
     '''
     Your code to call the custom integration API here
     '''
-    response = requests.get(API_URL, headers=API_HEADERS)
-    json_raw = response.json()
+
+    json_raw = get_assets()
     parsed_json = parse_response(json_raw)
 
     # Format asset list for import into runZero
