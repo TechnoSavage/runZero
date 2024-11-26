@@ -34,6 +34,12 @@ KISMET_PHY = os.environ['KISMET_PHY']
 KISMET_KEY = os.environ['KISMET_KEY']
 
 def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset]:
+    '''
+    Map asset attributes from API reponse and populate custom attributes and network interfaces.
+
+    :param json_input: a dict, API JSON response of asset data.
+    :returns: a list, asset data formatted for runZero import.  
+    '''
 
     assets: List[ImportAsset] = []
     for item in json_input:
@@ -46,7 +52,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         name = item.get('kismet.device.base.commonname')
         first_seen = item.get('kismet.device.base.first.time')
 
-        # create the network interface
+        # create the network interfaces
         network = build_network_interface(ips=[], mac=mac)
 
         # handle any additional values and insert into custom_attrs
@@ -76,6 +82,10 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
     ''' 
     This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
     is accepted in the ImportAsset
+
+    :param ips: A list, a list of IP addresses
+    :param mac: A string, a MAC address formatted as follows 00:11:22:AA:BB:CC
+    :returns: A list, a list of runZero network interface classes
     '''
 
     ip4s: List[IPv4Address] = []
@@ -95,10 +105,12 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
 
 def import_data_to_runzero(assets: List[ImportAsset]):
     '''
-    The code below gives an example of how to create a custom source and upload valid assets to a site using
-    the new custom source.
-    '''
+    Import assets to specified runZero Organization and Site using the specified Custom Source ID and Name.
 
+    :param assets: A list, list of assets formatted by the ImportAsset class from the runZero SDK.
+    :returns: None
+    '''
+    
     # create the runzero client
     client = runzero.Client()
 
@@ -141,12 +153,16 @@ def get_kismet_assets(cookie=KISMET_KEY, uri=KISMET_URL, port=KISMET_PORT, phy=K
                'Accept': 'application/json'}
     try:
         response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            print(f"Unable to retrieve assets from Kismet. Received {response.status_code}")
+            exit()
         return json.loads(response.content)
     except ConnectionError as error:
         print("No Response from Kismet server.", error)
         exit()
 
 def main():
+    
     asset_json = get_kismet_assets()
 
     # Format asset list for import into runZero
