@@ -8,11 +8,11 @@
 import json
 import os
 import requests
+import runzero
 import uuid
 from flatten_json import flatten
 from ipaddress import ip_address
 from typing import Any, Dict, List
-import runzero
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
 from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask)
