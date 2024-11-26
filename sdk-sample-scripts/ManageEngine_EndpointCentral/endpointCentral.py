@@ -16,7 +16,6 @@ from runzero.api import CustomAssets, Sites
 from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask)
 
 # Configure runZero variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded values to make testing easier
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
 RUNZERO_CLIENT_ID = os.environ['RUNZERO_CLIENT_ID']
 RUNZERO_CLIENT_SECRET = os.environ['RUNZERO_CLIENT_SECRET']
@@ -28,10 +27,8 @@ MEEC_IMPORT_TASK_NAME = os.environ['MEEC_IMPORT_TASK_NAME']
 
 
 # Configure Manage Engine API variables
-# Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
-MEEC_BASE_URL = os.environ['MEEC_BASE_URL']
-MEEC_URL = f'{MEEC_BASE_URL}api/1.4/inventory/scancomputers'
-MEEC_KEY = os.environ['ME_KEY']
+MEEC_URL = f"{os.environ['MEEC_BASE_URL']}api/1.4/inventory/scancomputers"
+MEEC_KEY = os.environ['MEEC_KEY']
 
 def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset]:
     '''
@@ -55,7 +52,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
         addresses = item.get('ip_address', '').split(',')
         name = item.get('resource_name', '')
 
-        # create the network interface
+        # create the network interfaces
         interfaces = []
         for address in addresses:
             index = addresses.index(address)
@@ -94,7 +91,7 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
 
     :param ips: A list, a list of IP addresses
     :param mac: A string, a MAC address formatted as follows 00:11:22:AA:BB:CC
-    :returns: 
+    :returns: A list, a list of runZero network interface classes
     '''
     
     ip4s: List[IPv4Address] = []

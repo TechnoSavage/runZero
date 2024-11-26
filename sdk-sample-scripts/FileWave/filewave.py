@@ -27,12 +27,17 @@ FW_CUSTOM_SOURCE_ID = os.environ['FW_CUSTOM_SOURCE_ID']
 FW_IMPORT_TASK_NAME = os.environ['FW_IMPORT_TASK_NAME']
 
 # Configure FileWave variables
-FW_BASE_URL = os.environ['FW_BASE_URL']
-FW_API_URL = f'{FW_BASE_URL}/api/inv/api/v1/' # curl -s  -H "Authorization: $auth" https://$server_dns:/api/inv/api/v1/query_result/191
+FW_API_URL = f"{os.environ['FW_BASE_URL']}/api/inv/api/v1/" # curl -s  -H "Authorization: $auth" https://$server_dns:/api/inv/api/v1/query_result/191
 FW_API_KEY = os.environ['FW_API_KEY']
 FW_REPORT = os.environ['FW_REPORT']
 
 def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset]:
+    '''
+    Map asset attributes from API reponse and populate custom attributes and network interfaces.
+
+    :param json_input: a dict, API JSON response of asset data.
+    :returns: a list, asset data formatted for runZero import.  
+    '''
 
     assets: List[ImportAsset] = []
     for item in json_input:
@@ -54,13 +59,13 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
             networks.append(network)
 
         # handle any additional values and insert into custom_attrs
-        custom_attrs: Dict[str, CustomAttribute] = {}
+        custom_attrs: Dict[str] = {}
         for key, value in item.items():
             if isinstance(value, dict):
                 for k, v in value.items():
-                    custom_attrs[k] = CustomAttribute(str(v)[:1023])
+                    custom_attrs[k] = str(v)[:1023]
             else:
-               custom_attrs[key] = CustomAttribute(str(value))
+               custom_attrs[key] = str(value)
 
         # Build assets for import
         assets.append(
@@ -80,6 +85,10 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
     ''' 
     This function converts a mac and a list of strings in either ipv4 or ipv6 format and creates a NetworkInterface that
     is accepted in the ImportAsset
+
+    :param ips: A list, a list of IP addresses
+    :param mac: A string, a MAC address formatted as follows 00:11:22:AA:BB:CC
+    :returns: A list, a list of runZero network interface classes
     '''
     ip4s: List[IPv4Address] = []
     ip6s: List[IPv6Address] = []
@@ -99,8 +108,10 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
 
 def import_data_to_runzero(assets: List[ImportAsset]):
     '''
-    The code below gives an example of how to create a custom source and upload valid assets to a site using
-    the new custom source.
+    Import assets to specified runZero Organization and Site using the specified Custom Source ID and Name.
+
+    :param assets: A list, list of assets formatted by the ImportAsset class from the runZero SDK.
+    :returns: None
     '''
     # create the runzero client
     client = runzero.Client()
@@ -130,10 +141,10 @@ def get_assets(url=FW_API_URL, token=FW_API_KEY, report=FW_REPORT):
     '''
     Retrieve asset data from specified Filewave report.
         
-        :param url: A string, URL of Filewave instance.
-        :param token: A string, Filewave API Key.
-        :returns: a dict, JSON object of assets.
-        :raises: ConnectionError: if unable to successfully make GET request to console.
+    :param url: A string, URL of Filewave instance.
+    :param token: A string, Filewave API Key.
+    :returns: a dict, JSON object of assets.
+    :raises: ConnectionError: if unable to successfully make GET request to console.
     '''
 
     url = f"{url}/api/inv/api/v1/query_result/{report}"
@@ -144,6 +155,9 @@ def get_assets(url=FW_API_URL, token=FW_API_KEY, report=FW_REPORT):
                     'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
+        if response.status_code != 200:
+            print(f"Unable to retrieve assets from FileWave. Received {response.status_code}")
+            exit()
         content = response.content
         data = json.loads(content)
         return data
@@ -156,8 +170,8 @@ def reformat_response(raw_json):
     Function to reformat the API response by mapping the fields
     to the corresponding values for each asset in values.
          
-        :param raw_json: a dict, FileWave API response
-        :returns: a list of dictionaries. 
+    :param raw_json: a dict, FileWave API response
+    :returns: a list of dictionaries. 
     '''
     
     # assign reported fields as keys to all reported value sets
