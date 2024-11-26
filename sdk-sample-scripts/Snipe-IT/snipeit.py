@@ -6,8 +6,8 @@
 # Prerequisite: pip install runzero-sdk
 
 import json
-import requests
 import os
+import requests
 import uuid
 from flatten_json import flatten
 from ipaddress import ip_address
