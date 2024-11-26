@@ -1,6 +1,6 @@
 [Crowdstrike](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Crowdstrike)
 
-[SCCM/MECM](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#SCCM/MECM)
+[SCCM/MECM](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#SCCM-MECM)
 
 [Tanium](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Tanium)
 
@@ -61,7 +61,7 @@
 - systemProductName
 - ts
 
-## SCCM/MECM
+## SCCM-MECM
 
 - adLastLogonTime
 - adSiteName
