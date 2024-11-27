@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    dlScans.py, version 2.1
+    dlScans.py, version 2.2
     This script will download the scan data from the last 'n' processed tasks in an organization, 
     as specified by the user."""
 
@@ -20,7 +20,7 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('--version', action='version', version='%(prog)s 2.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.2')
     return parser.parse_args()
     
 def getTasks(url, token): 
@@ -32,8 +32,8 @@ def getTasks(url, token):
            :raises: ConnectionError: if unable to successfully make GET request to console."""
     
     url = f"{url}/api/v1.0/org/tasks"
-    #change {'search':'type": "scan'} to {'search':'type": "sample'} to retrieve traffic sampling tasks 
-    payload = {'search': 'type": "scan',
+    #change {'search':'type:scan'} to {'search':'type:sample'} to retrieve traffic sampling tasks 
+    payload = {'search': 'type:scan',
                'status':'processed'}
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
@@ -41,7 +41,6 @@ def getTasks(url, token):
         response = requests.get(url, headers=headers, params=payload)
         content = response.content
         data = json.loads(content)
-        print(data)
         return data
     except ConnectionError as error:
         raise error
