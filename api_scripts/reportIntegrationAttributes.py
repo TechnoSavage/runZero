@@ -60,7 +60,12 @@ def parseAttributes(data, source):
        :returns: a dict: parsed runZero asset data.
        :raises: TypeError: if dataset is not iterable."""
     
-    forAttrKey = f'@{source}.dev'
+    
+    forAttrKey = f''
+    if source == 'aws':
+        forAttrKey = '@aws.ec2'
+    else:    
+        forAttrKey = f'@{source}.dev'
     try:
         #Gather all integration source information into one list
         sourceList = []
