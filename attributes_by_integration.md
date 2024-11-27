@@ -1,3 +1,5 @@
+[AWS](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#AWS)
+
 [Crowdstrike](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Crowdstrike)
 
 [Defender](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Defender)
@@ -14,6 +16,43 @@
 
 [ServiceNow](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#ServiceNow)
 
+# Inbound
+
+## AWS
+
+### ec2
+
+```
+accountID
+architecture
+availabilityZone
+hypervisor
+id
+imageID
+instanceID
+instanceLifecycle
+instanceType
+ipv4
+ipv6
+keyName
+launchTimeTS
+macs
+privateDNS
+privateIP
+publicDNS
+publicIP
+region
+rootDeviceName
+rootDeviceType
+spotInstanceRequestID
+subnetID
+tags
+tenancy
+ts
+type
+virtualizationType
+vpcID
+```
 
 ## Crowdstrike
 
