@@ -1,0 +1,40 @@
+id,created_at,updated_at,created_by,type,category,severity,name,description,query,auto,alive_only,report_vuln,risk,exploitable,vid,cve,cvss2_base_score,cvss2_temporal_score,cvss3_base_score,cvss3_temporal_score,cpe23,solution,attributes
+,,,salesengineering@runzero.com,services,Policy,Info,CISA hardening guidance: Restrict internet accessible remote management,"Per guidance: 
+
+-If feasible, limit exposure of management traffic to the Internet. Only allow management via a limited and enforced network path, ideally only directly from dedicated administrative workstations.
+
+-Do not manage devices from the internet. Only allow device management from trusted devices on trusted networks.
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure",(type:router OR type:switch OR type:firewall) AND (port:80 OR port:443) AND has_public:true,false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,users,Policy,Info,CISA hardening guidance: User account validation and monitoring,"Per guidance: Monitor user and service account logins for anomalies that could indicate potential malicious activity. Validate all accounts and disable inactive accounts to reduce the attack surface. Monitor logins occurring internally and externally from the management environment.
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure",alive:t AND (isDisabled:true OR (source:googleworkspace suspended:t) OR (source:googleworkspace isEnforcedIn2Sv:f) OR (has:accountExpiresTS) OR (isDisabled:true) OR (passwordExpired:true OR msDS-UserPasswordExpiryTimeComputedTS:<now)),false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,assets,Policy,Info,CISA hardening guidance: End of life assets,"Per guidance: Ensure the inventory of devices and firmware in the environment are up to date to enable effective visibility and monitoring.
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure",os_eol_expired:t,false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,assets,Policy,Info,CISA hardening guidance: Monitor externally facing assets,"Per guidance: Closely monitor all devices that accept external connections from outside the corporate network
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure",has_public:t,false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,services,Policy,Info,CISA hardening guidance: Monitor IPsec tunnel usage,"Per guidance: Generic Routing Encapsulation (GRE) or IPsec tunnel usage
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure",protocol:ike,false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,assets,Policy,Info,CISA hardening guidance: Logical VLAN separation for like assets,"Per guidance: Additionally, as a general strategy, put devices with similar purposes in the same VLAN. For example, place all user workstations from a certain team in one VLAN, while putting another team with different functions in a separate VLAN.
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure",outlier:>=2,false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,services,Policy,Info,CISA hardening guidance: Restrict use of SNMPv1 and SNMPv2(c),"Per guidance: if using Simple Network Management Protocol (SNMP), ensure only SNMP v3 with encryption and authentication is used
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure",protocol:snmp1 or protocol:snmp2 or protocol:snmp2c,false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,services,Policy,Info,CISA hardening guidance: Disable CDP,"Per guidance: Disable all unnecessary discovery protocols, such as Cisco Discovery Protocol (CDP) or Link Layer Discovery Protocol (LLDP).
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure",protocol:cdp,false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,services,Policy,Info,CISA hardening guidance: TLS protocol version below TLS 1.3,"Per guidance: Ensure Transport Layer Security (TLS) v1.3 is used on any TLS-capable protocols to secure data in transit over a network.
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure","tls.supportedVersionNames:""SSL"" or tls.supportedVersionNames:""TLSv1.0"" or tls.supportedVersionNames:""TLSv1.1"" or tls.supportedVersionNames:""TLSv1.2""",false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,services,Policy,Info,CISA hardening guidance: Deprecated SSH protocol,"Per guidance: Disable Secure Shell (SSH) version 1
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure","banner:""SSH-1""",false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,services,Policy,Info,CISA hardening guidance: Plaintext services and protocols in use,"Per guidance: Disable any unnecessary, unused, exploitable, or plaintext services and protocols, such as Telnet, File Transfer Protocol (FTP), Trivial FTP (TFTP), SSH v1, Hypertext Transfer Protocol (HTTP) servers, and SNMP v1/v2c
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure","protocol:telnet or protocol:ftp or protocol:tftp or banner:""SSH-1"" or (protocol:http and not protocol:tls) or protocol:snmp1 or protocol:snmp2 or protocol:snmp2c",false,true,false,None,false,,,0,0,0,0,,,{}
+,,,salesengineering@runzero.com,services,Policy,Info,CISA hardening guidance: Monitor Externally exposed ports and services,"Per guidance: Conduct port-scanning and scanning of known internet-facing infrastructure
+
+Source: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure",has_public:t,false,true,false,None,false,,,0,0,0,0,,,{}
