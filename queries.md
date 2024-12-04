@@ -453,7 +453,7 @@ protocol:telnet AND NOT port:23
 ### SSH version 1 in use:
 
 ```
-protocol:ssh AND (banner:"SSH-1" OR banner:"%1.0%" OR banner:"%1.5-" OR banner:"1.99")
+protocol:ssh AND banner:"SSH-1"
 ```
 
 ### Detect OpenSSL version 3.0:
