@@ -450,10 +450,10 @@ type:switch AND (_asset.protocol:http AND NOT _asset.protocol:tls) AND ( html.in
 protocol:telnet AND NOT port:23
 ```
 
-### SSH version predating 2.0:
+### SSH version 1 in use:
 
 ```
-protocol:ssh AND (banner:"%1.0%" OR banner:"%1.5-" OR banner:"1.99")
+protocol:ssh AND (banner:"SSH-1" OR banner:"%1.0%" OR banner:"%1.5-" OR banner:"1.99")
 ```
 
 ### Detect OpenSSL version 3.0:
