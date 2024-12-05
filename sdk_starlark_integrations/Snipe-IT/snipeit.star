@@ -38,6 +38,7 @@ def build_assets(assets_json):
         # Map additional Snipe-IT fields as custom attributes
         name = asset.get('name', '')
         serial = asset.get('serial', '')
+        
 
         # parse IP addresses
         ipv4s = []
