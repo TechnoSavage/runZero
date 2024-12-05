@@ -36,12 +36,38 @@ def build_assets(assets_json):
             mac = None
 
         # Map additional Snipe-IT fields as custom attributes
+        age = asset.get('age', '')
         asset_tag = asset.get('asset_tag', '')
+        book_value = asset.get(str('book_value'), '')
         byod = asset.get(str('byod'), '')
-        eol = asset.get(str('eol'), 'NA')
+        checkin_count = asset.get(str('checkin_counter'), '')
+        checkout_count = asset.get(str('checkout_counter'), '')
+        company_info = asset.get('company', {})
+        if company_info:
+            company_name = company_info.get('')
+        created_info = asset.get('created_at', {})
+        if created_info:
+            created = created_info.get('datetime', '')
+        else:
+            created = ''
+        eol = asset.get(str('eol'), '')
         eol_date = asset.get(str('asset_eol_date'), 'NA')
+        expected_checkin = asset.get(str('expected_checkin'), '')
+        last_audit = asset.get('last_audit_date', '')
+        last_checkout = asset.get(str('last_checkout'), '')
+        location_info = asset.get('location', {})
+        if location_info:
+            location = location_info.get('name', '')
+        else:
+            location = ''
         model_number = asset.get('model_number', '')
         name = asset.get('name', '')
+        next_audit = asset.get('next_audit_date', '')
+        notes = asset.get('notes', '')
+        order_number = asset.get(str('order_number'), '')
+        purchase_cost = asset.get('purchase_cost', '')
+        purchase_date = asset.get('purchase_date', '')
+        requests_count = asset.get(str('requests_counter'), '')
         serial = asset.get('serial', '')
         status_info = asset.get('status_label', {})
         if status_info:
@@ -55,6 +81,14 @@ def build_assets(assets_json):
             supplier = supplier_info('name', '')
         else:
             supplier = ''
+        updated_info = asset.get('updated_at', {})
+        if updated_info:
+            updated = updated_info('datetime', '')
+        else:
+            updated = ''
+        user_checkout = asset.get(str('user_can_checkout'), '')
+        warranty_months = asset.get('warranty_months', '')
+        warranty_exp = asset.get(str('warranty_expires'), '')
 
 
 
@@ -88,16 +122,35 @@ def build_assets(assets_json):
                 manufacturer=manufacturer,
                 networkInterfaces=[network],
                 customAttributes={
+                    "age": age,
                     "asset.tag": asset_tag,
+                    "book.value": book_value,
                     "byod": byod,
+                    "checkin.count": checkin_count,
+                    "checkout.count": checkout_count,
                     "eol": eol,
                     "eol.date": eol_date,
+                    "expected.checkin": expected_checkin,
+                    "first.seen": created,
+                    "last.audit": last_audit,
+                    "last.checkout": last_checkout,
+                    "last.seen": updated,
+                    "location": location,
                     "model.number": model_number,
                     "name": name,
+                    "next.audit": next_audit,
+                    "notes": notes,
+                    "order.number": order_number,
+                    "purchase.cost": purchase_cost,
+                    "purchase.date": purchase_date,
+                    "requests.count": requests_count,
                     "serial.number": serial,
                     "status.name": status_name,
                     "status.type": status_type,
-                    "supplier.name": supplier
+                    "supplier.name": supplier,
+                    "user.checkout": user_checkout,
+                    "warranty.months": warranty_months,
+                    "warranty.expiration": warranty_exp
                 }
             )
         )
