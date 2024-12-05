@@ -36,9 +36,15 @@ def build_assets(assets_json):
             mac = None
 
         # Map additional Snipe-IT fields as custom attributes
+        asset_tag = asset.get('asset_tag', '')
+        byod = asset.get(str('byod'), '')
+        eol = asset.get(str('eol'), 'NA')
+        eol_date = asset.get(str('asset_eol_date'), 'NA')
+        model_number = asset.get('model_number', '')
         name = asset.get('name', '')
         serial = asset.get('serial', '')
-        
+
+
 
         # parse IP addresses
         ipv4s = []
@@ -69,6 +75,11 @@ def build_assets(assets_json):
                 manufacturer=manufacturer,
                 networkInterfaces=[network],
                 customAttributes={
+                    "asset.tag": asset_tag,
+                    "byod": byod,
+                    "eol": eol,
+                    "eol.date": eol_date,
+                    "model.number": model_number,
                     "name": name,
                     "serial.number": serial
                 }
