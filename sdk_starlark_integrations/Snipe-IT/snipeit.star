@@ -4,6 +4,7 @@ load('net', 'ip_address')
 load('http', http_post='post', http_get='get', 'url_encode')
 load('uuid', 'new_uuid')
 
+#Change the URL to match your Snipe-IT server
 SNIPE_BASE_URL = 'https://<domain or IP>:<port>'
 RUNZERO_REDIRECT = 'https://console.runzero.com/'
 
@@ -83,7 +84,7 @@ def build_assets(assets_json):
             supplier = ''
         updated_info = asset.get('updated_at', {})
         if updated_info:
-            updated = updated_info('datetime', '')
+            updated = updated_info.get('datetime', '')
         else:
             updated = ''
         user_checkout = asset.get(str('user_can_checkout'), '')
