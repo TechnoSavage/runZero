@@ -4,7 +4,7 @@ load('net', 'ip_address')
 load('http', http_post='post', http_get='get', 'url_encode')
 load('uuid', 'new_uuid')
 
-SNIPE_BASE_URL = 'https://<domain or IP>:<port>'
+SNIPE_BASE_URL = http://192.168.68.64 #'https://<domain or IP>:<port>'
 RUNZERO_REDIRECT = 'https://console.runzero.com/'
 
 def build_assets(assets_json):
