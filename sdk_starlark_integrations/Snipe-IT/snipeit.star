@@ -4,25 +4,46 @@ load('net', 'ip_address')
 load('http', http_post='post', http_get='get', 'url_encode')
 load('uuid', 'new_uuid')
 
-SNIPE_BASE_URL = 'https://<domain or IP>:<port>'
+SNIPE_BASE_URL = 'http://192.168.68.64' #'https://<domain or IP>:<port>'
 RUNZERO_REDIRECT = 'https://console.runzero.com/'
 
 def build_assets(assets_json):
     assets_import = []
-    for item in assets_json:
-        id = item.get(item['id'], new_uuid)
-        model = item.get(item['model']['value'], '')
-        device_type = item.get(item['category']['name'], '')
-        man = item.get(item['manufacturer']['name'], '')
+    for asset in assets_json:
+        id = asset.get(str('id'), new_uuid)
+        model_info = asset.get('model', {})
+        if model_info:
+            model = model_info.get('name', '')
+        else:
+            model = ''
+        device_info = asset.get('category', {})
+        if device_info:
+            device_type = device_info.get('name', '')
+        else:
+            device_type = ''
+        manuf_info = asset.get('manufacturer', {})
+        if manuf_info:
+            manufacturer = manuf_info.get('name', '')
+        else:
+            manufacturer = ''
         # Map custom fields from Snipe-IT
-        custom_fields = item.get('custom_fields', '')
-        mac = item.get(custom_fields['MAC Address']['value'], None)
+        custom_fields = asset.get('custom_fields', {})
+        if custom_fields:
+            mac_info =custom_fields.get('MAC Address', {})
+            if mac_info:
+                mac = mac_info.get('value', None)
+        else:
+            mac = None
+
+        # Map additional Snipe-IT fields as custom attributes
+        name = asset.get('name', '')
+        serial = asset.get('serial', '')
 
         # parse IP addresses
         ipv4s = []
         ipv6s = []
         ips = []
-        networks = item.get('networks', {})
+        networks = asset.get('networks', {})
         if networks:
             ipv4s = networks.get('v4', [])
             ipv6s = networks.get('v6', [])
@@ -38,17 +59,17 @@ def build_assets(assets_json):
                     ips.append(addr)        
 
         network = build_network_interface(ips=[], mac=mac)
-
-        # Map additional fields as custom attributes
-                
+        
         assets_import.append(
             ImportAsset(
                 id=str(id),
                 model=model,
                 deviceType=device_type,
-                manufacturer=man,
+                manufacturer=manufacturer,
                 networkInterfaces=[network],
                 customAttributes={
+                    "name": name,
+                    "serial.number": serial
                 }
             )
         )
@@ -73,22 +94,21 @@ def build_network_interface(ips, mac):
 
 def main(**kwargs):
     # assign API key from kwargs
-    token = kwargs['api_key']
+    token = kwargs['access_secret']
 
     # get assets
     assets = []
     url = '{}/{}'.format(SNIPE_BASE_URL, 'api/v1/hardware')
-    assets = http_get(url, headers={'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer' + token})
+    assets = http_get(url, headers={'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token})
     if assets.status_code != 200:
-        print('failed to retrieve assets' + assets)
+        print('failed to retrieve assets' + str(assets))
         return None
 
-    assets_json = json_decode(assets.body['rows'])
-    print(assets_json)
+    assets_json = json_decode(assets.body)['rows']
 
     # build asset import
-    # assets_import = build_assets(assets_json)
-    # if not assets_import:
-    #     print('no assets')
+    assets_import = build_assets(assets_json)
+    if not assets_import:
+         print('no assets')
     
-    #return assets_import
+    return assets_import
