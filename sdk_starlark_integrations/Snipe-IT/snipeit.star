@@ -43,6 +43,19 @@ def build_assets(assets_json):
         model_number = asset.get('model_number', '')
         name = asset.get('name', '')
         serial = asset.get('serial', '')
+        status_info = asset.get('status_label', {})
+        if status_info:
+            status_name = status_info.get('name', '')
+            status_type = status_info.get('status_type', '')
+        else:
+            status_name = ''
+            status_type = ''
+        supplier_info = asset.get('supplier', {})
+        if supplier_info:
+            supplier = supplier_info('name', '')
+        else:
+            supplier = ''
+
 
 
 
@@ -81,7 +94,10 @@ def build_assets(assets_json):
                     "eol.date": eol_date,
                     "model.number": model_number,
                     "name": name,
-                    "serial.number": serial
+                    "serial.number": serial,
+                    "status.name": status_name,
+                    "status.type": status_type,
+                    "supplier.name": supplier
                 }
             )
         )
