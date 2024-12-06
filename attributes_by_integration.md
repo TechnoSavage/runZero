@@ -32,7 +32,7 @@
 
 ## AWS
 
-### ec2
+### ec2 (@aws.ec2)
 
 ```
 accountID
@@ -68,7 +68,7 @@ vpcID
 
 ## Azure
 
-### VMs
+### VMs (@azure.vmss)
 
 ```
 clientID
@@ -110,7 +110,7 @@ type
 vmID
 ```
 
-### LBs
+### LBs (@azure.lb)
 
 ```
 backendAddressPools.0.loadBalancerBackendAddress.0.name
@@ -165,6 +165,8 @@ type
 
 ## Censys
 
+### (@censys.host)
+
 ```
 address
 addresses
@@ -198,6 +200,8 @@ ts
 ```
 
 ## Crowdstrike
+
+### (@crowdstrike.dev)
 
 ```
 agentLoadFlags
@@ -253,6 +257,8 @@ ts
 
 ## Defender
 
+### (@ms365defender.dev)
+
 ```
 agentVersion
 computerDNSName
@@ -282,7 +288,7 @@ version
 
 ## Google CLoud
 
-### VMs
+### VMs (@gcp.vm)
 
 ```
 canIPForward
@@ -331,7 +337,7 @@ type
 zone
 ```
 
-### LBs
+### LBs (@gcp.lb)
 
 ```
 clientID
@@ -387,7 +393,7 @@ selfLink
 ts
 ```
 
-### DBs
+### DBs (@gcp.cloudsql)
 
 ```
 addresses
@@ -457,7 +463,7 @@ ts
 
 ## Google Workspace
 
-### Endpoints
+### Endpoints (@googleworkspace.endpoint)
 
 ```
 android.enabledUnknownSources
@@ -485,7 +491,7 @@ serialNumber
 ts
 ```
 
-### Mobile
+### Mobile (@googleworkspace.mobile)
 
 ```
 adbStatus
@@ -518,6 +524,8 @@ unknownSourcesStatus
 
 ## Nessus
 
+### (@nessus.dev)
+
 ```
 firstSeenTS
 fqdns
@@ -536,6 +544,8 @@ ts
 ```
 
 ## Rapid7
+
+### (@rapid7.dev)
 
 ```
 id
@@ -619,6 +629,8 @@ ts
 ```
 
 ## SentinelOne
+
+### (@sentinelone.dev)
 
 ```
 accountID
@@ -754,6 +766,8 @@ ts
 
 ## Tenable
 
+### (@tenable.dev)
+
 ```
 biosUUID
 createdAtTS
@@ -788,6 +802,8 @@ updatedAtTS
 ```
 
 ## Qualys
+
+### (@qualys.dev)
 
 ```
 detection.firstFoundTS
