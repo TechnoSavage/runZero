@@ -155,7 +155,7 @@ def get_assets(url=SNIPE_API_URL, token=SNIPE_API_KEY):
             exit()
         return json.loads(response.content)
     except ConnectionError as error:
-        print("No Response from Manage Engine server.", error)
+        print("No Response from Snipe-IT server.", error)
         exit()    
 
 def main():
