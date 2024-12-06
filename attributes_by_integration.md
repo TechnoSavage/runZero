@@ -8,6 +8,10 @@
 
 [Google Cloud](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#google-cloud)
 
+[Google Workspace](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#google-workspace)
+
+[Nessus](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#nessus)
+
 [Rapid7](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#rapid7)
 
 [SCCM/MECM](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#sccm-mecm)
@@ -412,6 +416,86 @@ settings.storageAutoResize
 settings.storageAutoResizeLimit
 settings.tier
 state
+ts
+```
+
+## Google Workspace
+
+### Endpoints
+
+```
+android.enabledUnknownSources
+android.ownerProfileAccount
+android.supportsWorkProfile
+clientTypes
+createdTS
+deviceType
+email
+email.names
+email.uid
+enabledDeveloperOptions
+enabledUsbDebugging
+encryptionState
+hostname
+id
+lastSyncTS
+model
+osVersion
+ownerType
+releaseVersion
+resourceName
+securityPatchTS
+serialNumber
+ts
+```
+
+### Mobile
+
+```
+adbStatus
+developerOptionsStatus
+deviceCompromisedStatus
+devicePasswordStatus
+email
+email.names
+email.uid
+encryptionStatus
+etag
+firstSyncTS
+id
+kind
+lastSyncTS
+managedAccountIsOnOwnerProfile
+model
+os
+owner
+privilege
+releaseVersion
+resourceId
+securityPatchLevel
+status
+supportsWorkProfile
+ts
+type
+unknownSourcesStatus
+```
+
+## Nessus
+
+```
+firstSeenTS
+fqdns
+id
+ipv4s
+lastScanTimeTS
+lastSeenTS
+macAddresses
+match.criteria
+operatingSystems
+policyUsed
+scannedIPv4s
+systemTypes
+traceroute
 ts
 ```
 
