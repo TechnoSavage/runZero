@@ -102,6 +102,30 @@ def parseGCP(data):
     except AttributeError as error:
         print("Data is not JSON object; make sure provided API key is correct")
         exit()
+
+def parseGoogleWorkspace(data):
+    """Search Google Workspace source assets "foreign attributes" and extract all keys pertaining to the source.
+     
+       :param data: a dict, runZero JSON asset data.
+       :returns: a dict: parsed runZero asset data.
+       :raises: TypeError: if dataset is not iterable."""
+       
+    try:
+        endpoints = []
+        mobile = []
+        for item in data:
+            for source in item['foreign_attributes']:
+                endpoints.append(item['foreign_attributes'].get('@googleworkspace.endpoint', []))
+                mobile.append(item['foreign_attributes'].get('@googleworkspace.mobile', []))
+        #Gather all integration keys (attributes) in a list and deduplicate
+        epAttrList = set([key for group in endpoints for item in group for key in item])
+        moAttrList = set([key for group in mobile for item in group for key in item])
+        return(epAttrList, moAttrList)
+    except TypeError as error:
+        raise error
+    except AttributeError as error:
+        print("Data is not JSON object; make sure provided API key is correct")
+        exit()
     
 def parseAttributes(data, source):
     """Search assets "foreign attributes" and extract all keys pertaining to the source.
@@ -120,6 +144,9 @@ def parseAttributes(data, source):
         return attributeList
     elif source == 'gcp':
         attributeList = parseGCP(data)
+        return attributeList
+    elif source == 'googleworkspace':
+        attributeList = parseGoogleWorkspace(data)
         return attributeList
     else:    
         forAttrKey = f'@{source}.dev'
