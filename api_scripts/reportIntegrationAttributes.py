@@ -66,13 +66,37 @@ def parseAzure(data):
             for source in item['foreign_attributes']:
                 vms.append(item['foreign_attributes'].get('@azure.vmss', []))
                 lbs.append(item['foreign_attributes'].get('@azure.lb', []))
-        #Gather all integration keys (attributes) in a list
-        vmAttrList = [key for group in vms for item in group for key in item]
-        lbAttrList = [key for group in lbs for item in group for key in item]
-        # Deduplicate keys
-        vmAttrList = set(vmAttrList)
-        lbAttrList = set(lbAttrList)
+        #Gather all integration keys (attributes) in a list and deduplicate
+        vmAttrList = set([key for group in vms for item in group for key in item])
+        lbAttrList = set([key for group in lbs for item in group for key in item])
         return(vmAttrList, lbAttrList)
+    except TypeError as error:
+        raise error
+    except AttributeError as error:
+        print("Data is not JSON object; make sure provided API key is correct")
+        exit()
+
+def parseGCP(data):
+    """Search Google Cloud source assets "foreign attributes" and extract all keys pertaining to the source.
+     
+       :param data: a dict, runZero JSON asset data.
+       :returns: a dict: parsed runZero asset data.
+       :raises: TypeError: if dataset is not iterable."""
+       
+    try:
+        vms = []
+        lbs = []
+        dbs = []
+        for item in data:
+            for source in item['foreign_attributes']:
+                vms.append(item['foreign_attributes'].get('@gcp.vm', []))
+                lbs.append(item['foreign_attributes'].get('@gcp.lb', []))
+                dbs.append(item['foreign_attributes'].get('@gcp.cloudsql', []))
+        #Gather all integration keys (attributes) in a list and deduplicate
+        vmAttrList = set([key for group in vms for item in group for key in item])
+        lbAttrList = set([key for group in lbs for item in group for key in item])
+        dbAttrList = set([key for group in dbs for item in group for key in item])
+        return(vmAttrList, lbAttrList, dbAttrList)
     except TypeError as error:
         raise error
     except AttributeError as error:
@@ -93,6 +117,9 @@ def parseAttributes(data, source):
         forAttrKey = '@aws.ec2'
     elif source == 'azure':
         attributeList = parseAzure(data)
+        return attributeList
+    elif source == 'gcp':
+        attributeList = parseGCP(data)
         return attributeList
     else:    
         forAttrKey = f'@{source}.dev'
