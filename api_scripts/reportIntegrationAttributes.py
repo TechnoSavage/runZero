@@ -142,6 +142,8 @@ def parseAttributes(data, source):
     elif source == 'azure':
         attributeList = parseAzure(data)
         return attributeList
+    elif source == 'censys':
+        forAttrKey = '@censys.host'
     elif source == 'gcp':
         attributeList = parseGCP(data)
         return attributeList
