@@ -1,26 +1,26 @@
-[AWS](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#AWS)
+[AWS](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#aws)
 
-[Azure](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Azure)
+[Azure](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#azure)
 
-[Crowdstrike](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Crowdstrike)
+[Crowdstrike](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#crowdstrike)
 
-[Defender](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Defender)
+[Defender](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#defender)
 
-[Google Cloud](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Google%20Cloud)
+[Google Cloud](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#google-cloud)
 
-[Rapid7](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Rapid7)
+[Rapid7](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#rapid7)
 
-[SCCM/MECM](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#SCCM-MECM)
+[SCCM/MECM](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#sccm-mecm)
 
-[SentinelOne](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#SentinelOne)
+[SentinelOne](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#sentinelone)
 
-[Tanium](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Tanium)
+[Tanium](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#tanium)
 
-[Tenable](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Tenable)
+[Tenable](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#tenable)
 
-[Qualys](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Qualys)
+[Qualys](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#qualys)
 
-[ServiceNow](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#ServiceNow)
+[ServiceNow](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#servicenow)
 
 # Inbound
 
