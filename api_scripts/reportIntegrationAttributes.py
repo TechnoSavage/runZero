@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    reportIntegrationAttributes.py, version 1.0
+    reportIntegrationAttributes.py, version 1.1
     Specify an integration source in order to generate a list of all discovered attributes reported by that source."""
 
 import argparse
@@ -21,7 +21,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.1')
     return parser.parse_args()
     
 def getAssets(url, token, filter='', fields=''):
@@ -52,6 +52,33 @@ def getAssets(url, token, filter='', fields=''):
         content = "No Response"
         raise error
     
+def parseAzure(data):
+    """Search Azure source assets "foreign attributes" and extract all keys pertaining to the source.
+     
+       :param data: a dict, runZero JSON asset data.
+       :returns: a dict: parsed runZero asset data.
+       :raises: TypeError: if dataset is not iterable."""
+       
+    try:
+        vms = []
+        lbs = []
+        for item in data:
+            for source in item['foreign_attributes']:
+                vms.append(item['foreign_attributes'].get('@azure.vmss', []))
+                lbs.append(item['foreign_attributes'].get('@azure.lb', []))
+        #Gather all integration keys (attributes) in a list
+        vmAttrList = [key for group in vms for item in group for key in item]
+        lbAttrList = [key for group in lbs for item in group for key in item]
+        # Deduplicate keys
+        vmAttrList = set(vmAttrList)
+        lbAttrList = set(lbAttrList)
+        return(vmAttrList, lbAttrList)
+    except TypeError as error:
+        raise error
+    except AttributeError as error:
+        print("Data is not JSON object; make sure provided API key is correct")
+        exit()
+    
 def parseAttributes(data, source):
     """Search assets "foreign attributes" and extract all keys pertaining to the source.
      
@@ -61,24 +88,19 @@ def parseAttributes(data, source):
        :raises: TypeError: if dataset is not iterable."""
     
     
-    forAttrKey = f''
+    forAttrKey = ''
     if source == 'aws':
         forAttrKey = '@aws.ec2'
+    elif source == 'azure':
+        attributeList = parseAzure(data)
+        return attributeList
     else:    
         forAttrKey = f'@{source}.dev'
     try:
         #Gather all integration source information into one list
-        sourceList = []
-        for item in data:
-            for source in item['foreign_attributes'][forAttrKey]:
-                sourceList.append(source)
-        #Gather all integration keys (attributes) in a list
-        attributeList = []
-        for item in sourceList:
-            for key in item:
-                attributeList.append(key)
-        # Deduplicate keys
-        attributeList = set(attributeList)
+        sourceList = [source for item in data for source in item['foreign_attributes'][forAttrKey]]
+        #Gather all integration keys (attributes) in a list and deduplicate keys
+        attributeList = set([key for item in sourceList for key in item])
         return(attributeList)
     except TypeError as error:
         raise error
@@ -128,7 +150,11 @@ def main():
     fields = 'foreign_attributes'
     assets = getAssets(args.consoleURL, token, search, fields)
     results = parseAttributes(assets, args.search)
-    outputFormat(args.output, fileName, sorted(results))
+    if type(results) is tuple:
+        for result in results:
+            outputFormat(args.output, fileName, sorted(result))
+    else:
+        outputFormat(args.output, fileName, sorted(results))
     
 if __name__ == "__main__":
     main()
