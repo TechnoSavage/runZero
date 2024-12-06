@@ -1,12 +1,18 @@
 [AWS](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#AWS)
 
+[Azure](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Azure)
+
 [Crowdstrike](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Crowdstrike)
 
 [Defender](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Defender)
 
+[Google Cloud](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Google%20Cloud)
+
 [Rapid7](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Rapid7)
 
 [SCCM/MECM](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#SCCM-MECM)
+
+[SentinelOne](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#SentinelOne)
 
 [Tanium](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#Tanium)
 
