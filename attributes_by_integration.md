@@ -2,6 +2,8 @@
 
 [Azure](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#azure)
 
+[Censys](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#censys)
+
 [Crowdstrike](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#crowdstrike)
 
 [Defender](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#defender)
@@ -159,6 +161,40 @@ subscriptionID
 tenantID
 ts
 type
+```
+
+## Censys
+
+```
+address
+addresses
+asUpdatedAtTS
+asn.bgpPrefix
+asn.countryCode
+asn.description
+asn.name
+asn.number
+dns.names
+id
+lastUpdatedAtTS
+location.city
+location.continent
+location.coordinates.latitude
+location.coordinates.longitude
+location.country
+location.countryCode
+location.postalCode
+location.province
+location.registeredCountry
+location.registeredCountryCode
+location.timezone
+locationUpdatedAtTS
+match.criteria
+os.part
+os.product
+os.source
+os.uniformResourceIdentifier
+ts
 ```
 
 ## Crowdstrike
