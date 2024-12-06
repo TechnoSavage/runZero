@@ -91,9 +91,6 @@ def build_assets(assets_json):
         warranty_months = asset.get('warranty_months', '')
         warranty_exp = asset.get(str('warranty_expires'), '')
 
-
-
-
         # parse IP addresses
         ipv4s = []
         ipv6s = []
