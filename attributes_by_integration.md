@@ -709,6 +709,35 @@ userActionsNeeded
 uuid
 ```
 
+## Shodan
+
+### (@shodan.dev)
+
+```
+host.asn
+host.city
+host.countryCode
+host.countryName
+host.domains
+host.hostnames
+host.ip
+host.ipStr
+host.isp
+host.lastUpdateTS
+host.latitude
+host.longitude
+host.org
+host.os
+host.ports
+host.regionCode
+host.tags
+host.vulns
+id
+service.firstFoundTS
+service.lastFoundTS
+ts
+```
+
 ## Tanium
 
 ```
