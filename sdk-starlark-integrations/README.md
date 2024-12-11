@@ -8,6 +8,8 @@
 
 - Click the "Add custom integration" button at the top right of the screen
 
+![configure custom integration](https://github.com/TechnoSavage/runZero/blob/main/sdk-starlark-integrations/img-resources/img_2.png?raw=true)
+
 ## Configure credentials
 
 
