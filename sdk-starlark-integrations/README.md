@@ -4,7 +4,7 @@
 
 ## Create custom integration
 
-![create custom integration](https://github.com/TechnoSavage/runZero/blob/main/sdk-starlark-integrations/img_resources/image_1.jpg?raw=true)
+![create custom integration](https://github.com/TechnoSavage/runZero/blob/main/sdk-starlark-integrations/img_resources/img_1.png?raw=true)
 
 - Navigate 
 
