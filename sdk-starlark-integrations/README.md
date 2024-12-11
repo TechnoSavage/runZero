@@ -1,10 +1,8 @@
-![alt text](https://github.com/TechnoSavage/runZero/blob/main/sdk-starlark-integrations/img_resources/image.jpg?raw=true)
-
 # Using Starlark scripts for custom integrations
 
 ## Create custom integration
 
-![create custom integration](https://github.com/TechnoSavage/runZero/blob/main/sdk-starlark-integrations/img_resources/img_1.png?raw=true)
+![create custom integration](https://github.com/TechnoSavage/runZero/blob/main/sdk-starlark-integrations/img-resources/img_1.png?raw=true)
 
 - Navigate 
 
