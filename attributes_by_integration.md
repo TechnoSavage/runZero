@@ -20,6 +20,8 @@
 
 [SentinelOne](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#sentinelone)
 
+[Shodan](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#shodan)
+
 [Tanium](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#tanium)
 
 [Tenable](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#tenable)
@@ -286,7 +288,7 @@ riskScore
 version
 ```
 
-## Google CLoud
+## Google Cloud
 
 ### VMs (@gcp.vm)
 
