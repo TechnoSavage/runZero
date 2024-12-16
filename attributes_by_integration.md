@@ -1,3 +1,5 @@
+[Active Directory](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#active-directory)
+
 [AWS](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#aws)
 
 [Azure](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#azure)
@@ -35,6 +37,44 @@
 [ServiceNow](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#servicenow)
 
 # Inbound
+
+## Active Directory
+
+### (@ldap.computer)
+
+```
+badPwdCount
+cn
+codePage
+countryCode
+dNSHostName
+description
+distinguishedName
+id
+instanceType
+isCriticalSystemObject
+lastLogonTS
+lastLogonTimestampTS
+localPolicyFlags
+logonCount
+memberOf
+name
+objectCategory
+objectClass
+objectGUID
+objectSid
+operatingSystem
+operatingSystemVersion
+primaryGroupID
+pwdLastSetTS
+sAMAccountName
+sAMAccountType
+ts
+userAccountControl
+userCertificate
+whenChangedTS
+whenCreatedTS
+```
 
 ## AWS
 
