@@ -109,7 +109,6 @@ def main():
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
-    attrsSNOW = []
     assets = getSnowAssets(args.consoleURL, token)
     attrsSNOW = parseSNOWAttributes(assets) 
     attrsSNOW = set(attrsSNOW)
