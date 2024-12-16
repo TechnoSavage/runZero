@@ -105,23 +105,13 @@ def writeFile(fileName, contents):
 def main():
     args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f"{args.path}Asset_Serial_Numbers_{str(datetime.datetime.now(datetime.timezone.utc))}"
+    fileName = f"{args.path}SNOW_attributes_{str(datetime.datetime.now(datetime.timezone.utc))}"
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
     attrsSNOW = []
-    endpoints = getSnowAssets(args.consoleURL, token, filter='type:desktop or type:server or type:laptop')
-    endpointResults = parseSNOWAttributes(endpoints)
-    for item in endpointResults:
-        attrsSNOW.append(item)
-    infrastructure = getSnowAssets(args.consoleURL, token, filter='type:router or type:switch or type:firewall or type:wap')
-    infraResults = parseSNOWAttributes(infrastructure)
-    for item in infraResults:
-        attrsSNOW.append(item)
-    other = getSnowAssets(args.consoleURL, token, filter='type:"ip camera" or type:"ip phone" or type:"game console" or type:nas or type:"device server" or type:plc or type:hmi or type:bacnet')
-    otherResults = parseSNOWAttributes(other)
-    for item in otherResults:
-        attrsSNOW.append(item)
+    assets = getSnowAssets(args.consoleURL, token)
+    attrsSNOW = parseSNOWAttributes(assets) 
     attrsSNOW = set(attrsSNOW)
     outputFormat(args.output, fileName, sorted(attrsSNOW))
     
