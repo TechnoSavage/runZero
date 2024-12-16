@@ -84,4 +84,4 @@
 
 - Custom integration sources can be queried using the `custom_integration` keyword followed by the source name as defined in the [Create custom integration](https://github.com/TechnoSavage/runZero/blob/main/sdk-starlark-integrations/README.md#Create-custom-integration) step. E.g. `custom_integration:snipe-it`
 
-- Custom integration attributes can be queried just like any other integration attribute. Custom integration sources with have the `.custom` suffix in the keyword value. For example, a custom integration called "snipe-it" that reports an asset attribute of "deviceType" would have a keyword like the following with shows a reported value of "WAP" `@snipe-it.custom.deviceType:="WAP"`.
+- Custom integration attributes can be queried just like any other integration attribute. Custom integration sources with have the `.custom` suffix in the keyword. For example, a custom integration called "snipe-it" that reports an asset attribute of "deviceType" would have a keyword like the following with shows a reported value of "WAP" `@snipe-it.custom.deviceType:="WAP"`.
