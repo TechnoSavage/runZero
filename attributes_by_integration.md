@@ -209,6 +209,10 @@ ts
 type
 ```
 
+## Azure AD
+
+### ()
+
 ## Censys
 
 ### (@censys.host)
@@ -566,6 +570,50 @@ supportsWorkProfile
 ts
 type
 unknownSourcesStatus
+```
+
+## Intune
+
+### (@intune.dev)
+
+```
+azureADDeviceID
+azureADRegistered
+complianceGracePeriodExpirationDateTimeTS
+complianceState
+deviceCategoryDisplayName
+deviceEnrollmentType
+deviceName
+deviceRegistrationState
+easActivated
+easActivationDateTimeTS
+easDeviceID
+enrolledDateTimeTS
+exchangeAccessState
+exchangeAccessStateReason
+exchangeLastSuccessfulSyncDateTimeTS
+freeStorageSpaceInBytes
+id
+isEncrypted
+isSupervised
+jailBroken
+lastSyncDateTimeTS
+managedDeviceName
+managedDeviceOwnerType
+managementAgent
+manufacturer
+model
+operatingSystem
+osVersion
+partnerReportedThreatState
+physicalMemoryInBytes
+serialNumber
+totalStorageSpaceInBytes
+ts
+userDisplayName
+userID
+userPrincipalName
+wiFiMacAddress
 ```
 
 ## Miradore
@@ -1001,7 +1049,8 @@ addresses_scope
 alive
 asset_id
 comments
-detected_by_domains
+detected_by
+domains
 first_discovered
 has_public
 hw_version
@@ -1040,3 +1089,8 @@ type
 virtual
 virtual_type
 ```
+
+## Splunk
+
+### From runZero Splunk API to Splunk sotre connector
+
