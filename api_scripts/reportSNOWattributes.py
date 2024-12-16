@@ -32,7 +32,7 @@ def getSnowAssets(url, token, filter='', fields=''):
         :returns: a dict, JSON object of assets.
         :raises: ConnectionError: if unable to successfully make GET request to console."""
 
-    url = f"{url}/api/v1.0//export/org/assets.servicegraph.json"
+    url = f"{url}/api/v1.0//export/org/assets/sync/created/assets.json"
     params = {'search': filter,
               'fields': fields}
     payload = ''
