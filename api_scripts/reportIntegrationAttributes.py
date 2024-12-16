@@ -150,6 +150,8 @@ def parseAttributes(data, source):
     elif source == 'googleworkspace':
         attributeList = parseGoogleWorkspace(data)
         return attributeList
+    elif source == 'ldap':
+        forAttrKey = '@ldap.computer'
     else:    
         forAttrKey = f'@{source}.dev'
     try:
