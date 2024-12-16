@@ -12,6 +12,8 @@
 
 [Google Workspace](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#google-workspace)
 
+[Miradore](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#miradore)
+
 [Nessus](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#nessus)
 
 [Rapid7](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#rapid7)
@@ -27,6 +29,8 @@
 [Tenable](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#tenable)
 
 [Qualys](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#qualys)
+
+[Wiz](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#wiz)
 
 [ServiceNow](https://github.com/TechnoSavage/runZero/blob/main/attributes_by_integration.md#servicenow)
 
@@ -524,6 +528,38 @@ type
 unknownSourcesStatus
 ```
 
+## Miradore
+
+### (@miradore.dev)
+
+```
+createdAt
+device.bluetoothMAC
+device.deviceName
+device.deviceType
+device.manufacturer
+device.model
+device.productName
+device.serialNumber
+device.softwareVersion
+device.storeAccountActive
+device.udid
+device.wifiMAC
+id
+ip
+lastReportedAt
+mac
+os.language
+os.platform
+os.version
+osVersionName
+platform
+status
+ts
+user.email
+user.name
+```
+
 ## Nessus
 
 ### (@nessus.dev)
@@ -856,6 +892,61 @@ id
 match.criteria
 qg.hostID
 ts
+```
+
+## Wiz
+
+### (@wiz.dev)
+
+```
+accessibleFromInternet
+atRestEncryption
+awsLambdaCodeSHA256
+awsLambdaURLConfigs
+cloudPlatform
+cloudProviderURL
+creationDateTS
+dns
+externalID
+hasBackups
+hasHighPrivileges
+hasSensitiveData
+id
+ipv4
+ipv6
+isEphemeral
+isManaged
+isPaaS
+kind
+match.criteria
+memoryGB
+name
+nativeType
+numAddressesOpenForHTTP
+numAddressesOpenForHTTPS
+numAddressesOpenForNonStandardPorts
+numAddressesOpenToInternet
+numPortsOpenToInternet
+openToAllInternet
+operatingSystem
+operatingSystemVersion
+providerUniqueID
+region
+regionLocation
+replicaCount
+runtime
+sizeGB
+status
+subscriptionExternalID
+tags
+totalDisks
+ts
+type
+updatedAtTS
+validatedOpenPorts
+vcpus
+version
+wafEnabled
 ```
 
 # Outbound
