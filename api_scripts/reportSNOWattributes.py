@@ -54,7 +54,7 @@ def getSnowAssets(url, token, filter='', fields=''):
     
 def parseSNOWAttributes(data):
     '''
-        Search assets "foreign attributes" and extract all keys pertaining to the source.
+        Search response attributes and extract all keys pertaining to the source.
      
        :param data: a dict, runZero JSON asset data.
        :param source: a string, the integration source to extract keys from.
