@@ -2,13 +2,13 @@
 
 ## Create custom integration
 
-![create custom integration](https://github.com/TechnoSavage/runZero/blob/main/sdk-sample-scripts/img-resources/img_1?raw=true)
+![create custom integration](https://github.com/TechnoSavage/runZero/blob/main/sdk-sample-scripts/img-resources/img_1.png?raw=true)
 
 - Navigate to "Account" -> "Custom integrations".
 
 - Click the "Add custom integration" button at the top right of the page.
 
-![add custom integration details](https://github.com/TechnoSavage/runZero/blob/main/sdk-sample-scripts/img-resources/img_2?raw=true)
+![add custom integration details](https://github.com/TechnoSavage/runZero/blob/main/sdk-sample-scripts/img-resources/img_2.png?raw=true)
 
 - Give the custom integration a name (this will be the source name e.g. custom_integration:my_integration_name).
 
@@ -20,17 +20,17 @@
 
 ## Create API Client
 
-![create client](https://github.com/TechnoSavage/runZero/blob/main/sdk-sample-scripts/img-resources/img_3?raw=true)
+![create client](https://github.com/TechnoSavage/runZero/blob/main/sdk-sample-scripts/img-resources/img_3.png?raw=true)
 
 - Navigate to "Account" -> "API clients.
 
 - Click the "Register New API Client" button at the top right of the page.
 
-![name client key and secret](https://github.com/TechnoSavage/runZero/blob/main/sdk-sample-scripts/img-resources/img_4?raw=true)
+![name client key and secret](https://github.com/TechnoSavage/runZero/blob/main/sdk-sample-scripts/img-resources/img_4.png?raw=true)
 
 - Provide an application name for the client in the pop up.
 
-![copy client key and secret](https://github.com/TechnoSavage/runZero/blob/main/sdk-sample-scripts/img-resources/img_5?raw=true)
+![copy client key and secret](https://github.com/TechnoSavage/runZero/blob/main/sdk-sample-scripts/img-resources/img_5.png?raw=true)
 
 - Copy the Client ID value to the "RUNZERO_CLIENT_ID" variable in the appropriate .env file for the custom integration script.
 
