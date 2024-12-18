@@ -28,12 +28,15 @@ def parseArgs():
     return parser.parse_args()
     
 def readTargets(targetFile):
-    """ Read IP addresses, CIDR blocks, domains etc. from provided file
+    '''
+        Read IP addresses, CIDR blocks, domains etc. from provided file
 
         :param targetFile: a text file, file containing targets one per line.
         :returns: a List, list of targets to pass to scan task.
         :raises: IOError: if file cannot be read.
-        :raises: FileNotFoundError: if file doesn't exist."""
+        :raises: FileNotFoundError: if file doesn't exist.
+    '''
+
     targetList = []
     try:
         with open( targetFile, 'r') as t:
@@ -49,18 +52,20 @@ def readTargets(targetFile):
 
 #This function only addresses basic settings for the scan in arguments and .env file. Adapt or modify as needed.
 def createScan(url, token, siteID, explorer, targetList, name, description, rate): 
-    """ Create new scan task.
+    '''
+        Create new scan task.
            
-           :param url: A string, URL of the runZero console.
-           :param token: A string, Organization API Key.
-           :param siteID: A string, UID of site to scan.
-           :param explorer: A string, UID of explorer.
-           :param targetList: A list, list of scan targets.
-           :param name: A string, name for scan task.
-           :param description: A string, description for scan task.
-           :param rate: A string, scan rate (packets per second).
-           :returns: A JSON object, scan creation results.
-           :raises: ConnectionError: if unable to successfully make PUT request to console."""
+        :param url: A string, URL of the runZero console.
+        :param token: A string, Organization API Key.
+        :param siteID: A string, UID of site to scan.
+        :param explorer: A string, UID of explorer.
+        :param targetList: A list, list of scan targets.
+        :param name: A string, name for scan task.
+        :param description: A string, description for scan task.
+        :param rate: A string, scan rate (packets per second).
+        :returns: A JSON object, scan creation results.
+        :raises: ConnectionError: if unable to successfully make PUT request to console.
+    '''
     
     url = f"{url}/api/v1.0/org/sites/{siteID}/scan"
     payload = json.dumps({"targets": ', '.join(targetList),
@@ -93,6 +98,9 @@ def createScan(url, token, siteID, explorer, targetList, name, description, rate
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.put(url, headers=headers, data=payload)
+        if response.status_code != 200:
+            print('Unable to create task' + response)
+            exit()
         content = response.content
         data = json.loads(content)
         return data
