@@ -1,15 +1,15 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    importPCAP.py, version 1.2
+    importPCAP.py, version 1.3
     Bulk import all packet capture files in a specified folder via the runZero API."""
 
 import argparse
-import datetime
 import json
 import os
 import pandas as pd
 import re
 import requests
 import subprocess
+from datetime import datetime, timezone
 from getpass import getpass
 from requests.exceptions import ConnectionError
 
@@ -27,18 +27,20 @@ def parseArgs():
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-c', '--clean', help='Enable file clean up. Automatically delete capture files that are successfully uploaded', action='store_true', required=False)
     parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.2')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.3')
     return parser.parse_args()
 
 def importPCAP(url, token, siteID, capture):
-    """ Upload a capture file . 
+    '''
+        Upload a capture file . 
     
         :param url: A string, URL of the runZero console.
         :param token: A string, Organization API key
         :param siteID: A string, the site ID of the Site to upload to.
         :param capture: A capture file, packet capture file to upload (including path).
         :returns: Dict Object, JSON formatted.
-        :raises: ConnectionError: if unable to successfully make PUT request to console."""
+        :raises: ConnectionError: if unable to successfully make PUT request to console.
+    '''
 
     url = f"{url}/api/v1.0/org/sites/{siteID}/import/packet"
     headers = {'Accept': 'application/octet-stream',
@@ -54,15 +56,18 @@ def importPCAP(url, token, siteID, capture):
         raise error
     
 def fileUpload(url, token, siteID, dir):
-    """Identify packet capture in a directory and pass them
-       to importPCAP function. 
+    '''
+        Identify packet capture in a directory and pass them
+        to importPCAP function. 
     
         :param url: A string, URL of the runZero console.
         :param token: A string, Organization API key
         :param siteID: A string, the site ID of the Site to upload to.
         :param dir: A string, the directory path containing the packet capture.
         :returns: Dict Object, JSON formatted.
-        :raises: OSError: if unable to run subprocess commands."""
+        :raises: OSError: if unable to run subprocess commands.
+    '''
+
     uploadLog = []
     try:     
         contents = subprocess.check_output(['ls', dir]).splitlines()
@@ -88,12 +93,14 @@ def fileUpload(url, token, siteID, dir):
     return uploadLog
     
 def cleanUp(dir, log):
-    """Remove packet capture files that are uploaded successfully.
+    '''
+        Remove packet capture files that are uploaded successfully.
 
         :param dir: A String, the directory path to packet capture location(s).
         :param log: A Dict, dictionary of packet capture filenames and upload status.
         :returns None: this function returns nothing but removes files from disk.
-        :raises: IOerror, if unable to delete file."""
+        :raises: IOerror, if unable to delete file.
+    '''
     
     for entry in log:
         if entry['Status'] == 'success':
@@ -105,12 +112,14 @@ def cleanUp(dir, log):
             pass
 
 def outputFormat(format, fileName, data):
-    """ Determine output format and call function to write appropriate file.
+    '''
+        Determine output format and call function to write appropriate file.
         
         :param format: A String, the desired output format.
         :param fileName: A String, the filename, minus extension.
         :para data: json data, file contents
-        :returns None: Calls another function to write the file or prints the output."""
+        :returns None: Calls another function to write the file or prints the output.
+    '''
     
     if format == 'json':
         fileName = f'{fileName}.json'
@@ -129,12 +138,14 @@ def outputFormat(format, fileName, data):
             print(json.dumps(line, indent=4))
     
 def writeDF(format, fileName, data):
-    """ Write contents to output file. 
+    '''
+        Write contents to output file. 
     
         :param format: a string, excel, csv, or html
         :param fileName: a string, the filename, excluding extension.
         :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file."""
+        :raises: IOError: if unable to write to file.
+    '''
     
     df = pd.DataFrame(data)
     try:
@@ -148,11 +159,14 @@ def writeDF(format, fileName, data):
         raise error
     
 def writeFile(fileName, contents):
-    """ Write contents to output file in plaintext. 
+    '''
+        Write contents to output file in plaintext. 
     
         :param fileName: a string, name for file including (optionally) file extension.
         :param contents: anything, file contents.
-        :raises: IOError: if unable to write to file. """
+        :raises: IOError: if unable to write to file.
+    '''
+    
     try:
         with open( fileName, 'w') as o:
             o.write(contents)
@@ -166,8 +180,10 @@ def main():
         token = getpass(prompt="Enter your Organization API Key: ")
     uploadLog = fileUpload(args.consoleURL, token, args.site, args.dir)
     if args.log is not None:
+        timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
+        fileName = f'{args.path}importPacket_log_{timestamp}'
         outputFormat(args.output, fileName, uploadLog)
-        fileName = f'{args.path}importPacket_log_{str(datetime.datetime.now(datetime.timezone.utc))}'
+        
     else:
         print(json.dumps(uploadLog, indent=4))
     if args.clean:
