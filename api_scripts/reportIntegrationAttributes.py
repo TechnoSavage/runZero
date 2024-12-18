@@ -1,12 +1,12 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    reportIntegrationAttributes.py, version 1.1
+    reportIntegrationAttributes.py, version 1.2
     Specify an integration source in order to generate a list of all discovered attributes reported by that source."""
 
 import argparse
-import datetime
 import json
 import os
 import requests
+from datetime import datetime, timezone
 from getpass import getpass
 from requests.exceptions import ConnectionError
     
@@ -21,18 +21,20 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.2')
     return parser.parse_args()
     
 def getAssets(url, token, filter='', fields=''):
-    """ Retrieve assets using supplied query filter from Console and restrict to fields supplied.
+    '''
+        Retrieve assets using supplied query filter from Console and restrict to fields supplied.
         
         :param url: A string, URL of runZero console.
         :param token: A string, Export API Key.
         :param filter: A string, query to filter returned assets(" " returns all).
         :param fields: A string, comma separated string of fields to return(" " returns all).
         :returns: a dict, JSON object of assets.
-        :raises: ConnectionError: if unable to successfully make GET request to console."""
+        :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
 
     url = f"{url}/api/v1.0/export/org/assets.json"
     params = {'search': filter,
@@ -53,11 +55,13 @@ def getAssets(url, token, filter='', fields=''):
         raise error
     
 def parseAzure(data):
-    """Search Azure source assets "foreign attributes" and extract all keys pertaining to the source.
+    '''
+        Search Azure source assets "foreign attributes" and extract all keys pertaining to the source.
      
        :param data: a dict, runZero JSON asset data.
        :returns: a dict: parsed runZero asset data.
-       :raises: TypeError: if dataset is not iterable."""
+       :raises: TypeError: if dataset is not iterable.
+    '''
        
     try:
         vms = []
@@ -77,11 +81,13 @@ def parseAzure(data):
         exit()
 
 def parseGCP(data):
-    """Search Google Cloud source assets "foreign attributes" and extract all keys pertaining to the source.
+    '''
+        Search Google Cloud source assets "foreign attributes" and extract all keys pertaining to the source.
      
        :param data: a dict, runZero JSON asset data.
        :returns: a dict: parsed runZero asset data.
-       :raises: TypeError: if dataset is not iterable."""
+       :raises: TypeError: if dataset is not iterable.
+    '''
        
     try:
         vms = []
@@ -104,11 +110,13 @@ def parseGCP(data):
         exit()
 
 def parseGoogleWorkspace(data):
-    """Search Google Workspace source assets "foreign attributes" and extract all keys pertaining to the source.
+    '''
+        Search Google Workspace source assets "foreign attributes" and extract all keys pertaining to the source.
      
        :param data: a dict, runZero JSON asset data.
        :returns: a dict: parsed runZero asset data.
-       :raises: TypeError: if dataset is not iterable."""
+       :raises: TypeError: if dataset is not iterable.
+    '''
        
     try:
         endpoints = []
@@ -128,13 +136,14 @@ def parseGoogleWorkspace(data):
         exit()
     
 def parseAttributes(data, source):
-    """Search assets "foreign attributes" and extract all keys pertaining to the source.
+    '''
+        Search assets "foreign attributes" and extract all keys pertaining to the source.
      
        :param data: a dict, runZero JSON asset data.
        :param source: a string, the integration source to extract keys from.
        :returns: a dict: parsed runZero asset data.
-       :raises: TypeError: if dataset is not iterable."""
-    
+       :raises: TypeError: if dataset is not iterable.
+    '''
     
     forAttrKey = ''
     if source == 'aws':
@@ -168,12 +177,14 @@ def parseAttributes(data, source):
     
 #Output formats require some finessing
 def outputFormat(format, fileName, data):
-    """ Determine output format and call function to write appropriate file.
+    '''
+        Determine output format and call function to write appropriate file.
         
         :param format: A String, the desired output format.
         :param filename: A String, the filename, minus extension.
         :param data: json data, file contents
-        :returns None: Calls another function to write the file or prints the output."""
+        :returns None: Calls another function to write the file or prints the output.
+    '''
     
     if format == 'txt':
         fileName = f'{fileName}.txt'
@@ -184,11 +195,14 @@ def outputFormat(format, fileName, data):
             print(item)
     
 def writeFile(fileName, contents):
-    """ Write contents to output file. 
+    '''
+        Write contents to output file. 
     
         :param filename: a string, name for file including (optionally) file extension.
         :param contents: anything, file contents.
-        :raises: IOError: if unable to write to file. """
+        :raises: IOError: if unable to write to file.
+    '''
+
     try:
         with open( fileName, 'w') as o:
             o.write(contents)
@@ -198,7 +212,8 @@ def writeFile(fileName, contents):
 def main():
     args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f"{args.path}Asset_Serial_Numbers_{str(datetime.datetime.now(datetime.timezone.utc))}"
+    timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
+    fileName = f"{args.path}Asset_Serial_Numbers_{timestamp}"
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
