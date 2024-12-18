@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    dlScans.py, version 2.2
+    dlScans.py, version 2.3
     This script will download the scan data from the last 'n' processed tasks in an organization, 
     as specified by the user."""
 
@@ -20,16 +20,18 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('--version', action='version', version='%(prog)s 2.2')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.3')
     return parser.parse_args()
     
 def getTasks(url, token): 
-    """ Retrieve Tasks from Organization corresponding to supplied token.
+    '''
+        Retrieve Tasks from Organization corresponding to supplied token.
 
-           :param url: A string, URL of the runZero console.
-           :param token: A string, Account API Key.
-           :returns: A JSON object, runZero task data.
-           :raises: ConnectionError: if unable to successfully make GET request to console."""
+        :param url: A string, URL of the runZero console.
+        :param token: A string, Account API Key.
+        :returns: A JSON object, runZero task data.
+        :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
     
     url = f"{url}/api/v1.0/org/tasks"
     #change {'search':'type:scan'} to {'search':'type:sample'} to retrieve traffic sampling tasks 
@@ -39,6 +41,9 @@ def getTasks(url, token):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=payload)
+        if response.status_code != 200:
+            print('Unable to retrieve tasks' + response)
+            exit()
         content = response.content
         data = json.loads(content)
         return data
@@ -46,12 +51,14 @@ def getTasks(url, token):
         raise error
 
 def parseIDs(data, taskNo=1000):
-    """ Extract task IDs from supplied recent task data. 
+    '''
+        Extract task IDs from supplied recent task data. 
     
-            :param data: JSON object, runZero task data.
-            :param taskNo: an Integer, number of tasks to process.
-            :returns: A List, list of task IDs.
-            :raises: TypeError: if data variable passed is not JSON format. """
+        :param data: JSON object, runZero task data.
+        :param taskNo: an Integer, number of tasks to process.
+        :returns: A List, list of task IDs.
+        :raises: TypeError: if data variable passed is not JSON format.
+    '''
     
     try:
         taskIDs = [item.get('id') for counter, item in enumerate(data) if counter <= taskNo - 1]
@@ -60,15 +67,17 @@ def parseIDs(data, taskNo=1000):
         raise error
 
 def getData(url, token, taskID, path):
-    """ Download and write scan data (.json.gz) for each task ID provided.
+    '''
+        Download and write scan data (.json.gz) for each task ID provided.
 
-           :param url: A string, URL of the runZero console.
-           :param token: A string, Organization API key.
-           :param taskID: A string, ID of scan task to download.
-           :param path: A string, path to write files to.
-           :returns: None, this function returns no data but writes files to disk.
-           :raises: ConnectionError: if unable to successfully make GET request to console.
-           :raises: IOError: if unable to write file."""
+        :param url: A string, URL of the runZero console.
+        :param token: A string, Organization API key.
+        :param taskID: A string, ID of scan task to download.
+        :param path: A string, path to write files to.
+        :returns: None, this function returns no data but writes files to disk.
+        :raises: ConnectionError: if unable to successfully make GET request to console.
+        :raises: IOError: if unable to write file.
+    '''
     
     url = f"{url}/api/v1.0/org/tasks/{taskID}/data"
     payload = ""
@@ -76,6 +85,9 @@ def getData(url, token, taskID, path):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, data=payload, stream=True)
+        if response.status_code != 200:
+            print('Unable to retrieve task data' + response)
+            exit()
         with open( f"{path}scan_{taskID}.json.gz", 'wb') as f:
             for chunk in response.iter_content(chunk_size=128):
                 f.write(chunk)
