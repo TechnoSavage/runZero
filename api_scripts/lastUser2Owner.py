@@ -22,14 +22,16 @@ def parseArgs():
     return parser.parse_args()
     
 def getAssets(url, token, filter=" ", fields=" "):
-    """ Retrieve assets using supplied query filter from Console and restrict to fields supplied.
+    '''
+        Retrieve assets using supplied query filter from Console and restrict to fields supplied.
         
         :param url: A string, URL of runZero console.
         :param token: A string, Organization API Key.
         :param filter: A string, query to filter returned assets(" " returns all).
         :param fields: A string, comma separated string of fields to return(" " returns all).
         :returns: a dict, JSON object of assets.
-        :raises: ConnectionError: if unable to successfully make GET request to console."""
+        :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
 
     url = f"{url}/api/v1.0/export/org/assets.json"
     params = {'search': filter,
@@ -39,6 +41,9 @@ def getAssets(url, token, filter=" ", fields=" "):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
+        if response.status_code != 200:
+            print('Unable to retrieve assets' + response)
+            exit()
         content = response.content
         data = json.loads(content)
         return data
@@ -47,11 +52,13 @@ def getAssets(url, token, filter=" ", fields=" "):
         raise error
     
 def getUsers(data):
-    """Search asset "foreign_attributes" and extract last user where available, discard the rest.
+    '''
+        Search asset "foreign_attributes" and extract last user where available, discard the rest.
      
        :param data: a dict: runZero JSON asset data.
        :returns: a dict: parsed runZero asset data.
-       :raises: TypeError: if dataset is not iterable."""
+       :raises: TypeError: if dataset is not iterable.
+    '''
     
     try:
         assetList = []
@@ -76,14 +83,16 @@ def getUsers(data):
         raise error
     
 def parseOwners(url, token, ownerList, owner_type):
-    """ Parse supplied ownership sources for most detailed owner info.
+    '''
+        Parse supplied ownership sources for most detailed owner info.
         Pass owner to assign function to assign owner info. 
 
         :param url: A string, URL of runZero console.
         :param token: A string, Organization API Key.
         :param ownerList: A list, list of dictionaries containing asset ID and last user info.
         :param owner_type: A string, UUID of ownership type.
-        :raises: ConnectionError: if unable to successfully make PATCH request to console. """
+        :raises: ConnectionError: if unable to successfully make PATCH request to console.
+    '''
     
     #to do: improve method of filtering out system accounts
     #add system accounts to noAssign list to prevent them from being populated as owners
@@ -100,7 +109,8 @@ def parseOwners(url, token, ownerList, owner_type):
             return assignment
 
 def assignOwner(url, token, id, owner, owner_type):
-    """ Assign supplied owner name to asset ID under given owner_type.
+    '''
+        Assign supplied owner name to asset ID under given owner_type.
         
         :param url: A string, URL of runZero console.
         :param token: A string, Organization API Key.
@@ -108,7 +118,8 @@ def assignOwner(url, token, id, owner, owner_type):
         :param owner: A string, name of asset owner.
         :param owner_type: A string, UUID of ownership type.
         :returns: a dict, JSON object of assets.
-        :raises: ConnectionError: if unable to successfully make PATCH request to console. """
+        :raises: ConnectionError: if unable to successfully make PATCH request to console.
+    '''
     
     url = f"{url}/api/v1.0/org/assets/{id}/owners"
     payload = json.dumps({"ownerships": [{"ownership_type_id": owner_type, "owner": owner}]})
@@ -116,6 +127,9 @@ def assignOwner(url, token, id, owner, owner_type):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.patch(url, headers=headers, data=payload)
+        if response.status_code != 200:
+            print('Unable to add owner' + response)
+            exit()
         content = response.content
         data = json.loads(content)
         return data
