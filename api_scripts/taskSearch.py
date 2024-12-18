@@ -1,12 +1,11 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    taskSearch.py, version 0.8
+    taskSearch.py, version 0.9
     This script, when provided one or more IPs as an argument or in a file, will return the first and last tasks that discovered an asset,
     with relevant attributes, as well as any other task with a scope that could potentially discover the asset. Optionally the script can
     search task data of possible discovery tasks to determine if a task ever discoverd the IP and IPs can be automatically applied as exclusions
     to recurring tasks."""
 
 import argparse
-import datetime
 import gzip
 import json
 import os
@@ -14,6 +13,7 @@ import re
 import requests
 import subprocess
 import pandas as pd
+from datetime import datetime, timezone
 from getpass import getpass
 from requests.exceptions import ConnectionError
 
@@ -35,16 +35,18 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write temporary scan file downloads. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.8')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.9')
     return parser.parse_args()
 
 def assignTaskQuery(address):
-    """ Return a task search query to filter tasks for any task that contains a scope
+    '''
+        Return a task search query to filter tasks for any task that contains a scope
         containing the provided IP address.
             
-            :param address: A string, IP address of asset.
-            :returns: A string | None, task search query or None if provided address
-                                       is not a valid RFC1918 address."""
+        :param address: A string, IP address of asset.
+        :returns: A string | None, task search query or None if provided address is not a valid RFC1918 address.
+    '''
+
     #find pattern to exclude leading 0 without removing only 0
     if re.match('\A(192\.168\.)(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', address):
         query = 'params:192.168.%.%'
@@ -58,10 +60,12 @@ def assignTaskQuery(address):
     return query
 
 def targetList(args):
-    """ Return list of asset targets from arguments.
+    '''
+        Return list of asset targets from arguments.
 
-           :param args: A namespace object , argparse.Namespace.
-           :returns: A list, IP addresses of asset targets."""
+        :param args: A namespace object , argparse.Namespace.
+        :returns: A list, IP addresses of asset targets.
+    '''
      
     if args.targets:
         targets = args.targets.split(',')
@@ -74,12 +78,14 @@ def targetList(args):
     return targets
 
 def getAssets(url, token, address):
-    """ Retrieve assets using supplied query filter from Console and restrict to fields supplied.
+    '''
+        Retrieve assets matching supplied IP address.
         
         :param url: A string, URL of runZero console.
         :param token: A string, Organization API Key.
         :returns: a dict, JSON object of assets.
-        :raises: ConnectionError: if unable to successfully make GET request to console."""
+        :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
 
     url = f"{url}/api/v1.0/export/org/assets.jsonl"
     params = {'search': f'source:runzero and address:{address}',
@@ -89,6 +95,9 @@ def getAssets(url, token, address):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
+        if response.status_code != 200:
+            print('Unable to retrieve assets' + response)
+            exit()
         content = response.content
         if len(content) == 0:
             content = json.dumps({"addresses":f"{address}", "id": "not found", "first_task_id":"NA", "last_task_id": "NA", "first_agent_id":"NA", "last_agent_id":"NA"})
@@ -99,19 +108,24 @@ def getAssets(url, token, address):
         raise error
     
 def getTask(url, token, taskID):
-    """ Retrieve Task from Organization corresponding to supplied task_id.
+    '''
+        Retrieve Task from Organization corresponding to supplied task_id.
 
-           :param url: A string, URL of the runZero console.
-           :param token: A string, Organization API Key.
-           :param taskID: A string, UUID of runZero task.
-           :returns: A JSON object, runZero task data.
-           :raises: ConnectionError: if unable to successfully make GET request to console."""
+        :param url: A string, URL of the runZero console.
+        :param token: A string, Organization API Key.
+        :param taskID: A string, UUID of runZero task.
+        :returns: A JSON object, runZero task data.
+        :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
     
     url = f"{url}/api/v1.0/org/tasks/{taskID}" 
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            print('Unable to retrieve task' + response)
+            exit()
         content = response.content
         data = json.loads(content)
         return data
@@ -119,7 +133,8 @@ def getTask(url, token, taskID):
         raise error
     
 def writeTaskData(url, token, taskID, path):
-    """ Download and write scan data (.json.gz) for each task ID provided.
+    '''
+        Download and write scan data (.json.gz) for each task ID provided.
 
            :param url: A string, URL of the runZero console.
            :param token: A string, Organization API key.
@@ -127,7 +142,8 @@ def writeTaskData(url, token, taskID, path):
            :param path: A string, path to write files to.
            :returns: None, this function returns no data but writes files to disk.
            :raises: ConnectionError: if unable to successfully make GET request to console.
-           :raises: IOError: if unable to write file."""
+           :raises: IOError: if unable to write file.
+    '''
     
     url = f"{url}/api/v1.0/org/tasks/{taskID}/data"
     payload = ""
@@ -135,6 +151,9 @@ def writeTaskData(url, token, taskID, path):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, data=payload, stream=True)
+        if response.status_code != 200:
+            print('Unable to retrieve task data' + response)
+            exit()
         with open( f"{path}scan_{taskID}.json.gz", 'wb') as f:
             for chunk in response.iter_content(chunk_size=128):
                 f.write(chunk)
@@ -145,11 +164,13 @@ def writeTaskData(url, token, taskID, path):
         raise error
     
 def searchTaskData(address, taskID, path):
-    """ Search task data for any matches to address. 
+    '''
+        Search task data for any matches to address. 
     
         :param address: A string, IP address to search for.
         :param taskID: A String, UUID of task to identify scan file to search.
-        :param path: A String, path to scan archive location. """
+        :param path: A String, path to scan archive location.
+    '''
 
     with gzip.open( f'{path}scan_{taskID}.json.gz', 'rt') as f:
         content = f.read()
@@ -161,12 +182,14 @@ def searchTaskData(address, taskID, path):
             return
 
 def deleteTaskData(taskID, path):
-    """Remove task data files created by writeTaskData funtion.
+    '''
+        Remove task data files created by writeTaskData funtion.
 
         :param taskID: A String, UUID of task to identify scan file to delete.
         :param path: A String, path used in getData to create scan files.
         :returns None: this function returns nothing but removes files from disk.
-        :raises: IOerror, if unable to delete file."""
+        :raises: IOerror, if unable to delete file.
+    '''
 
     handle = f"scan_{taskID}.json.gz"
     try:
@@ -182,13 +205,15 @@ def deleteTaskData(taskID, path):
         raise error
     
 def autoExclude(url, token, address, taskID):
-    """ Apply address as exclusion to task corresponding to supplied task_id.
+    '''
+        Apply address as exclusion to task corresponding to supplied task_id.
 
-           :param url: A string, URL of the runZero console.
-           :param token: A string, Organization API Key.
-           :param taskID: A string, UUID of runZero task.
-           :returns: NoneType.
-           :raises: ConnectionError: if unable to successfully make PATCH request to console."""
+        :param url: A string, URL of the runZero console.
+        :param token: A string, Organization API Key.
+        :param taskID: A string, UUID of runZero task.
+        :returns: NoneType.
+        :raises: ConnectionError: if unable to successfully make PATCH request to console.
+    '''
     
     url = f"{url}/api/v1.0/org/tasks/{taskID}" 
     headers = {'Accept': 'application/json',
@@ -196,6 +221,9 @@ def autoExclude(url, token, address, taskID):
     payload = {'params': {'excludes': address}}
     try:
         response = requests.patch(url, headers=headers, payload=payload)
+        if response.status_code != 200:
+            print('Unable to retrieve task' + response)
+            exit()
         if response.status_code == 200:
             return 'success'
         else:
@@ -204,12 +232,14 @@ def autoExclude(url, token, address, taskID):
         raise error
 
 def getPossibleTasks(url, token, query): 
-    """ Retrieve Tasks from Organization corresponding to supplied token.
+    '''
+        Retrieve Tasks from Organization corresponding to supplied token.
 
-           :param url: A string, URL of the runZero console.
-           :param token: A string, Organization API Key.
-           :returns: A JSON object, runZero task data.
-           :raises: ConnectionError: if unable to successfully make GET request to console."""
+        :param url: A string, URL of the runZero console.
+        :param token: A string, Organization API Key.
+        :returns: A JSON object, runZero task data.
+        :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
     
     url = f"{url}/api/v1.0/org/tasks" 
     payload = {'search': query,
@@ -218,6 +248,9 @@ def getPossibleTasks(url, token, query):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=payload)
+        if response.status_code != 200:
+            print('Unable to retrieve tasks' + response)
+            exit()
         content = response.content
         data = json.loads(content)
         return data
@@ -225,12 +258,14 @@ def getPossibleTasks(url, token, query):
         raise error
     
 def buildReportEntry(url, token, address, deepDiscovery, path, exclusion):
-    """ Build a report of the assets and related tasks data based on IP address.
+    '''
+        Build a report of the assets and related tasks data based on IP address.
      
         :param url: A string, URL of the runZero console.
         :param token: A string, Organization API key.
         :param address: A string, IP address of asset.
-        :returns: A dict, asset and task attributes."""
+        :returns: A dict, asset and task attributes.
+    '''
     
     entry = {}
     discovered = getAssets(url, token, address)
@@ -308,12 +343,14 @@ def buildReportEntry(url, token, address, deepDiscovery, path, exclusion):
 
 #Output formats require some finessing
 def outputFormat(format, fileName, data):
-    """ Determine output format and call function to write appropriate file.
+    '''
+        Determine output format and call function to write appropriate file.
         
         :param format: A String, the desired output format.
         :param filename: A String, the filename, minus extension.
         :para data: json data, file contents
-        :returns None: Calls another function to write the file or prints the output."""
+        :returns None: Calls another function to write the file or prints the output.
+    '''
     
     if format == 'json':
         fileName = f'{fileName}.json'
@@ -333,12 +370,14 @@ def outputFormat(format, fileName, data):
 
     
 def writeDF(format, fileName, data):
-    """ Write contents to output file. 
+    '''
+        Write contents to output file. 
     
         :param format: a string, excel, csv, or html
         :param fileName: a string, the filename, excluding extension.
         :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file."""
+        :raises: IOError: if unable to write to file.
+    '''
     
     df = pd.DataFrame(data)
     try:
@@ -352,11 +391,14 @@ def writeDF(format, fileName, data):
         raise error
     
 def writeFile(fileName, contents):
-    """ Write contents to output file. 
+    '''
+        Write contents to output file. 
     
         :param filename: a string, name for file including (optionally) file extension.
         :param contents: anything, file contents.
-        :raises: IOError: if unable to write to file. """
+        :raises: IOError: if unable to write to file.
+    '''
+
     try:
         with open( fileName, 'w') as o:
                     o.write(contents)
@@ -366,7 +408,8 @@ def writeFile(fileName, contents):
 def main():
     args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f'{args.path}Task_Discovery_Report_{str(datetime.datetime.now(datetime.timezone.utc))}'
+    timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
+    fileName = f'{args.path}Task_Discovery_Report_{timestamp}'
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
