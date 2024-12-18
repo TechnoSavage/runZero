@@ -1,13 +1,13 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    orgIDs.py, version 4.2
+    orgIDs.py, version 4.3
     Script to retrieve all Organization IDs and 'friendly' names for a given account. """
 
 import argparse
-import datetime
 import json
 import os
 import pandas as pd
 import requests
+from datetime import datetime, timezone
 from getpass import getpass
 from requests.exceptions import ConnectionError
     
@@ -20,16 +20,18 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 4.2')
+    parser.add_argument('--version', action='version', version='%(prog)s 4.3')
     return parser.parse_args()
 
 def getOIDs(url, token):
-    """ Retrieve Organizational IDs from Console.
+    '''
+        Retrieve Organizational IDs from Console.
 
            :param url: A string, URL of runZero console.
            :param token: A string, Account API Key.
            :returns: A JSON object, runZero Org data.
-           :raises: ConnectionError: if unable to successfully make GET request to console."""
+           :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
 
     url = f"{url}/api/v1.0/account/orgs"
     payload = ""
@@ -37,6 +39,9 @@ def getOIDs(url, token):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, data=payload)
+        if response.status_code != 200:
+            print('Unable to retrieve Organization IDs' + response)
+            exit()
         content = response.content
         data = json.loads(content)
         return data
@@ -45,11 +50,14 @@ def getOIDs(url, token):
         raise error
 
 def parseOIDs(data):
-    """ Parse API response to extract Organization names and IDs. 
+    '''
+        Parse API response to extract Organization names and IDs. 
     
         :param data: JSON object, runZero org data.
         :returns: Dict Object, JSON formatted dictionary of relevant values.
-        :raises: TypeError: if data variable passed is not JSON format."""
+        :raises: TypeError: if data variable passed is not JSON format.
+    '''
+
     try:
         parsed = []
         for item in data:
@@ -69,12 +77,14 @@ def parseOIDs(data):
     
 #Output formats require some finessing
 def outputFormat(format, fileName, data):
-    """ Determine output format and call function to write appropriate file.
+    '''
+        Determine output format and call function to write appropriate file.
         
         :param format: A String, the desired output format.
         :param filename: A String, the filename, minus extension.
         :para data: json data, file contents
-        :returns None: Calls another function to write the file or prints the output."""
+        :returns None: Calls another function to write the file or prints the output.
+    '''
     
     if format == 'json':
         fileName = f'{fileName}.json'
@@ -93,12 +103,14 @@ def outputFormat(format, fileName, data):
             print(json.dumps(line, indent=4))
     
 def writeDF(format, fileName, data):
-    """ Write contents to output file. 
+    '''
+        Write contents to output file. 
     
         :param format: a string, excel, csv, or html
         :param fileName: a string, the filename, excluding extension.
         :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file."""
+        :raises: IOError: if unable to write to file.
+    '''
     
     df = pd.DataFrame(data)
     try:
@@ -112,11 +124,14 @@ def writeDF(format, fileName, data):
         raise error
 
 def writeFile(fileName, contents):
-    """ Write contents to output file. 
+    '''
+        Write contents to output file. 
     
         :param filename: a string, name for file including (optionally) file extension.
         :param contents: anything, file contents.
-        :raises: IOError: if unable to write to file. """
+        :raises: IOError: if unable to write to file.
+    '''
+
     try:
         with open( fileName, 'w') as o:
                     o.write(contents)
@@ -126,7 +141,8 @@ def writeFile(fileName, contents):
 def main():
     args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f"{args.path}Org_IDs_Report_{str(datetime.datetime.now(datetime.timezone.utc))}"
+    timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
+    fileName = f"{args.path}Org_IDs_Report_{timestamp}"
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Account API Key: ")
