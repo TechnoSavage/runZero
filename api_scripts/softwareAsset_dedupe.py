@@ -21,12 +21,15 @@ def parseArgs():
     return parser.parse_args()
 
 def parseFile(inputFile):
-    """ Read input file, parse contents and return list of JSON formatted
+    '''
+        Read input file, parse contents and return list of JSON formatted
         assets. 
     
         :param inputFile: JSONl formatted file.    
         :raises: FileNotFoundError: if provided filename not found is not JSON formatted.
-        :raises: JSONDecodeError: if content is not JSON formatted."""
+        :raises: JSONDecodeError: if content is not JSON formatted.
+    '''
+
     try:
         assetList = []
         with open (inputFile, 'r') as input:
@@ -50,11 +53,14 @@ def parseFile(inputFile):
         raise error
 
 def writeFile(fileName, contents):
-    """ Write contents to output file. 
+    '''
+        Write contents to output file. 
     
         :param filename: a string, name for file including (optionally) file extension.
         :param contents: anything, file contents.
-        :raises: IOError: if unable to write to file. """
+        :raises: IOError: if unable to write to file.
+    '''
+    
     try:
         with open( fileName, 'w') as fileName:
                     fileName.write(contents)
