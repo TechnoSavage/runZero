@@ -1,14 +1,14 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    hwProfile.py, version 3.3
+    hwProfile.py, version 3.4
     Query runZero API for physical assets found within an Organization (tied to Export API key provided) and generate JSON
     output of all attributes describing the physical hardware of the asset."""
 
 import argparse
-import datetime
 import json
 import os
 import pandas as pd
 import requests
+from datetime import datetime, timezone
 from flatten_json import flatten
 from getpass import getpass
 from requests.exceptions import ConnectionError
@@ -22,18 +22,20 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.3')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.4')
     return parser.parse_args()
 
 def getAssets(url, token, filter=" ", fields=" "):
-    """ Retrieve assets using supplied query filter from Console and restrict to fields supplied.
+    '''
+        Retrieve assets using supplied query filter from Console and restrict to fields supplied.
         
         :param url: A string, URL of runZero console.
         :param token: A string, Export API Key.
         :param filter: A string, query to filter returned assets(" " returns all).
         :param fields: A string, comma separated string of fields to return(" " returns all).
         :returns: a dict, JSON object of assets.
-        :raises: ConnectionError: if unable to successfully make GET request to console."""
+        :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
 
     url = f"{url}/api/v1.0/export/org/assets.json"
     params = {'search': filter,
@@ -43,6 +45,9 @@ def getAssets(url, token, filter=" ", fields=" "):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
+        if response.status_code != 200:
+            print('Unable to retrieve assets' + response)
+            exit()
         content = response.content
         data = json.loads(content)
         return data
@@ -51,12 +56,14 @@ def getAssets(url, token, filter=" ", fields=" "):
         raise error
     
 def parseHW(data):
-    """Search assets "attributes" and "foreign_attributes"
+    '''
+        Search assets "attributes" and "foreign_attributes"
         for hardware information, discard the rest.
      
        :param data: a dict: runZero JSON asset data.
        :returns: a dict: parsed runZero asset data.
-       :raises: TypeError: if dataset is not iterable."""
+       :raises: TypeError: if dataset is not iterable.
+    '''
     
     try:
         assetList = []
@@ -89,12 +96,14 @@ def parseHW(data):
         raise error
     
 def outputFormat(format, fileName, data):
-    """ Determine output format and call function to write appropriate file.
+    '''
+        Determine output format and call function to write appropriate file.
         
         :param format: A String, the desired output format.
         :param fileName: A String, the filename, minus extension.
         :para data: json data, file contents
-        :returns None: Calls another function to write the file or prints the output."""
+        :returns None: Calls another function to write the file or prints the output.
+    '''
     
     if format == 'json':
         fileName = f'{fileName}.json'
@@ -113,12 +122,14 @@ def outputFormat(format, fileName, data):
             print(json.dumps(line, indent=4))
     
 def writeDF(format, fileName, data):
-    """ Write contents to output file. 
+    '''
+        Write contents to output file. 
     
         :param format: a string, excel, csv, or html
         :param fileName: a string, the filename, excluding extension.
         :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file."""
+        :raises: IOError: if unable to write to file.
+    '''
     
     df = pd.DataFrame(data)
     try:
@@ -132,11 +143,14 @@ def writeDF(format, fileName, data):
         raise error
     
 def writeFile(fileName, contents):
-    """ Write contents to output file. 
+    '''
+        Write contents to output file. 
     
         :param fileName: a string, name for file including (optionally) file extension.
         :param contents: anything, file contents.
-        :raises: IOError: if unable to write to file. """
+        :raises: IOError: if unable to write to file.
+    '''
+
     try:
         with open( fileName, 'w') as o:
                     o.write(contents)
@@ -146,7 +160,8 @@ def writeFile(fileName, contents):
 def main():
     args = parseArgs()
     #Output report name; default uses UTC time
-    fileName = f'{args.path}Physical_Hardware_Types_{str(datetime.datetime.now(datetime.timezone.utc))}'
+    timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
+    fileName = f'{args.path}Physical_Hardware_Types_{timestamp}'
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
