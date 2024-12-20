@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    tallyNew.py, version 3.3
+    tallyNew.py, version 3.4
     Script to retrieve last 'N' completed tasks and tally new asset counts. """
 
 import argparse
@@ -23,7 +23,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='Output file format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.3')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.4')
     return parser.parse_args()
 
 def getTasks(url, token): 
@@ -42,7 +42,7 @@ def getTasks(url, token):
     try:
         response = requests.get(url, headers=headers, data=payload)
         if response.status_code != 200:
-            print('Unable to retrieve tasks' + response)
+            print('Unable to retrieve tasks' + str(response))
             exit()
         content = response.content
         data = json.loads(content)

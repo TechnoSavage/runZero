@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    lastUser2Owner.py, version 1.0
+    lastUser2Owner.py, version 1.1
     This script will search asset foreign attributes (EDR, MDM, etc.) for last logon user information
     and apply last logged on user as an asset owner type defined in the provided argument (e.g. Primary User)"""
 
@@ -18,7 +18,7 @@ def parseArgs():
     parser.add_argument('-k', '--key', dest='token', help='Prompt for Organization API key (do not enter at command line). This argument will override the .env file', 
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
     parser.add_argument('-t', '--type', help='Ownership type UUID that reported last users should be assigned to', required=True)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.1')
     return parser.parse_args()
     
 def getAssets(url, token, filter=" ", fields=" "):
@@ -42,7 +42,7 @@ def getAssets(url, token, filter=" ", fields=" "):
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
         if response.status_code != 200:
-            print('Unable to retrieve assets' + response)
+            print('Unable to retrieve assets' + str(response))
             exit()
         content = response.content
         data = json.loads(content)
@@ -128,7 +128,7 @@ def assignOwner(url, token, id, owner, owner_type):
     try:
         response = requests.patch(url, headers=headers, data=payload)
         if response.status_code != 200:
-            print('Unable to add owner' + response)
+            print('Unable to add owner' + str(response))
             exit()
         content = response.content
         data = json.loads(content)

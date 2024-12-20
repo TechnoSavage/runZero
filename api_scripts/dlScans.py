@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    dlScans.py, version 2.3
+    dlScans.py, version 2.4
     This script will download the scan data from the last 'n' processed tasks in an organization, 
     as specified by the user."""
 
@@ -20,7 +20,7 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('--version', action='version', version='%(prog)s 2.3')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.4')
     return parser.parse_args()
     
 def getTasks(url, token): 
@@ -42,7 +42,7 @@ def getTasks(url, token):
     try:
         response = requests.get(url, headers=headers, params=payload)
         if response.status_code != 200:
-            print('Unable to retrieve tasks' + response)
+            print('Unable to retrieve tasks' + str(response))
             exit()
         content = response.content
         data = json.loads(content)
@@ -86,7 +86,7 @@ def getData(url, token, taskID, path):
     try:
         response = requests.get(url, headers=headers, data=payload, stream=True)
         if response.status_code != 200:
-            print('Unable to retrieve task data' + response)
+            print('Unable to retrieve task data' + str(response))
             exit()
         with open( f"{path}scan_{taskID}.json.gz", 'wb') as f:
             for chunk in response.iter_content(chunk_size=128):

@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    orgIDs.py, version 4.3
+    orgIDs.py, version 4.4
     Script to retrieve all Organization IDs and 'friendly' names for a given account. """
 
 import argparse
@@ -20,7 +20,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 4.3')
+    parser.add_argument('--version', action='version', version='%(prog)s 4.4')
     return parser.parse_args()
 
 def getOIDs(url, token):
@@ -40,7 +40,7 @@ def getOIDs(url, token):
     try:
         response = requests.get(url, headers=headers, data=payload)
         if response.status_code != 200:
-            print('Unable to retrieve Organization IDs' + response)
+            print('Unable to retrieve Organization IDs' + str(response))
             exit()
         content = response.content
         data = json.loads(content)

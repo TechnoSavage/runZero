@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    serialNumbers.py, version 3.4
+    serialNumbers.py, version 3.5
     Retrieve assets from console using Export API endpoint, extract defined fields and serial numbers,
     and, optionally, write to file. This allows users to pull assets and SN information with a predefined
     set of attributes included."""
@@ -23,7 +23,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.4')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.5')
     return parser.parse_args()
     
 def getAssets(url, token, filter='', fields=''):
@@ -47,7 +47,7 @@ def getAssets(url, token, filter='', fields=''):
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
         if response.status_code != 200:
-            print('Unable to retrieve assets' + response)
+            print('Unable to retrieve assets' + str(response))
             exit()
         content = response.content
         data = json.loads(content)

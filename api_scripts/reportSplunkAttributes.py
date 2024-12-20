@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    reportSplunkAttributes.py, version 1.1
+    reportSplunkAttributes.py, version 1.2
     Generate a list of Splunk attributes sent to Splunk connector."""
 
 import argparse
@@ -19,7 +19,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.2')
     return parser.parse_args()
     
 def getSplunkAssets(url, token, filter='', fields=''):
@@ -43,7 +43,7 @@ def getSplunkAssets(url, token, filter='', fields=''):
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
         if response.status_code != 200:
-            print('failed to retrieve assets, bad status code!')
+            print('failed to retrieve assets, bad status code!' + str(response))
             exit()
         content = response.content
         data = json.loads(content)

@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    taskSearch.py, version 0.9
+    taskSearch.py, version 0.9.1
     This script, when provided one or more IPs as an argument or in a file, will return the first and last tasks that discovered an asset,
     with relevant attributes, as well as any other task with a scope that could potentially discover the asset. Optionally the script can
     search task data of possible discovery tasks to determine if a task ever discoverd the IP and IPs can be automatically applied as exclusions
@@ -35,7 +35,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write temporary scan file downloads. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.9')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.9.1')
     return parser.parse_args()
 
 def assignTaskQuery(address):
@@ -96,7 +96,7 @@ def getAssets(url, token, address):
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
         if response.status_code != 200:
-            print('Unable to retrieve assets' + response)
+            print('Unable to retrieve assets' + str(response))
             exit()
         content = response.content
         if len(content) == 0:
@@ -124,7 +124,7 @@ def getTask(url, token, taskID):
     try:
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
-            print('Unable to retrieve task' + response)
+            print('Unable to retrieve task' + str(response))
             exit()
         content = response.content
         data = json.loads(content)
@@ -152,7 +152,7 @@ def writeTaskData(url, token, taskID, path):
     try:
         response = requests.get(url, headers=headers, data=payload, stream=True)
         if response.status_code != 200:
-            print('Unable to retrieve task data' + response)
+            print('Unable to retrieve task data' + str(response))
             exit()
         with open( f"{path}scan_{taskID}.json.gz", 'wb') as f:
             for chunk in response.iter_content(chunk_size=128):
@@ -222,7 +222,7 @@ def autoExclude(url, token, address, taskID):
     try:
         response = requests.patch(url, headers=headers, payload=payload)
         if response.status_code != 200:
-            print('Unable to retrieve task' + response)
+            print('Unable to retrieve task' + str(response))
             exit()
         if response.status_code == 200:
             return 'success'
@@ -249,7 +249,7 @@ def getPossibleTasks(url, token, query):
     try:
         response = requests.get(url, headers=headers, params=payload)
         if response.status_code != 200:
-            print('Unable to retrieve tasks' + response)
+            print('Unable to retrieve tasks' + str(response))
             exit()
         content = response.content
         data = json.loads(content)

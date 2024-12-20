@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    vuln_kpi.py, version 3.1
+    vuln_kpi.py, version 3.2
     Proof of concept to illustrate use of runZero API to generate KPI reports. This script focuses on generating a report for 
     a provided time period that reports all assets discovered within the specified time as well as assets with vulnerabilies 
     discovered within the same time period. Report states what percentage of vulnerable assets are compared to the total asset 
@@ -25,7 +25,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.2')
     return parser.parse_args()
 
 def getAssets(url, token, filter):
@@ -47,7 +47,7 @@ def getAssets(url, token, filter):
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
         if response.status_code != 200:
-            print('Unable to retrieve assets' + response)
+            print('Unable to retrieve assets' + str(response))
             exit()
         content = response.content
         data = json.loads(content)
@@ -79,7 +79,7 @@ def getVulns(url, token, filter):
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
         if response.status_code != 200:
-            print('Unable to retrieve vulnerabilities' + response)
+            print('Unable to retrieve vulnerabilities' + str(response))
             exit()
         content = response.content
         data = json.loads(content)

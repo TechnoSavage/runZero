@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    reportIntegrationAttributes.py, version 1.2
+    reportIntegrationAttributes.py, version 1.3
     Specify an integration source in order to generate a list of all discovered attributes reported by that source."""
 
 import argparse
@@ -21,7 +21,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.2')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.3')
     return parser.parse_args()
     
 def getAssets(url, token, filter='', fields=''):
@@ -45,7 +45,7 @@ def getAssets(url, token, filter='', fields=''):
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
         if response.status_code != 200:
-            print('failed to retrieve assets, bad status code!')
+            print('failed to retrieve assets, bad status code!' + str(response))
             exit()
         content = response.content
         data = json.loads(content)

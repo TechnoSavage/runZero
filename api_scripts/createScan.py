@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    createScan.py, version 3.1
+    createScan.py, version 3.2
     Sample python script to set up and perform a scan task through the runZero API."""
 
 import argparse
@@ -24,7 +24,7 @@ def parseArgs():
     parser.add_argument('-n', '--name', help='Name for the scan task.', required=False, default='API Scan')
     parser.add_argument('-d', '--description', help='Description for scan task.', required=False)
     parser.add_argument('-r', '--rate', help='Scan rate for task.', required=False, default='1000')
-    parser.add_argument('--version', action='version', version='%(prog)s 3.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.2')
     return parser.parse_args()
     
 def readTargets(targetFile):
@@ -99,7 +99,7 @@ def createScan(url, token, siteID, explorer, targetList, name, description, rate
     try:
         response = requests.put(url, headers=headers, data=payload)
         if response.status_code != 200:
-            print('Unable to create task' + response)
+            print('Unable to create task' + str(response))
             exit()
         content = response.content
         data = json.loads(content)

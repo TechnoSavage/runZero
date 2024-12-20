@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    scanSync.py, version 2.2
+    scanSync.py, version 2.3
     This script is designed to sync task data from one console to another by downloading the last 'n' successful tasks
     from one console and uploading them to another. Example use case, download external scan tasks from a SaaS console
     and import them into a self-hosted instance. The script will attempt to automatically delete local files it creates."""
@@ -29,7 +29,7 @@ def parseArgs():
                         required=False, default=os.environ["RUNZERO_SITE_ID"])
     parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('--version', action='version', version='%(prog)s 2.2')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.3')
     return parser.parse_args()
     
 def getTasks(url, token): 
@@ -51,7 +51,7 @@ def getTasks(url, token):
     try:
         response = requests.get(url, headers=headers, params=payload)
         if response.status_code != 200:
-            print('Unable to retrieve tasks' + response)
+            print('Unable to retrieve tasks' + str(response))
             exit()
         content = response.content
         data = json.loads(content)
@@ -95,7 +95,7 @@ def getData(url, token, taskID, path):
     try:
         response = requests.get(url, headers=headers, data=payload, stream=True)
         if response.status_code != 200:
-            print('Unable to retrieve task data' + response)
+            print('Unable to retrieve task data' + str(response))
             exit()
         with open( f'{path}scan_{taskID}.json.gz', 'wb') as f:
             for chunk in response.iter_content(chunk_size=128):
@@ -125,7 +125,7 @@ def uploadData(url, token, site_id, path, taskData):
         with open(path + taskData, 'rb') as file:
             response = requests.put(url, headers=headers, data=file, stream=True)
             if response.status_code != 200:
-                print('Unable to upload task data' + response)
+                print('Unable to upload task data' + str(response))
             exit()
             content = response.content
             data = json.loads(content)
