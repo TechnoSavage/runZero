@@ -1092,7 +1092,7 @@ virtual_type
 
 ## Splunk
 
-### From runZero Splunk API to Splunk sotre connector
+### From runZero Splunk API to Splunk store connector
 
 ```
 addresses
