@@ -1,6 +1,6 @@
 # Kismet starlark integration for runZero
 
-Custom integration designed to pull asset information from a specified data source in Kismet.
+Custom integration designed to pull asset information from a specified WLAN source in Kismet.
 
 ## Kismet API Docs
 
