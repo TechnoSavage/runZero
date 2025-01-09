@@ -572,6 +572,12 @@ kev:vulncheck
 kev:any
 '''
 
+### Identify external exposure or exposed private keys
+
+```
+name:crypto or name:exposure
+```
+
 ## Rapid7
 
 ### Rapid7 - fails PCI compliance:
