@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    importPCAP.py, version 1.3
+    importPCAP.py, version 1.4
     Bulk import all packet capture files in a specified folder via the runZero API."""
 
 import argparse
@@ -27,10 +27,10 @@ def parseArgs():
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-c', '--clean', help='Enable file clean up. Automatically delete capture files that are successfully uploaded', action='store_true', required=False)
     parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.3')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.4')
     return parser.parse_args()
 
-def importPCAP(url, token, siteID, capture):
+def importPCAP(url, token, siteID, capture, name, description=""):
     '''
         Upload a capture file . 
     
@@ -38,16 +38,23 @@ def importPCAP(url, token, siteID, capture):
         :param token: A string, Organization API key
         :param siteID: A string, the site ID of the Site to upload to.
         :param capture: A capture file, packet capture file to upload (including path).
+        :param name: A string, a name for the import task.
+        :param description: A string, a description for the import task.
         :returns: Dict Object, JSON formatted.
         :raises: ConnectionError: if unable to successfully make PUT request to console.
     '''
 
+    print(name)
     url = f"{url}/api/v1.0/org/sites/{siteID}/import/packet"
+    # params are currently ignored and PCAP API import does not support name and descripiton
+    # retaining expecting that scan import params will be carried over to PCAP import as it doesn't hurt anything
+    params = {'name': name,
+              'description': description}
     headers = {'Accept': 'application/octet-stream',
                'Authorization': f'Bearer {token}'}
     try:
         with open(capture, 'rb') as file:
-            response = requests.put(url, headers=headers, data=file, stream=True)
+            response = requests.put(url, headers=headers, params=params, data=file, stream=True)
         code = response.status_code
         content = response.content
         data = json.loads(content)
@@ -77,7 +84,7 @@ def fileUpload(url, token, siteID, dir):
                 fileType = subprocess.check_output([f'file', dir + fileName.group(1)])
                 fileDescription = re.search("(: (.*))", str(fileType))
                 if 'pcap' in str(fileDescription) or 'pcapng' in str(fileDescription):
-                    response = importPCAP(url, token, siteID, f'{dir}{fileName.group(1)}')
+                    response = importPCAP(url, token, siteID, f'{dir}{fileName.group(1)}', fileName.group(2))
                     entry = {}
                     if response[0] == 200 and response[1]['error'] == '':
                         entry['File Name'] = fileName.group(1) 
@@ -182,8 +189,7 @@ def main():
     if args.log is not None:
         timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
         fileName = f'{args.path}importPacket_log_{timestamp}'
-        outputFormat(args.output, fileName, uploadLog)
-        
+        outputFormat(args.log, fileName, uploadLog)
     else:
         print(json.dumps(uploadLog, indent=4))
     if args.clean:
