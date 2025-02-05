@@ -169,7 +169,6 @@ def main():
         dstTok = getpass(prompt="Enter the Organization API Key for the destination console: ")
     taskInfo = getTasks(args.srcURL, srcTok, args.search)
     idList = parseIDs(taskInfo, args.taskNo)
-    print(idList)
     for id in idList:
         getData(args.srcURL, srcTok, id, args.path)
         try:
