@@ -43,8 +43,7 @@ def importPCAP(url, token, siteID, capture, name, description=""):
         :returns: Dict Object, JSON formatted.
         :raises: ConnectionError: if unable to successfully make PUT request to console.
     '''
-
-    print(name)
+    
     url = f"{url}/api/v1.0/org/sites/{siteID}/import/packet"
     # params are currently ignored and PCAP API import does not support name and descripiton
     # retaining expecting that scan import params will be carried over to PCAP import as it doesn't hurt anything
