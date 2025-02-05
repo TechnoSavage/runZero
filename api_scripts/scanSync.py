@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    scanSync.py, version 2.3
+    scanSync.py, version 2.4
     This script is designed to sync task data from one console to another by downloading the last 'n' successful tasks
     from one console and uploading them to another. Example use case, download external scan tasks from a SaaS console
     and import them into a self-hosted instance. The script will attempt to automatically delete local files it creates."""
@@ -17,6 +17,8 @@ def parseArgs():
     parser = argparse.ArgumentParser(description="Download last 'N' scans from one console and upload them to another console.")
     parser.add_argument('-t', '--tasks', dest='taskNo', help='Number of tasks, from most recent to oldest to sync. This argument will override the .env file', 
                         type=int, required=False, default=os.environ["TASK_NO"])
+    parser.add_argument('-f', '--filter', dest='search', help='filter by task type ( scan | sample | import ). Default is scan.', type=str, 
+                        choices=['scan', 'sample', 'import'], required=False, default='scan')
     parser.add_argument('-su', '--src', dest='srcURL', help='URL of source console. This argument will override the .env file', 
                         required=False, default=os.environ["CONSOLE_SOURCE_URL"])
     parser.add_argument('-du', '--dst', dest='dstURL', help='URL of destination console. This argument will override the .env file', 
@@ -29,10 +31,10 @@ def parseArgs():
                         required=False, default=os.environ["RUNZERO_SITE_ID"])
     parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('--version', action='version', version='%(prog)s 2.3')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.4')
     return parser.parse_args()
     
-def getTasks(url, token): 
+def getTasks(url, token, search): 
     '''
         Retrieve Tasks from Organization corresponding to supplied token.
 
@@ -43,8 +45,7 @@ def getTasks(url, token):
     '''
     
     url = f"{url}/api/v1.0/org/tasks"
-    #change {'search':'type:scan'} to {'search':'type:sample'} to retrieve traffic sampling tasks 
-    payload = {'search':'type:scan',
+    payload = {'search':f'type:{search}',
                'status':'processed'}
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
@@ -87,7 +88,7 @@ def getData(url, token, taskID, path):
         :raises: ConnectionError: if unable to successfully make GET request to console.
         :raises: IOError: if unable to write file.
     '''
-    
+
     url = f"{url}/api/v1.0/org/tasks/{taskID}/data"
     payload = ""
     headers = {'Accept': 'application/json',
@@ -118,15 +119,17 @@ def uploadData(url, token, site_id, path, taskData):
     '''
     
     url = f"{url}/api/v1.0/org/sites/{site_id}/import"
+    params = {'name': taskData,
+              'description': ""}
     headers = {'Content-Type': 'application/octet-stream',
                'Content-Encoding': 'gzip',
                'Authorization': f'Bearer {token}'}
     try:
         with open(path + taskData, 'rb') as file:
-            response = requests.put(url, headers=headers, data=file, stream=True)
+            response = requests.put(url, headers=headers, params=params, data=file, stream=True)
             if response.status_code != 200:
                 print('Unable to upload task data' + str(response))
-            exit()
+                exit()
             content = response.content
             data = json.loads(content)
         return data
@@ -164,8 +167,9 @@ def main():
     dstTok = args.dstTok
     if dstTok == None:
         dstTok = getpass(prompt="Enter the Organization API Key for the destination console: ")
-    taskInfo = getTasks(args.srcURL, srcTok)
+    taskInfo = getTasks(args.srcURL, srcTok, args.search)
     idList = parseIDs(taskInfo, args.taskNo)
+    print(idList)
     for id in idList:
         getData(args.srcURL, srcTok, id, args.path)
         try:
