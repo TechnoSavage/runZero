@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    dlScans.py, version 2.5
+    dlTasks.py, version 2.5
     This script will download the scan data from the last 'n' processed tasks in an organization, 
     as specified by the user."""
 
@@ -11,7 +11,7 @@ from getpass import getpass
 from requests.exceptions import ConnectionError
     
 def parseArgs():
-    parser = argparse.ArgumentParser(description="Download scan data from the last 'N' processed tasks.")
+    parser = argparse.ArgumentParser(description="Download task data from the last 'N' processed tasks.")
     parser.add_argument('-t', '--tasks', dest='taskNo', help='Number of tasks, from most recent to oldest to download. This argument will override the .env file', 
                         type=int, required=False, default=os.environ["TASK_NO"])
     parser.add_argument('-s', '--search', dest='type', help='Type of task to download ( scan | sample | import )', required=True, choices=['scan', 'sample', 'import'])
