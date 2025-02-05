@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    dlScans.py, version 2.4
+    dlScans.py, version 2.5
     This script will download the scan data from the last 'n' processed tasks in an organization, 
     as specified by the user."""
 
@@ -14,33 +14,34 @@ def parseArgs():
     parser = argparse.ArgumentParser(description="Download scan data from the last 'N' processed tasks.")
     parser.add_argument('-t', '--tasks', dest='taskNo', help='Number of tasks, from most recent to oldest to download. This argument will override the .env file', 
                         type=int, required=False, default=os.environ["TASK_NO"])
+    parser.add_argument('-s', '--search', dest='type', help='Type of task to download ( scan | sample | import )', required=True, choices=['scan', 'sample', 'import'])
     parser.add_argument('-u', '--url', dest='consoleURL', help='URL of console. This argument will override the .env file', 
                         required=False, default=os.environ["RUNZERO_BASE_URL"])
     parser.add_argument('-k', '--key', dest='token', help='Prompt for Organization API key (do not enter at command line). This argument will override the .env file', 
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('--version', action='version', version='%(prog)s 2.4')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.5')
     return parser.parse_args()
     
-def getTasks(url, token): 
+def getTasks(url, type, token): 
     '''
         Retrieve Tasks from Organization corresponding to supplied token.
 
         :param url: A string, URL of the runZero console.
+        :param type: A string, the type of scan task(s) to download.
         :param token: A string, Account API Key.
         :returns: A JSON object, runZero task data.
         :raises: ConnectionError: if unable to successfully make GET request to console.
     '''
     
     url = f"{url}/api/v1.0/org/tasks"
-    #change {'search':'type:scan'} to {'search':'type:sample'} to retrieve traffic sampling tasks 
-    payload = {'search': 'type:scan',
+    params = {'search': f'type:{type}',
                'status':'processed'}
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
-        response = requests.get(url, headers=headers, params=payload)
+        response = requests.get(url, headers=headers, params=params)
         if response.status_code != 200:
             print('Unable to retrieve tasks' + str(response))
             exit()
@@ -101,7 +102,7 @@ def main():
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
-    taskInfo = getTasks(args.consoleURL, token)
+    taskInfo = getTasks(args.consoleURL, args.type, token)
     idList = parseIDs(taskInfo, args.taskNo)
     for id in idList:
         getData(args.consoleURL, token, id, args.path)
