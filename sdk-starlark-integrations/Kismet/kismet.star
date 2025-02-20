@@ -1,12 +1,12 @@
-load('runzero.types', 'ImportAsset', 'NetworkInterface')
+load('http', http_post='post', http_get='get', 'url_encode')
 load('json', json_encode='encode', json_decode='decode')
 load('net', 'ip_address')
-load('http', http_post='post', http_get='get', 'url_encode')
+load('runzero.types', 'ImportAsset', 'NetworkInterface')
 load('uuid', 'new_uuid')
 
 #Change the URL to match your Kismet server
-KISMET_BASE_URL = 'http://192.168.68.57:2501' # 'http://<domain or IP>:<port>'
-KISMET_PHY = '<PHY device>'
+KISMET_BASE_URL = 'http://192.168.68.71:2501' # 'http://<domain or IP>:<port>'
+KISMET_PHY =  '5FE308BD-0000-0000-0000-00C0CAB098F6' # <PHY device>'
 RUNZERO_REDIRECT = 'https://console.runzero.com/'
 
 def build_assets(assets_json):
@@ -16,6 +16,8 @@ def build_assets(assets_json):
         name = asset.get('kismet.device.base.commonname', '')
         manufacturer = asset.get('kismet.device.base.manuf', '')
         device_type = asset.get('kismet.device.base.type', '')
+        if device_type == "Wi-Fi AP":
+            device_type = "WAP"
         first_seen = asset.get('kismet.device.base.first_time', '')
         mac = asset.get('kismet.device.base.macaddr', None)
 
@@ -48,122 +50,63 @@ def build_assets(assets_json):
         typeset = dot11_device.get('dot11.device.typeset', '')
         wps_m3_count = dot11_device.get('dot11.device.wps_m3_count', '')
         wps_m3_last = dot11_device.get('dot11.device.wps_m3_last', '')
+
+        # Create initial custom attributes dictionary
+        custom_attributes = {
+            "first.seen": first_seen,
+            "name": name,
+            "dot11.device.beacon_fingerprint": beacon_fingerprint,
+            "dot11.device.bss_timestamp": bss_timestamp,
+            "dot11.device.client_disconnects": client_disconnects,
+            "dot11.device.client_disconnects_last": client_disconnects_last,
+            "dot11.device.datasize": datasize,
+            "dot11.device.datasize_retry": datasize_retry,
+            "dot11.device.last_beacon_timestamp": last_beacon_timestamp,
+            "dot11.device.last_bssid": last_bssid,
+            "dot11.device.last_sequence": last_sequence,
+            "dot11.device.link_measurement_capable": link_measurement_capable,
+            "dot11.device.max_tx_power": max_tx_power,
+            "dot11.device.min_tx_power": min_tx_power,
+            "dot11.device.neighbor_report_capable": neighbor_report_capable,
+            "dot11.device.num_advertised_ssids": num_advertised_ssids,
+            "dot11.device.num_associated_clients": num_associated_clients,
+            "dot11.device.num_client_aps": num_client_aps,
+            "dot11.device.num_fragments": num_fragments,
+            "dot11.device.num_probed_ssids": num_probed_ssids,
+            "dot11.device.num_retries": num_retries,
+            "dot11.device.num_responded_ssids": num_responded_ssids,
+            "dot11.device.probe_fingerprint": probe_fingerprint,
+            "dot11.device.response_fingerprint": response_fingerprint,
+            "dot11.device.typeset": typeset,
+            "dot11.device.wps_m3_count": wps_m3_count,
+            "dot11.device.wps_m3_last": wps_m3_last
+        }
         
         # Map Kismet last beaconed SSID record
         last_beaconed_ssid_record = dot11_device.get('dot11.device.last_beaconed_ssid_record', {})
-        beaconed_advertisedssid_beacon = last_beaconed_ssid_record.get('dot11.advertisedssid.beacon', '')
-        beaconed_advertisedssid_beaconrate = last_beaconed_ssid_record.get('dot11.advertisedssid.beaconrate', '')
-        beaconed_advertisedssid_beacons_sec = last_beaconed_ssid_record.get('dot11.advertisedssid.beacons_sec', '')
-        beaconed_advertisedssid_channel = last_beaconed_ssid_record.get('dot11.advertisedssid.channel', '')
-        beaconed_advertisedssid_ccx_txpower= last_beaconed_ssid_record.get('dot11.advertisedssid.ccx_txpower', '')
-        beaconed_advertisedssid_cisco_client_mfp = last_beaconed_ssid_record.get('dot11.advertisedssid.cisco_client_mfp', '')
-        beaconed_advertisedssid_cloaked= last_beaconed_ssid_record.get('dot11.advertisedssid.cloaked', '')
-        beaconed_advertisedssid_crypt_set = last_beaconed_ssid_record.get('dot11.advertisedssid.crypt_set', '')
-        beaconed_advertisedssid_dot11d_country = last_beaconed_ssid_record.get('dot11.advertisedssid.dot11d_country', '')
-        beaconed_advertisedssid_dot11e_channel_utilization_perc = last_beaconed_ssid_record.get('dot11.advertisedssid.dot11e_channel_utilization_perc', '')
-        beaconed_advertisedssid_dot11e_qbss = last_beaconed_ssid_record.get('dot11.advertisedssid.dot11e_qbss', '')
-        beaconed_advertisedssid_dot11e_qbss_stations = last_beaconed_ssid_record.get('dot11.advertisedssid.dot11e_qbss_stations', '')
-        beaconed_advertisedssid_dot11r_mobility_domain_id = last_beaconed_ssid_record.get('dot11.advertisedssid.dot11r_mobility_domain_id', '')
-        beaconed_advertisedssid_dot11r_mobility = last_beaconed_ssid_record.get('dot11.advertisedssid.dot11r_mobility', '')
-        beaconed_advertisedssid_first_time = last_beaconed_ssid_record.get('dot11.advertisedssid.first_time', '')
-        beaconed_advertisedssid_ht_center_1 = last_beaconed_ssid_record.get('dot11.advertisedssid.ht_center_1', '')
-        beaconed_advertisedssid_ht_center_2 = last_beaconed_ssid_record.get('dot11.advertisedssid.ht_center_2', '')
-        beaconed_advertisedssid_ht_mode = last_beaconed_ssid_record.get('dot11.advertisedssid.ht_mode', '')
-        beaconed_advertisedssid_ietag_checksum = last_beaconed_ssid_record.get('dot11.advertisedssid.ietag_checksum', '')
-        beaconed_advertisedssid_last_time = last_beaconed_ssid_record.get('dot11.advertisedssid.last_time', '')
-        beaconed_advertisedssid_maxrate = last_beaconed_ssid_record.get('dot11.advertisedssid.maxrate', '')
-        beaconed_advertisedssid_probe_response = last_beaconed_ssid_record.get('dot11.advertisedssid.probe_response', '')
-        beaconed_advertisedssid_ssid = last_beaconed_ssid_record.get('dot11.advertisedssid.ssid', '')
-        beaconed_advertisedssid_ssid_hash = last_beaconed_ssid_record.get('dot11.advertisedssid.ssid_hash', '')
-        beaconed_advertisedssid_ssidlen = last_beaconed_ssid_record.get('dot11.advertisedssid.ssidlen', '')
-        beaconed_advertisedssid_wpa_mfp_required = last_beaconed_ssid_record.get('dot11.advertisedssid.wpa_mfp_required', '')
-        beaconed_advertisedssid_wpa_mfp_supported = last_beaconed_ssid_record.get('dot11.advertisedssid.wpa_mfp_supported', '')
-        beaconed_advertisedssid_wps_config_methods = last_beaconed_ssid_record.get('dot11.advertisedssid.wps_config_methods', '')
-        beaconed_advertisedssid_wps_state = last_beaconed_ssid_record.get('dot11.advertisedssid.wps_state', '')
-        beaconed_advertisedssid_wps_version = last_beaconed_ssid_record.get('dot11.advertisedssid.wps_version', '')
-
-        # Build custom attributes dictionary
-        custom_attributes = {
-                "first.seen": first_seen,
-                "name": name,
-                "dot11.device.beacon_fingerprint": beacon_fingerprint,
-                "dot11.device.bss_timestamp": bss_timestamp,
-                "dot11.device.client_disconnects": client_disconnects,
-                "dot11.device.client_disconnects_last": client_disconnects_last,
-                "dot11.device.datasize": datasize,
-                "dot11.device.datasize_retry": datasize_retry,
-                "dot11.device.last_beacon_timestamp": last_beacon_timestamp,
-                "dot11.device.last_bssid": last_bssid,
-                "dot11.device.last_sequence": last_sequence,
-                "dot11.device.link_measurement_capable": link_measurement_capable,
-                "dot11.device.max_tx_power": max_tx_power,
-                "dot11.device.min_tx_power": min_tx_power,
-                "dot11.device.neighbor_report_capable": neighbor_report_capable,
-                "dot11.device.num_advertised_ssids": num_advertised_ssids,
-                "dot11.device.num_associated_clients": num_associated_clients,
-                "dot11.device.num_client_aps": num_client_aps,
-                "dot11.device.num_fragments": num_fragments,
-                "dot11.device.num_probed_ssids": num_probed_ssids,
-                "dot11.device.num_retries": num_retries,
-                "dot11.device.num_responded_ssids": num_responded_ssids,
-                "dot11.device.probe_fingerprint": probe_fingerprint,
-                "dot11.device.response_fingerprint": response_fingerprint,
-                "dot11.device.typeset": typeset,
-                "dot11.device.wps_m3_count": wps_m3_count,
-                "dot11.device.wps_m3_last": wps_m3_last
-        }
+        for key, value in last_beaconed_ssid_record.items():
+                keyword = "{}.{}".format("last_beaconed_ssid_record", key)
+                custom_attributes[keyword] = value
 
         # Map Kismet associated client map
         associated_client_map = dot11_device.get('dot11.device.associated_client_map', {})
+        for key, value in associated_client_map.items():
+                keyword = "{}.{}".format("associated_client_map", key)
+                custom_attributes[keyword] = value
         
         # Map Kismet responded SSID map
         responded_ssid_map = dot11_device.get('dot11.device.responded_ssid_map', [])
         for item in responded_ssid_map:
             for key, value in item.items():
-                print(key, value)
-                custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), key)] = value # item.get(key, '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),"dot11.advertisedssid.ssidlen")] = item.get('dot11.advertisedssid.ssidlen', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),"dot11.advertisedssid.cloaked")] = item.get('dot11.advertisedssid.cloaked', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.ccx_txpower")] = item.get('dot11.advertisedssid.ccx_txpower', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.cisco_client_mfp")] = item.get('dot11.advertisedssid.cisco_client_mfp', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.dot11e_qbss")] = item.get('dot11.advertisedssid.dot11e_qbss', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.probe_response")] = item.get('dot11.advertisedssid.probe_response', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.wps_uuid_e")] = item.get('dot11.advertisedssid.wps_uuid_e', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.ht_center_1")] = item.get('dot11.advertisedssid.ht_center_1', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.maxrate")] = item.get('dot11.advertisedssid.maxrate', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.beacon")] = item.get('dot11.advertisedssid.beacon', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.ietag_checksum")] = item.get('dot11.advertisedssid.ietag_checksum', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.ht_center_2")] = item.get('dot11.advertisedssid.ht_center_2', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.wps_model_name")] = item.get('dot11.advertisedssid.wps_model_name', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.ssid_hash")] = item.get('dot11.advertisedssid.ssid_hash', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.ht_mode")] = item.get('dot11.advertisedssid.ht_mode', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), "dot11.advertisedssid.wps_manuf")] = item.get('dot11.advertisedssid.wps_manuf', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.first_time', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.beaconrate', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.dot11e_channel_utilization_perc', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.crypt_set', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.wpa_mfp_supported', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.last_time', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.dot11e_qbss_stations', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.wps_version', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.dot11r_mobility_domain_id', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.ssid', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.wps_config_methods', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.beacons_sec', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.wps_state', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.wpa_mfp_required', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.channel', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.wps_serial_number', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.wps_device_name', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.dot11r_mobility', '')
-            # custom_attributes["{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)),)] = item.get('dot11.advertisedssid.wps_model_number', '')
+                keyword = "{}.{}.{}".format("responded_ssid_map", str(responded_ssid_map.index(item)), key)
+                custom_attributes[keyword] = value
 
         # Map Kismet associated SSID map
-        # advertised_ssid_map = dot11_device.get('dot11.device.advertised_ssid_map', [])
-        # for item in advertised_ssid_map:
-
-
-        
+        advertised_ssid_map = dot11_device.get('dot11.device.advertised_ssid_map', [])
+        for item in advertised_ssid_map:
+            for key, value in item.items():
+                keyword = "{}.{}.{}".format("advertised_ssid_map", str(advertised_ssid_map.index(item)), key)
+                custom_attributes[keyword] = value
 
         # parse IP addresses
         ipv4s = []
@@ -185,7 +128,7 @@ def build_assets(assets_json):
                     ips.append(addr)        
 
         network = build_network_interface(ips=[], mac=mac)
-        
+
         assets_import.append(
             ImportAsset(
                 id=str(id),
@@ -195,8 +138,7 @@ def build_assets(assets_json):
                 customAttributes=custom_attributes
             )
         )
-    print(custom_attributes)
-    # return assets_import
+    return assets_import
 
 # build runZero network interfaces; shouldn't need to touch this
 def build_network_interface(ips, mac):
@@ -221,8 +163,13 @@ def main(**kwargs):
 
     # get assets
     assets = []
-    #url = '{}/{}-{}/{}'.format(KISMET_BASE_URL, 'devices/views/seenby', KISMET_PHY, 'devices.json')
-    url = '{}/{}'.format(KISMET_BASE_URL, 'devices/last-time/-60/devices.json')
+    # uncomment the url variable that corresponds to the API query best suited for your Kismet instance
+
+    # Return devices only for a given WLAN PHY UUID as defined in KISMET_PHY varoable
+    url = '{}/{}-{}/{}'.format(KISMET_BASE_URL, 'devices/views/seenby', KISMET_PHY, 'devices.json')
+
+    # Return devices seen by all WL
+    # url = '{}/{}'.format(KISMET_BASE_URL, 'devices/last-time/-60/devices.json')
     cookie = '{}={}'.format('KISMET', cookie)
     assets = http_get(url, headers={'Cookie': cookie, 'Content-Type': 'application/json', 'Accept': 'application/json'})
     if assets.status_code != 200:
