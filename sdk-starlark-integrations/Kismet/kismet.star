@@ -163,19 +163,13 @@ def main(**kwargs):
 
     # get assets
     assets = []
-    # uncomment the url variable that corresponds to the API query best suited for your Kismet instance
-
-    # Return devices only for a given WLAN PHY UUID as defined in KISMET_PHY varoable
     url = '{}/{}-{}/{}'.format(KISMET_BASE_URL, 'devices/views/seenby', KISMET_PHY, 'devices.json')
-
-    # Return devices seen by all WL
-    # url = '{}/{}'.format(KISMET_BASE_URL, 'devices/last-time/-60/devices.json')
     cookie = '{}={}'.format('KISMET', cookie)
     assets = http_get(url, headers={'Cookie': cookie, 'Content-Type': 'application/json', 'Accept': 'application/json'})
     if assets.status_code != 200:
         print('failed to retrieve assets' + str(assets))
         return None
-
+    
     assets_json = json_decode(assets.body)
 
     # build asset import
