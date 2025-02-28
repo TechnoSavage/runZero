@@ -12,7 +12,8 @@ import uuid
 import xmltodict
 from ipaddress import ip_address
 from flatten_json import flatten
-from gvm.connections import UnixSocketConnection
+from gvm.connections import (SSHConnection, TLSConnection, UnixSocketConnection)
+from gvm.errors import GvmError
 from gvm.protocols.gmp import Gmp
 from typing import Any, Dict, List
 from runzero.client import AuthError
@@ -73,6 +74,13 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
             osPos = val_list.index('best_os_txt')
             osKey = key_list[osPos]
             os_name = baseAttr.get(osKey.replace('_name', '_value')).replace('/', ' ')
+            if os_name == 'Linux Kernel':
+                os_name = 'Linux'
+            if 'Ubuntu' in os_name:
+                reformat = os_name.split()
+                os_name = f"{reformat[0]} Linux {reformat[1]}"
+            if os_name == 'Synology DiskStation Manager':
+                os_name = 'Synology DSM'
 
         # create the network interfaces
         network = build_network_interface(ips=[ip], mac=mac)
@@ -190,7 +198,8 @@ def main():
     else:
         print("Invalid connection method to GVM")
         exit()
-    assetJSON = xmltodict.parse(assetXML)
+    assetJSON = xmltodict.parse(assetXML[0])
+
     # Format asset list for import into runZero
     import_assets = build_assets_from_json(assetJSON['get_assets_response']['asset'])
 
