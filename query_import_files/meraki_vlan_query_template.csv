@@ -1,0 +1,4 @@
+id,created_at,updated_at,created_by,type,category,severity,name,description,query,auto,alive_only,report_vuln,risk,exploitable,vid,cve,cvss2_base_score,cvss2_temporal_score,cvss3_base_score,cvss3_temporal_score,cpe23,solution,attributes
+,2024-09-13,2024-09-13,salesengineering@runzero.com,assets,Audit,Info,Meraki: asset in VLAN 100,,"source:meraki AND has:""@meraki.ntwkclient.vlan"" AND @meraki.ntwkclient.vlan:""100""",false,true,false,None,false,,,0,0,0,0,,,{}
+,2024-09-13,2024-09-16,salesengineering@runzero.com,assets,Audit,Info,Meraki: asset in VLAN 200,,"source:meraki AND has:""@meraki.ntwkclient.vlan"" AND @meraki.ntwkclient.vlan:""200""",false,true,false,None,false,,,0,0,0,0,,,{}
+,2024-09-16,2024-09-16,salesengineering@runzero.com,assets,Audit,Info,Meraki: asset in VLAN 300,,"source:meraki AND has:""@meraki.ntwkclient.vlan"" AND @meraki.ntwkclient.vlan:""300""",false,true,false,None,false,,,0,0,0,0,,,{}
