@@ -1,0 +1,73 @@
+id,created_at,updated_at,created_by,type,category,severity,name,description,query,auto,alive_only,report_vuln,risk,exploitable,vid,cve,cvss2_base_score,cvss2_temporal_score,cvss3_base_score,cvss3_temporal_score,cpe23,solution,attributes
+,2024-09-13,2024-09-13,salesengineering@runzero.com,assets,Compliance,Info,CIS G1: Control 01 – Compute,"Tracks server assets and endpoints (desktops and laptops)
+
+Actively manage (inventory, track, and correct) all enterprise
+assets (end-user devices, including portable and mobile; network
+devices; non-computing/Internet of Things (IoT) devices; and
+servers) connected to the infrastructure physically, virtually,
+remotely, and those within cloud environments, to accurately
+know the totality of assets that need to be monitored and
+protected within the enterprise. This will also support identifying
+unauthorized and unmanaged assets to remove or remediate.",type:server,false,true,false,None,false,,,0,0,0,0,,,{}
+,2024-09-16,2024-09-16,salesengineering@runzero.com,assets,Compliance,Info,CIS G1: Control 01 – Virtual Machines,"Assets that are virtual machines
+
+Actively manage (inventory, track, and correct) all enterprise
+assets (end-user devices, including portable and mobile; network
+devices; non-computing/Internet of Things (IoT) devices; and
+servers) connected to the infrastructure physically, virtually,
+remotely, and those within cloud environments, to accurately
+know the totality of assets that need to be monitored and
+protected within the enterprise. This will also support identifying
+unauthorized and unmanaged assets to remove or remediate.",attr:virtual,false,true,false,None,false,,,0,0,0,0,,,{}
+,2024-09-16,2024-09-16,salesengineering@runzero.com,assets,Compliance,Info,CIS G1: Control 01 – Cloud Assets,"Tracks server assets
+
+Actively manage (inventory, track, and correct) all enterprise
+assets (end-user devices, including portable and mobile; network
+devices; non-computing/Internet of Things (IoT) devices; and
+servers) connected to the infrastructure physically, virtually,
+remotely, and those within cloud environments, to accurately
+know the totality of assets that need to be monitored and
+protected within the enterprise. This will also support identifying
+unauthorized and unmanaged assets to remove or remediate.",source:aws or source:gcp or source:azure,false,true,false,None,false,,,0,0,0,0,,,{}
+,2024-09-16,2024-09-16,salesengineering@runzero.com,assets,Compliance,Info,CIS G1: Control 01 – IoT devices,"Tracks server assets
+
+Actively manage (inventory, track, and correct) all enterprise
+assets (end-user devices, including portable and mobile; network
+devices; non-computing/Internet of Things (IoT) devices; and
+servers) connected to the infrastructure physically, virtually,
+remotely, and those within cloud environments, to accurately
+know the totality of assets that need to be monitored and
+protected within the enterprise. This will also support identifying
+unauthorized and unmanaged assets to remove or remediate.",not (type:server or type:desktop or type:laptop or type:mobile or type:switch or type:router or type:firewall),false,true,false,None,false,,,0,0,0,0,,,{}
+,2024-09-16,2024-09-16,salesengineering@runzero.com,assets,Compliance,Info,CIS G1: Control 01 – Mobile,"Tracks server assets
+
+Actively manage (inventory, track, and correct) all enterprise
+assets (end-user devices, including portable and mobile; network
+devices; non-computing/Internet of Things (IoT) devices; and
+servers) connected to the infrastructure physically, virtually,
+remotely, and those within cloud environments, to accurately
+know the totality of assets that need to be monitored and
+protected within the enterprise. This will also support identifying
+unauthorized and unmanaged assets to remove or remediate.",type:mobile,false,true,false,None,false,,,0,0,0,0,,,{}
+,2024-09-16,2024-09-16,salesengineering@runzero.com,assets,Compliance,Info,CIS G1: Control 01 – Network assets,"Tracks server assets
+
+Actively manage (inventory, track, and correct) all enterprise
+assets (end-user devices, including portable and mobile; network
+devices; non-computing/Internet of Things (IoT) devices; and
+servers) connected to the infrastructure physically, virtually,
+remotely, and those within cloud environments, to accurately
+know the totality of assets that need to be monitored and
+protected within the enterprise. This will also support identifying
+unauthorized and unmanaged assets to remove or remediate.",type:router or type:firewall or type:switch or type:wap or type:”load balancer”,false,true,false,None,false,,,0,0,0,0,,,{}
+,2024-09-16,2024-09-16,salesengineering@runzero.com,users,Compliance,Info,CIS G1: Control 06 – Expired passwords,"Tracks AD users with expired passwords
+
+Use processes and tools to create, assign, manage, and revoke
+access credentials and privileges for user, administrator, and
+service accounts for enterprise assets and software.
+","passwordExpired:""true""",false,true,false,None,false,,,0,0,0,0,,,{}
+,2024-09-16,2024-09-16,salesengineering@runzero.com,users,Compliance,Info,CIS G1: Control 06 – Bad passwords,"Tracks AD users with a bad password count greater than 1
+
+Use processes and tools to create, assign, manage, and revoke
+access credentials and privileges for user, administrator, and
+service accounts for enterprise assets and software.
+",badPwdCount:>1,false,true,false,None,false,,,0,0,0,0,,,{}
