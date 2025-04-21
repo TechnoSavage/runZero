@@ -188,6 +188,7 @@ def main(**kwargs):
     # build asset import
     assets_import = build_assets(assets_json)
     if not assets_import:
-         print('no assets')
-    
+        print('no assets')
+        return None
+
     return assets_import
