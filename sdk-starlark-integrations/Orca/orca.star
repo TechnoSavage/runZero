@@ -1,11 +1,12 @@
 load('runzero.types', 'ImportAsset', 'NetworkInterface')
 load('json', json_encode='encode', json_decode='decode')
 load('net', 'ip_address')
-load('http', http_get='get', http_post='port', 'url_encode')
+load('http', http_get='get', http_post='post', 'url_encode')
 load('uuid', 'new_uuid')
 
 #Change the URL to match your Orca instance
-ORCA_API_URL = "https://app.au.orcasecurity.io/api/assets"
+ORCA_API_URL = "https://app.eu.orcasecurity.io/api/assets"
+# ORCA_API_URL = "https://app.au.orcasecurity.io/api/assets"
 RUNZERO_REDIRECT = 'https://console.runzero.com/'
 
 def build_assets(asset_data):
@@ -60,7 +61,7 @@ def build_network_interface(ips, mac=None):
 def get_assets(token, url=ORCA_API_URL):
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + api_token
+        "Authorization": "Bearer " + token
     }
 
     query = {
@@ -75,6 +76,7 @@ def get_assets(token, url=ORCA_API_URL):
         if response.status_code != 200:
             print("Failed to fetch assets from Orca Security. Status:", response.status_code)
             return assets
+        print(response.status_code, response)
 
         batch = json_decode(response.body).get("assets", [])
 
@@ -96,6 +98,7 @@ def main(**kwargs):
 
     # map assets to runZero
     assets = build_assets(all_assets)
+    print(assets)
     
     if not assets:
         print("No assets retrieved from Orca Security")
