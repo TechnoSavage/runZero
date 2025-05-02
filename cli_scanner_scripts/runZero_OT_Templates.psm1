@@ -75,7 +75,7 @@ function Invoke-LimitedOTScan {
     
     Write-Host "`nPreparing OT Limited scan..."
 
-    & $Scanner_Path --input-targets $Input_Targets --host-ping --rate 300 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --tcp-ports $Ports --probes $Probes --snmp-comms $Comms --output $Output_Path
+    & $Scanner_Path scan --input-targets $Input_Targets --host-ping --rate 300 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --tcp-ports $Ports --probes $Probes --snmp-comms $Comms --output $Output_Path
 
     Write-Host "`nScan complete!"
 }
@@ -184,7 +184,7 @@ function Invoke-FullOTScan {
 
     Write-Host "`nPreparing OT Full scan..."
 
-    & $Scanner_Path --input-targets $Input_Targets --host-ping --rate 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --modbus-identification-level $Modbus --s7comm-request-extended-information $S7comm --dnp3-banner-address-discovery $Dnp3 --probes $Probes --snmp-comms $Comms --output $Output_Path
+    & $Scanner_Path scan --input-targets $Input_Targets --host-ping --rate 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 --modbus-identification-level $Modbus --s7comm-request-extended-information $S7comm --dnp3-banner-address-discovery $Dnp3 --probes $Probes --snmp-comms $Comms --output $Output_Path
 
     Write-Host "`nScan complete!"
 }

@@ -105,7 +105,7 @@ echo "Preparing OT Full scan..."
 
 # define parameters to reflect OT full scan at https://help.runzero.com/docs/playbooks/scanning-ot-networks/#step-3b-create-an-ot-full-scan-template 
 
-runzero --input-targets ${input_targets} --host-ping --rate 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 \
+runzero scan --input-targets ${input_targets} --host-ping --rate 500 --max-host-rate 20 --max-ttl 64 --max-group-size 2048 \
   --modbus-identification-level ${modbus} \
   --s7comm-request-extended-information ${s7comm} \
   --dnp3-banner-address-discovery ${dnp3} \
