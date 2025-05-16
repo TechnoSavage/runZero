@@ -5,8 +5,8 @@ load('runzero.types', 'ImportAsset', 'NetworkInterface')
 load('uuid', 'new_uuid')
 
 #Change the URL to match your Kismet server
-KISMET_BASE_URL = 'http://192.168.68.71:2501' # 'http://<domain or IP>:<port>'
-KISMET_PHY =  '5FE308BD-0000-0000-0000-00C0CAB098F6' # <PHY device>'
+KISMET_BASE_URL = 'http://<domain or IP>:<port>'
+KISMET_PHY =  '<PHY device UUID>'
 RUNZERO_REDIRECT = 'https://console.runzero.com/'
 
 def build_assets(assets_json):
