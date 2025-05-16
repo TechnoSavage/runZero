@@ -85,3 +85,20 @@
 - Custom integration sources can be queried using the `custom_integration` keyword followed by the source name as defined in the [Create custom integration](https://github.com/TechnoSavage/runZero/blob/main/sdk-starlark-integrations/README.md#Create-custom-integration) step. E.g. `custom_integration:snipe-it`
 
 - Custom integration attributes can be queried just like any other integration attribute. Custom integration sources with have the `.custom` suffix in the keyword. For example, a custom integration called "snipe-it" that reports an asset attribute of "deviceType" would have a keyword like the following which shows a reported value of "WAP" `@snipe-it.custom.deviceType:="WAP"`.
+
+### Testing and debugging starlark scripts with the runZero CLI tool
+
+- /usr/local/bin/runzero script --filename /path/to/starlark/script.star repl
+
+Previous versions of the cli-scanner binary have used the following syntax
+
+- /usr/local/bin/runzero script-repl --filename /path/to/starlark/script.star
+- /usr/local/bin/runzero integration-script-repl --filename /path/to/starlark/script.star
+
+Creates subshell
+
+kwargs = {"access_key": "foo", "access_secret": "bar"}
+
+OR
+
+runzero script --filename print.star --kwargs access_key=my-access-key --kwargs access_secret=my-access-secret
