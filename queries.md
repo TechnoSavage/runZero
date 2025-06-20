@@ -161,10 +161,16 @@ created_at:<"2weeks"
 last_seen:>"2weeks" 
 ```
 
-### Assets last updated over two weeks ago:
+### Assets last updated over two weeks ago:s
 
 ```
 updated_at:>"2weeks"
+```
+
+### Assets running database instances
+
+```
+software:sql or software:mariadb or software:mongodb or software:database or (software:redis not software:redistributable)
 ```
 
 ### Assets that (likely) have Tanium Client installed and running:
