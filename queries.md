@@ -170,7 +170,7 @@ updated_at:>"2weeks"
 ### Assets running database instances
 
 ```
-software:sql or software:mariadb or software:mongodb or software:database or (software:redis not software:redistributable)
+software:sql OR software:mariadb OR software:oracledb OR software:mongodb OR software:database OR (software:redis NOT software:redistributable)
 ```
 
 ### Assets that (likely) have Tanium Client installed and running:
@@ -548,10 +548,16 @@ _asset.protocol:http AND protocol:http AND (_service.last.http.body:="%FileCatal
 product:openssl AND version:3.0
 ```
 
-### Assets with SQL databases:
+### SQL database instances:
 
 ```
 product:sql OR product:mariadb OR product:oracledb
+```
+
+### Software related to database instances
+
+```
+product:sql OR product:mariadb OR product:mongodb OR product:oracledb OR product:database OR (product:redis NOT product:redistributable)
 ```
 
 # Vulnerability Queries
