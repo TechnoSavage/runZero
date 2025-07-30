@@ -724,6 +724,14 @@ source:qualys AND vulnerability.threatIntel:"%Ransomware%"
 source:qualys AND (vulnerability.threatIntel:"%Cisa_Known_Exploited_Vulns%" OR kev:cisa)
 ```
 
+## CVEs
+
+### Mitsubishi air conditioning authentication bypass - CVE-2025-3699
+
+```
+os:"mitsubishi electric air conditioning system" and (_service.banner:"%AG-150%", _service.banner:"%G-50%", _service.banner:"%GB-50%", _service.banner:"%GB-24%", _service.banner:"%G-150%", _service.banner:"%EB-50%", _service.banner:"%CMS-RMD-J%")
+```
+
 # Wireless Queries:
 
 ### Search ESSID for authentication exceptions:
