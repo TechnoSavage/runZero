@@ -73,6 +73,7 @@ def update_tasks(url, token, task_ids, enable):
         :returns: None, returns none.
         :raises: ConnectionError: if unable to successfully make PATCH request to console.
     '''
+
     if enable:
         state = "true"
     else:
