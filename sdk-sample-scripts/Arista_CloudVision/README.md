@@ -49,8 +49,10 @@ https://github.com/aristanetworks/cvprac
 
 ### CloudVision On-Prem node connection variables
 
-`CV_NODE_LIST` - The CloudVision Node(s) to connect to. Each node separated by a comma
+`CV_NODE_LIST` - The CloudVision Node(s) to connect to. Each node separated by a comma and space (', ')
+
 `CV_USERNAME` - Username for connecting to the specified nodes
+
 `CV_PASSWORD` - Password for connecting to the specified nodes
 
 `CV_CONSOLE_URL` - The domain of the CloudVision instance, minus any resource path e.g. www.arista.io (The sample env file includes the domains for two US based instances. Uncomment the one you prefer)

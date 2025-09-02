@@ -33,7 +33,7 @@ CV_IMPORT_TASK_NAME = os.environ['CV_IMPORT_TASK_NAME']
 # Script uses pipenv, but os.environ[] can be swapped out for a hardcoded value to make testing easier
 
 # Variables for CV On-Prem connection
-CV_NODE_LIST = os.environ['CV_CONSOLE_URL']
+CV_NODE_LIST = os.environ['CV_NODE_LIST']
 CV_USERNAME = os.environ['CV_USERNAME']
 CV_PASSWORD = os.environ['CV_PASSWORD']
 
@@ -144,8 +144,9 @@ def main():
     #client = CvpClient(syslog=True, filename='/path_to_file/cvprac_log')
     client = CvpClient()
 
-    # Connect CVP client to On-Prem Nodes
-    #client.connect(nodes=CV_NODE_LIST, username=CV_USERNAME, password=CV_PASSWORD)
+    # Connect CVP client to On-Prem Nodes 
+    #nodes = CV_NODE_LIST.split(', ')
+    #client.connect(nodes=nodes, username=CV_USERNAME, password=CV_PASSWORD)
     
     # Connect CVP client to CVaaS console
     client.connect(nodes=[CV_CONSOLE_URL], username='', password='', is_cvaas=True, api_token=CV_API_KEY)
