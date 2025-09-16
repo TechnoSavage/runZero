@@ -150,7 +150,7 @@ def get_comp_interfaces(id, token):
 
     # while items returned is == to items returned per page perform successive page fetches
     while True:
-        url = '{}/{}/{}/{}'.format(ATLAS_BASE_URL, 'api/sam/estate/v1/computers', id, 'hardware/networkadapters?page_size', item_count, '&page_number', page)
+        url = '{}/{}={}={}'.format(ATLAS_BASE_URL, 'api/sam/estate/v1/computers', id, 'hardware/networkadapters?page_size', item_count, '&page_number', page)
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}
         response = http_get(url, headers=headers, timeout=300)
 
@@ -171,7 +171,7 @@ def get_comp_apps(id, address, token):
     applications_all = []
 
     while True:
-        url = '{}/{}/{}/{}'.format(ATLAS_BASE_URL, 'api/sam/estate/v1/computers', id, 'applications?page_size', item_count, '&page_number', page)
+        url = '{}/{}={}={}'.format(ATLAS_BASE_URL, 'api/sam/estate/v1/computers', id, 'applications?page_size', item_count, '&page_number', page)
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}
         response = http_get(url, headers=headers, timeout=300)
         
@@ -186,9 +186,30 @@ def get_comp_apps(id, address, token):
 
     return applications_all
 
-def main(**kwargs):
-    # assign API key from kwargs
-    token = kwargs['access_secret']
+def get_token(client_id, client_secret):
+    url = '{}/{}'.format(ATLAS_BASE_URL, '/idp/api/connect/token?)
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    params = {'grant_type': 'client_credentials',
+              'client_id': client_id,
+              'client_secret': client_secret}
+    
+    response = http_post(url, headers=headers, params=bytes(url_encode(params)))
+    if response.status_code != 200:
+        print('authentication failed: ', response.status_code)
+        return None
+
+    auth_data = json_decode(response.body)
+    if not auth_data:
+        print('invalid authentication data')
+        return None
+
+    return auth_date['access_token']  
+
+def main(*args, **kwargs):
+    # retreive token with Oath credentials
+    client_id = kwargs['access_key']
+    client_secret = kwargs['access_secret']
+    token = get_token(client_id, client_secret)
 
     # retrieve initial computer assets
     computers = get_assets(token)
