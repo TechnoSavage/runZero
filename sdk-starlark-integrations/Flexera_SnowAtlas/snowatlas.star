@@ -112,7 +112,7 @@ def get_assets(token):
     assets_all = []
 
     # while items returned is == to items returned per page perform successive page fetches
-    while item_count > 0:
+    while True:
         url = '{}/{}={}={}'.format(ATLAS_BASE_URL, 'api/sam/estate/v1/computers?page_size', item_count, '&page_number', page)
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}
         response = http_get(url, headers=headers, timeout=300)
@@ -150,7 +150,7 @@ def get_comp_interfaces(id, token):
     interfaces_all = []
 
     # while items returned is == to items returned per page perform successive page fetches
-    while item_count > 0:
+    while True:
         url = '{}/{}/{}/{}'.format(ATLAS_BASE_URL, 'api/sam/estate/v1/computers', id, 'hardware/networkadapters?page_size', item_count, '&page_number', page)
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}
         response = http_get(url, headers=headers, timeout=300)
@@ -171,7 +171,7 @@ def get_comp_apps(id, address, token):
     item_count = 100
     applications_all = []
 
-    while item_count > 0:
+    while True:
         url = '{}/{}/{}/{}'.format(ATLAS_BASE_URL, 'api/sam/estate/v1/computers', id, 'applications?page_size', item_count, '&page_number', page)
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}
         response = http_get(url, headers=headers, timeout=300)
