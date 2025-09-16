@@ -63,8 +63,7 @@ def build_assets(assets_json, token):
         assets_import.append(
             ImportAsset(
                 id=str(id),
-                model=model,
-                deviceType=device_type,
+                model=hardware,
                 manufacturer=manufacturer,
                 networkInterfaces=networks,
                 customAttributes=custom_attributes,
@@ -122,7 +121,7 @@ def get_assets(token):
         else:
             assets = json_decode(response.body)['items']
             assets_all.extend(assets)
-            if len(assets) < item-count:
+            if len(assets) < item_count:
                 break
             page += 1
 
@@ -160,7 +159,7 @@ def get_comp_interfaces(id, token):
         else:
             interfaces = json_decode(response.body)['items']
             interfaces_all.extend(interfaces)
-            if len(interfaces) < item-count:
+            if len(interfaces) < item_count:
                 break
             page += 1
 
@@ -181,7 +180,7 @@ def get_comp_apps(id, address, token):
         else:
             applications = json_decode(response.body)['items']
             applications_all.extend(applications)
-            if len(applications) < item-count:
+            if len(applications) < item_count:
                 break
             page += 1
 
