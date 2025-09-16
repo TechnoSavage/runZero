@@ -130,7 +130,7 @@ def create_owner_group(url, token, group_name):
     payload =  {"name": group_name,
                 "reference": 1,
                 "order": 1,
-                "hidden": false}
+                "hidden": 'false'}
     try:
         response = requests.post(url, headers=headers, data=payload)
         if response.status_code != 200:
