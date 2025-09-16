@@ -22,7 +22,7 @@ def build_assets(assets_json, token):
         portable = asset.get('isPortable', '')
         virtual = asset.get('isVirtual', '')
         server = asset.get('isServer', '')
-        vdi = = asset.get('isVDI', '')
+        vdi = asset.get('isVDI', '')
         hostComputerId  = asset.get('hostComputerId', '')
         mostFrequentUser = asset.get('mostFrequentUser', '')
         mostRecentUser = asset.get('mostRecentUser', '')
