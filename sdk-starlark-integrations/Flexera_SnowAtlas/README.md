@@ -1,8 +1,4 @@
-## Configuration
-
-`ATLAS_BASE_URL` - The domain or IP of the Snow Atlas web server e.g. http://<'ip address'>:<'port'>
-
-`client_secret` - The bearer token
+# Custom Integration: Flexera Snow Atlas
 
 ## Getting Started
 
@@ -20,8 +16,11 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 ##  Snow Atlas requirements
 
-- <INSERT_REQUIREMENT_1> - example API Client Credentials
-- <INSERT_REQUIREMENT_2> - example API URL
+**ATLAS Instance URL** - The domain or IP of the Snow Atlas web server e.g. "https://<region>.snowsoftware.io" (defined within the starlark script as `ATLAS_BASE_URL`)
+
+`client_id` - Oauth Client ID for authentication (configured in Credentials section of runZero)
+
+`client_secret` - Oauth Client secret for authentication (configured in Credentials section of runZero)
 
 ## Snow Atlas API Docs
 
@@ -33,9 +32,13 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 ### Snow Atlas configuration
 
-1. <INSERT_STEP_1> - example get API URL
-2. <INSERT_STEP_2> - create API credentials
-3. <INSERT_STEP_3> - example update `API_URL` in the code
+1. Determine the proper Snow Atlas URL:
+    - Identify the region for your instance
+    - Assign the URL to `ATLAS_BASE_URL` within the starlark script 
+2. Create an Application Registration in Snow Atlas: 
+    - [Application Registration documentation](https://docs-snow.flexera.com/snow-atlas/user-documentation/snow-atlas-settings/application-registrations/manage-application-registrations)
+    - Copy the Client ID; this will be used as the value for `access_key` when creating the Custom Integration credentials in the runZero console (see below)
+    - Copy the Client secret; this will be used as the value for `access_secret` when creating the Custom Integration credentials in the runZero console (see below)
 
 ### runZero configuration
 
@@ -44,8 +47,9 @@ git clone https://github.com/TechnoSavage/runZero.git
     - Modify datapoints uploaded to runZero as needed 
 2. [Create the Credential for the Custom Integration](https://console.runzero.com/credentials)
     - Select the type `Custom Integration Script Secrets`
-    - Both `access_key` and `access_secret` are required, but not all scripts will use both
-    - Input a placeholde value like `foo` if the value is unused 
+    - Both `access_key` and `access_secret` are required
+    - `access_key` corresponds to the Client ID provided when creating the Snow Atlas Application Registration
+    -  `access_secret` corresponds to the Client secret provided when creating the Snow Atlas Application Registration
 3. [Create the Custom Integration](https://console.runzero.com/custom-integrations/new)
     - Add a Name and Icon 
     - Toggle `Enable custom integration script` to input your finalized script
