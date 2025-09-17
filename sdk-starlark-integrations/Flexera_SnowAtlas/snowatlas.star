@@ -1,7 +1,7 @@
 load('runzero.types', 'ImportAsset', 'NetworkInterface', 'Software')
 load('json', json_encode='encode', json_decode='decode')
 load('net', 'ip_address')
-load('http', http_get='get', 'url_encode')
+load('http', http_get='get', http_post='post', 'url_encode')
 load('uuid', 'new_uuid')
 
 #Change the URL to match your Snow Atlas server
@@ -187,7 +187,7 @@ def get_comp_apps(id, address, token):
     return applications_all
 
 def get_token(client_id, client_secret):
-    url = '{}/{}'.format(ATLAS_BASE_URL, '/idp/api/connect/token?)
+    url = '{}/{}'.format(ATLAS_BASE_URL, '/idp/api/connect/token?')
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     params = {'grant_type': 'client_credentials',
               'client_id': client_id,
@@ -203,10 +203,10 @@ def get_token(client_id, client_secret):
         print('invalid authentication data')
         return None
 
-    return auth_date['access_token']  
+    return auth_data['access_token']  
 
 def main(*args, **kwargs):
-    # retreive token with Oath credentials
+    # retreive token with Oauth credentials
     client_id = kwargs['access_key']
     client_secret = kwargs['access_secret']
     token = get_token(client_id, client_secret)
