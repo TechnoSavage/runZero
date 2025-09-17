@@ -33,7 +33,7 @@ git clone https://github.com/TechnoSavage/runZero.git
 ### Snow Atlas configuration
 
 1. Determine the proper Snow Atlas URL:
-    - Identify the region for your instance
+    - Identify the region for your instance. You can find your Data region in the Snow Atlas settings menu, in Application registrations. Your Data region is on the General information tab. For more information, see [General information](https://docs-snow.flexera.com/snow-atlas/user-documentation/snow-atlas-settings/application-registrations/#general-information).
     - Assign the URL to `ATLAS_BASE_URL` within the starlark script 
 2. Create an Application Registration in Snow Atlas: 
     - [Application Registration documentation](https://docs-snow.flexera.com/snow-atlas/user-documentation/snow-atlas-settings/application-registrations/manage-application-registrations)
