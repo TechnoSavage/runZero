@@ -8,8 +8,6 @@
 git clone https://github.com/TechnoSavage/runZero.git
 ``` 
 
-# Custom Integration: Flexera Snow Atlas
-
 ## runZero requirements
 
 - Superuser access to the [Custom Integrations configuration](https://console.runzero.com/custom-integrations) in runZero
