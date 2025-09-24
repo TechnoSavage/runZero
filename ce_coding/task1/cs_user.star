@@ -1,156 +1,119 @@
 load('json', json_encode='encode', json_decode='decode')
-load('http', http_get='get', http_post='post', 'url_encode')
+load('http', http_get='get', http_patch='patch', http_post='post', 'url_encode')
 
-def get_assets(url, token, filter=" ", fields=" "):
-    url = f"{url}/api/v1.0/export/org/assets.json"
-    params = {'search': filter,
-              'fields': fields}
-    payload = ''
+RUNZERO_BASE_URL = 'https://console.runzero.com'
+RUNZERO_REDIRECT = 'https://console.runzero.com/'
+
+def get_orgs(account_token):
+    url = RUNZERO_BASE_URL + '/api/v1.0/account/orgs'
     headers = {'Accept': 'application/json',
-               'Authorization': f'Bearer {token}'}
-    try:
-        response = requests.get(url, headers=headers, params=params, data=payload)
-        if response.status_code != 200:
-            print('Unable to retrieve assets' + str(response))
-            exit()
-        content = response.content
-        data = json.loads(content)
-        return data
-    except ConnectionError as error:
-        content = "No Response"
-        raise error
-    
-def get_recent_user(data, source):
-    '''
-       Search asset "foreign_attributes" and extract last user for the specifed source.
-     
-       :param data: a dict: runZero JSON asset data.
-       :param source: a string, the last user source to reference
-       :returns: a dict: parsed runZero asset data.
-       :raises: TypeError: if dataset is not iterable.
-    '''
-    
-    try:
-        assetList = []
-        for item in data:
-            asset = {}
-            source_mapping = {'crowdstrike': 'foreign_attributes_@crowdstrike.dev_0_lastLoginUser',
-                              'sentinelone': 'foreign_attributes_@sentinelone.dev_0_lastLoggedInUserName',
-                              'googleworkspace': 'foreign_attributes_@googleworkspace.chromeos_0_recentUsers',
-                              'miradore': 'foreign_attributes_@miradore.dev_0_user.name'}
-            for key, value in item.items():
-                if not isinstance(value, dict) and key == 'id':
-                    asset[key] = item.get(key)
+               'Authorization': 'Bearer ' + account_token}
+    response = http_get(url, headers=headers)
+    if response.status_code != 200:
+        print('Unable to retrieve organizations ' + str(response))
+        return None
+    content = json_decode(response.body)
+    org_ids = [org.get('id') for org in content if not org.get('project')]
+    return org_ids  
 
-            root_keys_to_ignore = []
-            for key, value in item.items():
-                if not isinstance(value, dict):
-                    root_keys_to_ignore.append(key)
-                flattened_items = flatten(nested_dict=item, root_keys_to_ignore=root_keys_to_ignore)
-                asset["owner"] = flattened_items.get(source_mapping[source.lower()], None)
-            assetList.append(asset)
-        return(assetList)
-    except TypeError as error:
-        raise error
+def get_assets(token, oid, query='source:crowdstrike', fields='id, foreign_attributes'):
+    url = RUNZERO_BASE_URL + '/api/v1.0/export/org/assets.json'
+    headers = {'Accept': 'application/json',
+               'Authorization': 'Bearer ' + token}
+    params = {'search': query,
+              'fields': fields,
+              '_oid': oid}
+    response = http_get(url, headers=headers, params=params)
+    if response.status_code != 200:
+        print('Unable to retrieve assets ' + str(response))
+        return None
+    content = json_decode(response.body)
+    return content
     
-def parse_owners(url, token, owner_list, owner_type):
-    '''
-        Parse supplied ownership sources for most detailed owner info.
-        Pass owner to assign function to assign owner info. 
-
-        :param url: A string, URL of runZero console.
-        :param token: A string, Organization API Key.
-        :param ownerList: A list, list of dictionaries containing asset ID and last user info.
-        :param owner_type: A string, UUID of ownership type.
-        :raises: ConnectionError: if unable to successfully make PATCH request to console.
-    '''
+def get_recent_user(data):
+    assetList = []
+    for item in data:
+        asset = {}
+        asset['id'] = item.get('id')
+        asset['owner'] = item.get('foreign_attributes', {}).get('@crowdstrike.dev', {}).get('lastLoginUser', '')
+        assetList.append(asset)
+    return(assetList)
     
+def parse_owners(token, asset_list, group_id):
     no_assign = [None, 'sshd', 'ssm-user', 'nt authority\anonymous logon', 'default group', 'developer']
-    for owner in owner_list:
-        reported_owner = None
-        for k,v in owner.items():
-            # In other words: do nothing if the Key is 'id' (used to identify asset), if the value is 'None', or if the last user is in the "No assign" list (case-insensitive)
-            if k == 'id' or not v or v and v.lower() in no_assign:
-                pass
-            else:
-                owner = v
-        if reported_owner:
-            assignment = assign_owner(url, token, owner['id'], reported_owner, owner_type)
-            return assignment
-        
-def get_owner_groups(url, token):
-    url = f"{url}/api/v1.0/account/assets/ownership-types"
-    headers = {'Content-Type': 'application/json',
-               'Authorization': f'Bearer {token}'}
-    try:
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            print('Unable to retrieve ownership types' + str(response))
-            exit()
-        content = response.content
-        data = json.loads(content)
-        return data
-    except ConnectionError as error:
-        content = "No Response"
-        raise error
+    for asset in asset_list:
+        reported_owner = asset.get('owner', None)
+        if reported_owner in no_assign:
+            pass
+        else:
+            assignment = assign_owner(token, asset['id'], reported_owner, group_id)
 
-def create_owner_group(url, token, group_name):
-    url = f"{url}/api/v1.0/account/assets/ownership-types"
+def assign_owner(token, asset_id, owner, group_id):
+    url = RUNZERO_BASE_URL + '/api/v1.0/org/assets/' + asset_id + '/owners'
     headers = {'Content-Type': 'application/json',
-               'Authorization': f'Bearer {token}'}
+               'Authorization': 'Bearer ' + token}
+    payload = json_encode({"ownerships": [{"ownership_type_id": group_id, "owner": owner}]})
+    response = http_patch(url, headers=headers, body=bytes(url_encode(payload)))
+    if response.status_code != 200:
+        print('Unable to add owner ' + str(response))
+        return None
+    content = json_decode(response.body)
+    print('assigned ' + owner + ' in ownership group ' + group_id + ' to asset ' + asset_id)
+        
+def get_owner_groups(token):
+    url = RUNZERO_BASE_URL + '/api/v1.0/account/assets/ownership-types'
+    headers = {'Content-Type': 'application/json',
+               'Authorization': 'Bearer ' + token}
+    response = http_get(url, headers=headers)
+    if response.status_code != 200:
+        print('Unable to retrieve ownership types ' + str(response))
+        return None
+    content = json_decode(response.body)
+    return content
+
+def create_owner_group(token, group_name):
+    url = RUNZERO_BASE_URL + '/api/v1.0/account/assets/ownership-types'
+    headers = {'Content-Type': 'application/json',
+               'Authorization': 'Bearer ' + token}
     payload =  {"name": group_name,
                 "reference": 1,
                 "order": 1,
-                "hidden": false}
-    try:
-        response = requests.post(url, headers=headers, data=payload)
-        if response.status_code != 200:
-            print('Unable to create ownership type' + str(response))
-            exit()
-        content = response.content
-        data = json.loads(content)
-        return data['id']
-    except ConnectionError as error:
-        content = "No Response"
-        raise error
+                "hidden": 'false'}
+    response = http_post(url, headers=headers, body=bytes(url_encode(payload)))
+    if response.status_code != 200:
+        print('Unable to create ownership type ' + str(response))
+        return None
+    content = json_decode(response.body)
+    return content['id']
 
-def assign_owner(url, token, id, owner, owner_type):
-    url = f"{url}/api/v1.0/org/assets/{id}/owners"
-    payload = json.dumps({"ownerships": [{"ownership_type_id": owner_type, "owner": owner}]})
-    headers = {'Content-Type': 'application/json',
-               'Authorization': f'Bearer {token}'}
-    try:
-        response = requests.patch(url, headers=headers, data=payload)
-        if response.status_code != 200:
-            print('Unable to add owner' + str(response))
-            exit()
-        content = response.content
-        data = json.loads(content)
-        return data
-    except ConnectionError as error:
-        content = "No Response"
-        raise error
+def get_token(client_id, client_secret):
+    url = RUNZERO_BASE_URL + '/api/v1.0/account/api/token'
+    headers = {'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+    payload = {'grant_type': 'client_credential',
+            'client_id': client_id,
+            'client_secret': client_secret}
+    response = http_post(url, headers=headers, body=bytes(url_encode(payload)))
+    if response.status_code != 200:
+        print('Unable to retrieve Oauth2.0 token ' + str(response))
+        return None
+    content = json_decode(response.body)
+    return content['access_token']
 
-def main():
-    args = parseArgs()
-    token = args.token
-    if token == None:
-        token = getpass(prompt="Enter your Organization API Key: ")
-    if not args.organization:
-        print("No organization ID has been provided in the .env file. Please provide a valid Organization UUID using the '-o' argument")
-    #Query to grab all assets with the specified last user source
-    query = f"source:{args.source}"
-    fields = "id, foreign_attributes" #fields to return in API call
-    assets = get_assets(args.consoleURL, token, query, fields)
-    results = get_recent_user(assets, args.source)
-    group_id == args.type
-    if not group_id:
-        group_target = f'{args.source} user'.title()
-        owner_groups = get_owner_groups(args.consoleURL, token)
-        for group in owner_groups:
-            if group['name'] == group_target:
-                group_id = group['id']
+def main(*args, **kwargs):
+    # Retrieve Oauth token
+    client_id = kwargs['access_key']
+    client_secret = kwargs['access_secret']
+    token = get_token(client_id, client_secret)
+    # Check for existence of Crowdstrike User ownership group; create if not found
+    owner_groups = get_owner_groups(token)
+    group_id = None
+    for group in owner_groups:
+        if group['name'] == 'Crowdstrike User':
+            group_id = group['id']
     if not group_id:             
-        group_id = create_owner_group(args.consoleURL, token, group_target)
-    assignment = parse_owners(args.consoleURL, token, results, args.type)
-    print(assignment)
+        group_id = create_owner_group(token, 'Crowdstrike User')
+    org_ids = get_orgs(token)
+    for oid in org_ids:
+        assets = get_assets(token, oid)
+        owners = get_recent_user(assets)
+        assignment = parse_owners(token, owners, group_id)
