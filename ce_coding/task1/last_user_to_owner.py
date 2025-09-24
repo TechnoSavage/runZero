@@ -193,7 +193,7 @@ def main():
                 group_id = group['id']
     if not group_id:             
         group_id = create_owner_group(args.consoleURL, token, group_target)
-    assignment = parse_owners(args.consoleURL, token, results, args.type)
+    assignment = parse_owners(args.consoleURL, token, results, group_id)
     print(assignment)
 
 if __name__ == "__main__":
