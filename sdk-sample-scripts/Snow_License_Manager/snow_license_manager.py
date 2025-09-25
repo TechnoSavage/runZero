@@ -5,11 +5,11 @@
 # Docs:
 # Prerequisite: pip install runzero-sdk
 
+import json
 import os
 import requests
 import runzero
 import uuid
-import xmltodict
 from ipaddress import ip_address
 from typing import Any, Dict, List
 from runzero.client import AuthError
@@ -43,7 +43,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
     assets: List[ImportAsset] = []
     for entry in json_input:
         item = entry.get('Body', {})
-        asset_id = item.get('Id', uuid.uuid4)
+        asset_id = str(item.get('Id', uuid.uuid4))
         hostname = item.get('Name', '')
         vendor = item.get('Manufacturer', '')
         hw = item.get('Model', '')
@@ -52,9 +52,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
 
         # create the network interfaces
         interfaces = []
-        adapters = item.get('Hardware', {}).get('NetworkAdapters', {}).get('NetworkAdapter', [])
-        if type(adapters) != list:
-            adapters = [adapters]
+        adapters = item.get('Hardware', {}).get('NetworkAdapters', [])
         for adapter in adapters:
             addresses = adapter.get('IpAddress', '').split(';')
             if type(addresses) != list:
@@ -162,7 +160,7 @@ def get_computers(url=SNOW_BASE_URL, username=SNOW_USERNAME, password=SNOW_PASSW
     while True:
         try:
             url = f'{url}/api/customers/{id}/computers?'
-            headers = {'Accept': 'application/xml'}
+            headers = {'Accept': 'application/json'}
             params = {'$inlinecount': 'allpages',
                         '$skip': str(items_returned)}
             response = requests.get(url, auth=requests.auth.HTTPBasicAuth(username, password), headers=headers, params=params)
@@ -170,16 +168,16 @@ def get_computers(url=SNOW_BASE_URL, username=SNOW_USERNAME, password=SNOW_PASSW
                 print('failed to retrieve assets at $skip=' + str(items_returned), 'status code: ', response.status_code)
                 exit()
             else:
-                response_json = xmltodict.parse(response.content)
-                meta = response_json['ComputerAbstractCollectionResource']['Meta']['Property']
+                data = json.loads(response.content)
+                meta = data['Meta']
                 has_page_size = False
                 for item in meta:
                     if item['Name'] == 'Count':
-                        total_items = int(item.get('Value').get('#text'))
+                        total_items = item.get('Value')
                     if item['Name'] == 'PageSize':
                         has_page_size = True
-                        items_returned += int(item.get('Value').get('#text'))
-                computers = response_json['ComputerAbstractCollectionResource']['Body']['ComputerAbstractResource']
+                        items_returned += item.get('Value')
+                computers = data['Body']
                 assets_all.extend(computers)
                 if not has_page_size: # The last page lacks the page size meta value
                     break
