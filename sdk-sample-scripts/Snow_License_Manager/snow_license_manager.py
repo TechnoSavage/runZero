@@ -14,7 +14,7 @@ from ipaddress import ip_address
 from typing import Any, Dict, List
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
-from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask)
+from runzero.types import (ImportAsset,IPv4Address,IPv6Address,NetworkInterface,ImportTask,Software)
 
 # Configure runZero variables
 RUNZERO_BASE_URL = os.environ['RUNZERO_BASE_URL']
@@ -69,6 +69,14 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
             else:
                 custom_attrs[key] = str(value)[:1023]
 
+        # Retrieve software information for asset
+        # create software entries
+        software = []
+        applications = get_apps(asset_id)
+        for app in applications:
+            software_entry = build_app(app)
+            software.append(software_entry)
+
         # Build assets for import
         assets.append(
             ImportAsset(
@@ -80,6 +88,7 @@ def build_assets_from_json(json_input: List[Dict[str, Any]]) -> List[ImportAsset
                 os_version=os_version,
                 networkInterfaces=interfaces,
                 customAttributes=custom_attrs,
+                software=software
             )
         )
     return assets
@@ -108,6 +117,40 @@ def build_network_interface(ips: List[str], mac: str = None) -> NetworkInterface
         return NetworkInterface(ipv4Addresses=ip4s, ipv6Addresses=ip6s)
     else:
         return NetworkInterface(macAddress=mac, ipv4Addresses=ip4s, ipv6Addresses=ip6s)
+    
+def build_app(software_entry):
+    '''
+
+    '''
+    app = software_entry.get('Body', {})
+    app_id = app.get('Id', None)
+    # if app_id:
+    #     software_details = get_app_details(app_id)
+    #installed = app.get('InstallDate', '')
+    product = app.get('FamilyName', '')
+    vendor = app.get('ManufacturerName', '')
+
+    custom_attrs: Dict[str] = {}
+    for key, value in software_entry.items():
+        if isinstance(value, dict):
+            for k, v in value.items():
+                custom_attrs[k] = str(v)[:1023]
+        else:
+            custom_attrs[key] = str(value)[:1023]
+    # if app_id:        
+    #     for key, value in software_details.items():
+    #         if isinstance(value, dict):
+    #             for k, v in value.items():
+    #                 custom_attrs[k] = str(v)[:1023]
+    #         else:
+    #             custom_attrs[key] = str(value)[:1023]
+
+    return Software(
+        id=app_id,
+        product=product,
+        vendor=vendor,
+        customAttributes=custom_attrs
+        )   
 
 
 def import_data_to_runzero(assets: List[ImportAsset]):
@@ -150,7 +193,7 @@ def get_computers(url=SNOW_BASE_URL, username=SNOW_USERNAME, password=SNOW_PASSW
     :param username: a string, username for Snow Software License Manager console basic auth.
     :param password: a string, password for Snow Software License Manager console basic auth.
     :param id: a string, numerical customer id to return computers from (found under https://<console ip>/api/customers ID column).
-    :returns: a list, a list of dictionaries for each computer starting at ComputerAbstractCollectionResource > Body > ComputerAbstractResource.
+    :returns: a list, a list of dictionaries for each computer.
     :raises: ConnectionError: if unable to successfully make GET request to console.
     '''
     items_returned = 0
@@ -162,10 +205,10 @@ def get_computers(url=SNOW_BASE_URL, username=SNOW_USERNAME, password=SNOW_PASSW
             url = f'{url}/api/customers/{id}/computers?'
             headers = {'Accept': 'application/json'}
             params = {'$inlinecount': 'allpages',
-                        '$skip': str(items_returned)}
+                      '$skip': str(items_returned)}
             response = requests.get(url, auth=requests.auth.HTTPBasicAuth(username, password), headers=headers, params=params)
             if response.status_code != 200:
-                print('failed to retrieve assets at $skip=' + str(items_returned), 'status code: ', response.status_code)
+                print(f'failed to retrieve assets at $skip={str(items_returned)}', f'status code: {response.status_code}')
                 exit()
             else:
                 data = json.loads(response.content)
@@ -188,6 +231,81 @@ def get_computers(url=SNOW_BASE_URL, username=SNOW_USERNAME, password=SNOW_PASSW
 
     return assets_all
 
+def get_apps(asset_id, url=SNOW_BASE_URL, username=SNOW_USERNAME, password=SNOW_PASSWORD, id=SNOW_CUSTOMER_ID):
+    '''
+    Return a list of installed software for a given computer ID.
+
+    :param asset_id: a string, the computer ID in Snow Software License Manager for which to retrieve applications.
+    :param url: a string, the base URL of the Snow Software License Manager console.
+    :param username: a string, username for Snow Software License Manager console basic auth.
+    :param password: a string, password for Snow Software License Manager console basic auth.
+    :param id: a string, numerical customer id to return computers from (found under https://<console ip>/api/customers ID column).
+    :returns: a list, a list of dictionaries for each application for the specified computer ID.
+    :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
+    items_returned = 0
+    total_items = 10000
+    applications_all = []
+
+    while True:
+        try:
+            url = f'{url}/api/customers/{id}/computers/{asset_id}/applications?'
+            headers = {'Accept': 'application/json'}
+            params = {'$inlinecount': 'allpages',
+                      '$skip': str(items_returned)}
+            response = requests.get(url, auth=requests.auth.HTTPBasicAuth(username, password), headers=headers, params=params)
+            if response.status_code != 200:
+                print(f'failed to retrieve application for {asset_id} at $skip={str(items_returned)}', f'status code: {response.status_code}')
+                exit()
+            else:
+                data = json.loads(response.content)
+                meta = data['Meta']
+                has_page_size = False
+                for item in meta:
+                    if item['Name'] == 'Count':
+                        total_items = item.get('Value')
+                    if item['Name'] == 'PageSize':
+                        has_page_size = True
+                        items_returned += item.get('Value')
+                applications = data['Body']
+                applications_all.extend(applications)
+                if not has_page_size: # The last page lacks the page size meta value
+                    break
+                print(f'{items_returned} applications of {total_items} returned from API')            
+        except ConnectionError as error:
+            print("No Response from server.", error)
+            exit()
+
+    return applications_all
+
+def get_app_details(app_id, url=SNOW_BASE_URL, username=SNOW_USERNAME, password=SNOW_PASSWORD, id=SNOW_CUSTOMER_ID):
+    '''
+    Return a application details for a given application ID.
+
+    :param app_id: a string, the computer ID in Snow Software License Manager for which to retrieve applications.
+    :param url: a string, the base URL of the Snow Software License Manager console.
+    :param username: a string, username for Snow Software License Manager console basic auth.
+    :param password: a string, password for Snow Software License Manager console basic auth.
+    :param id: a string, numerical customer id to return computers from (found under https://<console ip>/api/customers ID column).
+    :returns: a dict, application details.
+    :raises: ConnectionError: if unable to successfully make GET request to console.
+    '''
+
+    try:
+        url = f'{url}/api/customers/{id}/applications/{app_id}'
+        headers = {'Accept': 'application/json'}
+        response = requests.get(url, auth=requests.auth.HTTPBasicAuth(username, password), headers=headers)
+        if response.status_code != 200:
+            print(f'failed to retrieve application details for {app_id}', f'status code: {response.status_code}')
+            exit()
+        else:
+            data = json.loads(response.content)
+            details = data['Body']
+    except ConnectionError as error:
+        print("No Response from server.", error)
+        exit()
+
+    return details
 
 def main():
     assets = get_computers()
