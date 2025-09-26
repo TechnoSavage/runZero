@@ -31,13 +31,13 @@ def build_assets(assets, creds):
         bios_uuid = asset.get('bios_uuid', '')
         scoping_details = asset.get('scoping_details', {}).get('worksite', {})
         worksite_mod = scoping_details.get('modified', '')
-        worksite_name = scoping_details.get('name': '')
+        worksite_name = scoping_details.get('name', '')
         last_seen = asset.get('last_seen', '')
         mssp_tenant = asset.get('mssp_tenant_name', '')
         status = asset.get('status', '')
         instance_id = asset.get('instance_is', '')
         agent_info = asset.get('agent', {})
-        agent_last_seen = agent_info.get('agent_last_seen': '')
+        agent_last_seen = agent_info.get('agent_last_seen', '')
         agent_version = agent_info.get('agent_version', '')
         comments = asset.get('comments', '')
         orchestration_metadata = asset.get('orchestration_metadata', {})
@@ -78,8 +78,7 @@ def build_assets(assets, creds):
                 os=os,
                 first_seen_ts=first_seen,
                 networkInterfaces=interfaces,
-                customAttributes=custom_attributes,
-                software=software
+                customAttributes=custom_attributes
             )
         )
     return assets_import
@@ -110,16 +109,17 @@ def get_assets(token):
     params = {'max_results': results_per_page}
     response = http_get(url, headers=headers, params=params)
     if response.status_code != 200:
-        print('failed to retrieve assets,  'status code: ' + str(response.status_code))
+        print('failed to retrieve assets',  'status code: ' + str(response.status_code))
     else:
         data = json_decode(response.body)
         assets = data['objects']
-        assets_all.extend(computers)           
+        assets_all.extend(assets)           
 
     return assets_all
 
 def get_token(client_id, client_secret):
-    url = '{}/{}'.format(ATLAS_BASE_URL, '/idp/api/connect/token?')
+    # Need to determine Centra Ouath endpoint
+    url = CENTRA_BASE_URL + '</idp/oauth/endpoint/here>'
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     params = {'grant_type': 'client_credentials',
               'client_id': client_id,
@@ -141,10 +141,10 @@ def main(*args, **kwargs):
     client_id = kwargs['access_key']
     client_secret = kwargs['access_secret']
     token = get_token(client_id, client_secret)
-    assets = get_asset(token)
+    assets = get_assets(token)
     
     # Format asset list for import into runZero
-    import_assets = build_assets(assets, b64_creds)
+    import_assets = build_assets(assets)
     if not import_assets:
         print('no assets')
         return None
