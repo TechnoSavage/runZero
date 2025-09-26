@@ -14,7 +14,7 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 ##  Guardicore Centra requirements
 
-**Instance URL** - The domain or IP of the Guardicore Centra web server e.g. "https://<region>.snowsoftware.io" (defined within the starlark script as `ATLAS_BASE_URL`)
+**Instance URL** - The domain or IP of the Guardicore Centra web server e.g. "https://<url of guardicore centra console>" (defined within the starlark script as `CENTRA_BASE_URL`)
 
 `client_id` - Oauth Client ID for authentication (configured in Credentials section of runZero)
 
@@ -22,19 +22,15 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 ## Guardicore Centra API Docs
 
-- [Guardicore Centra API Reference](https://docs-snow.flexera.com/snow-atlas-api/resources/)
-
-- [Guardicore Centra Docs](https://docs-snow.flexera.com/snow-atlas/user-documentation/)
+- Unfortunately locked behind a customer login portal
 
 ## Steps
 
 ### Guardicore Centra configuration
 
 1. Determine the proper Guardicore Centra URL:
-    - Identify the region for your instance. You can find your Data region in the Guardicore Centra settings menu, in Application registrations. Your Data region is on the General information tab. For more information, see [General information](https://docs-snow.flexera.com/snow-atlas/user-documentation/snow-atlas-settings/application-registrations/#general-information).
-    - Assign the URL to `ATLAS_BASE_URL` within the starlark script 
-2. Create an Application Registration in Guardicore Centra: 
-    - [Application Registration documentation](https://docs-snow.flexera.com/snow-atlas/user-documentation/snow-atlas-settings/application-registrations/manage-application-registrations)
+    - Assign the URL to `CENTRA_BASE_URL` within the starlark script 
+2. Create an Ouath client ID and client secret in Guardicore Centra: 
     - Copy the Client ID; this will be used as the value for `access_key` when creating the Custom Integration credentials in the runZero console (see below)
     - Copy the Client secret; this will be used as the value for `access_secret` when creating the Custom Integration credentials in the runZero console (see below)
 
