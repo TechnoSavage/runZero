@@ -117,13 +117,12 @@ def get_assets(token):
 
     return assets_all
 
-def get_token(client_id, client_secret):
+def get_token(username, password):
     # Need to determine Centra Ouath endpoint
-    url = CENTRA_BASE_URL + '</idp/oauth/endpoint/here>'
+    url = CENTRA_BASE_URL + '</api/v4.0/authenticate'
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    params = {'grant_type': 'client_credentials',
-              'client_id': client_id,
-              'client_secret': client_secret}
+    params = {'username': username,
+              'password': password}
     
     response = http_post(url, headers=headers, params=bytes(url_encode(params)))
     if response.status_code != 200:
@@ -138,8 +137,8 @@ def get_token(client_id, client_secret):
     return auth_data['access_token']  
 
 def main(*args, **kwargs):
-    client_id = kwargs['access_key']
-    client_secret = kwargs['access_secret']
+    username = kwargs['access_key']
+    password = kwargs['access_secret']
     token = get_token(client_id, client_secret)
     assets = get_assets(token)
     
