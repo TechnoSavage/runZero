@@ -139,7 +139,7 @@ def get_token(username, password):
 def main(*args, **kwargs):
     username = kwargs['access_key']
     password = kwargs['access_secret']
-    token = get_token(client_id, client_secret)
+    token = get_token(username, password)
     assets = get_assets(token)
     
     # Format asset list for import into runZero
