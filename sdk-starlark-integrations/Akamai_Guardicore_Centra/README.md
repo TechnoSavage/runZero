@@ -16,9 +16,9 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 **Instance URL** - The domain or IP of the Guardicore Centra web server e.g. "https://<url of guardicore centra console>" (defined within the starlark script as `CENTRA_BASE_URL`)
 
-`client_id` - Oauth Client ID for authentication (configured in Credentials section of runZero)
+`client_id` - login username for authentication to retrieve JWT token (configured in Credentials section of runZero)
 
-`client_secret` - Oauth Client secret for authentication (configured in Credentials section of runZero)
+`client_secret` - login password for authentication to retrieve JWT token (configured in Credentials section of runZero)
 
 ## Guardicore Centra API Docs
 
@@ -30,9 +30,9 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 1. Determine the proper Guardicore Centra URL:
     - Assign the URL to `CENTRA_BASE_URL` within the starlark script 
-2. Create an Ouath client ID and client secret in Guardicore Centra: 
-    - Copy the Client ID; this will be used as the value for `access_key` when creating the Custom Integration credentials in the runZero console (see below)
-    - Copy the Client secret; this will be used as the value for `access_secret` when creating the Custom Integration credentials in the runZero console (see below)
+2. Create login credentials with necessary, read-only access to retrieve JWT token for API access: 
+    - Copy the username to the value for `access_key` when creating the Custom Integration credentials in the runZero console (see below)
+    - Copy the password to the the value for `access_secret` when creating the Custom Integration credentials in the runZero console (see below)
 
 ### runZero configuration
 
