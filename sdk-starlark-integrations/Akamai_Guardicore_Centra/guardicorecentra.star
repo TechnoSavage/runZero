@@ -121,10 +121,10 @@ def get_token(username, password):
     # Need to determine Centra Ouath endpoint
     url = CENTRA_BASE_URL + '</api/v4.0/authenticate'
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    params = {'username': username,
+    payload = {'username': username,
               'password': password}
     
-    response = http_post(url, headers=headers, params=bytes(url_encode(params)))
+    response = http_post(url, headers=headers, body=bytes(url_encode(payload)))
     if response.status_code != 200:
         print('authentication failed: ', response.status_code)
         return None
