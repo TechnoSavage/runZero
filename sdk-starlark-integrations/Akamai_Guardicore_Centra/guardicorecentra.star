@@ -119,7 +119,7 @@ def get_assets(token):
 
 def get_token(username, password):
     # Need to determine Centra Ouath endpoint
-    url = CENTRA_BASE_URL + '</api/v4.0/authenticate'
+    url = CENTRA_BASE_URL + '/api/v4.0/authenticate'
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     payload = {'username': username,
               'password': password}
