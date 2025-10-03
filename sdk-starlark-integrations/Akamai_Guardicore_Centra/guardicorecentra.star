@@ -100,20 +100,30 @@ def build_network_interface(ips, mac):
         return NetworkInterface(macAddress=mac, ipv4Addresses=ip4s, ipv6Addresses=ip6s)
 
 def get_assets(token):
-    results_per_page = 1000
     assets_all = []
+    results_per_page = 1000
+    start = 0
+    last_return = 1000
 
-    url = CENTRA_BASE_URL + '/api/v4.0/assets?'
-    headers = {'Accept': 'application/json',
-                'Authorization': 'Bearer ' + token}
-    params = {'max_results': results_per_page}
-    response = http_get(url, headers=headers, params=params)
-    if response.status_code != 200:
-        print('failed to retrieve assets',  'status code: ' + str(response.status_code))
-    else:
-        data = json_decode(response.body)
-        assets = data['objects']
-        assets_all.extend(assets)           
+    while True:
+        url = CENTRA_BASE_URL + '/api/v4.0/assets?'
+        headers = {'Accept': 'application/json',
+                    'Authorization': 'Bearer ' + token}
+        params = {'max_results': results_per_page,
+                  'start_at': start}
+        response = http_get(url, headers=headers, params=params)
+        if response.status_code != 200:
+            print('failed to retrieve assets ' + str(start) + ' to ' + str(start + results_per_page), 'status code: ' + str(response.status_code))
+            break
+            return None
+        else:
+            data = json_decode(response.body)
+            assets = data['objects']
+            assets_all.extend(assets)
+            last_return = len(assets)
+            start += last_return
+            if last_return < results_per_page:
+                break           
 
     return assets_all
 
