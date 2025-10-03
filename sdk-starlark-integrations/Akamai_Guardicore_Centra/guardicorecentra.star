@@ -8,7 +8,7 @@ load('uuid', 'new_uuid')
 CENTRA_BASE_URL = 'https://<Guardicore Centra URL>'
 RUNZERO_REDIRECT = 'https://console.runzero.com/'
 
-def build_assets(assets, creds):
+def build_assets(assets):
     assets_import = []
     for asset in assets:
         asset_id = str(asset.get('id', new_uuid))
@@ -118,15 +118,14 @@ def get_assets(token):
     return assets_all
 
 def get_token(username, password):
-    # Need to determine Centra Ouath endpoint
-    url = CENTRA_BASE_URL + '/api/v4.0/authenticate'
-    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    url = CENTRA_BASE_URL + '/api/v3.0/authenticate'
+    headers = {'Content-Type': 'application/json'}
     payload = {'username': username,
               'password': password}
     
-    response = http_post(url, headers=headers, body=bytes(url_encode(payload)))
+    response = http_post(url, headers=headers, body=bytes(json_encode(payload)))
     if response.status_code != 200:
-        print('authentication failed: ', response.status_code)
+        print('authentication failed: ' + str(response.status_code))
         return None
 
     auth_data = json_decode(response.body)
