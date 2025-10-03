@@ -41,10 +41,10 @@ def build_assets(assets):
         agent_version = agent_info.get('agent_version', '')
         comments = asset.get('comments', '')
         orchestration_metadata = asset.get('orchestration_metadata', {})
-        orc_asset_type = orchestration_metadata('asset_type', '')
-        orc_dev_name = orchestration_metadata('f5_device_hostname', '')
-        orc_partition = orchestration_metadata('partition', '')
-        orc_vs_name = orchestration_metadata('vs_name', '')
+        orc_asset_type = orchestration_metadata.get('asset_type', '')
+        orc_dev_name = orchestration_metadata.get('f5_device_hostname', '')
+        orc_partition = orchestration_metadata.get('partition', '')
+        orc_vs_name = orchestration_metadata.get('vs_name', '')
 
         custom_attributes = {
             'assetType': asset_type,
