@@ -11,76 +11,79 @@ RUNZERO_REDIRECT = 'https://console.runzero.com/'
 def build_assets(assets):
     assets_import = []
     for asset in assets:
-        asset_id = str(asset.get('id', new_uuid))
-        hostname = asset.get('name', '')
-        os_info = asset.get('os_info', {})
-        os = os_info.get('type', '')
-        first_seen = asset.get('first_seen', '')
+        if asset.get('status', '').lower() == 'deleted':
+            pass
+        else:
+            asset_id = str(asset.get('id', new_uuid))
+            hostname = asset.get('name', '')
+            os_info = asset.get('os_info', {})
+            os = os_info.get('type', '')
+            first_seen = asset.get('first_seen', '')
 
-        # create the network interfaces
-        interfaces = []
-        nics = asset.get('nics', [])
-        for nic in nics:
-            addresses = nic.get('ip_addresses', [])
-            interface = build_network_interface(ips=addresses, mac=nic.get('mac_address', None))
-            interfaces.append(interface)
+            # create the network interfaces
+            interfaces = []
+            nics = asset.get('nics', [])
+            for nic in nics:
+                addresses = nic.get('ip_addresses', [])
+                interface = build_network_interface(ips=addresses, mac=nic.get('mac_address', None))
+                interfaces.append(interface)
 
-        # Retrieve and map custom attributes
-        asset_type = asset.get('asset_type', '')
-        os_kernel = os_info.get('full_kernel_version', '')
-        bios_uuid = asset.get('bios_uuid', '')
-        scoping_details = asset.get('scoping_details', {}).get('worksite', {})
-        worksite_mod = scoping_details.get('modified', '')
-        worksite_name = scoping_details.get('name', '')
-        last_seen = asset.get('last_seen', '')
-        mssp_tenant = asset.get('mssp_tenant_name', '')
-        status = asset.get('status', '')
-        instance_id = asset.get('instance_is', '')
-        agent_info = asset.get('agent', {})
-        agent_last_seen = agent_info.get('agent_last_seen', '')
-        agent_version = agent_info.get('agent_version', '')
-        comments = asset.get('comments', '')
-        orchestration_metadata = asset.get('orchestration_metadata', {})
-        orc_asset_type = orchestration_metadata.get('asset_type', '')
-        orc_dev_name = orchestration_metadata.get('f5_device_hostname', '')
-        orc_partition = orchestration_metadata.get('partition', '')
-        orc_vs_name = orchestration_metadata.get('vs_name', '')
+            # Retrieve and map custom attributes
+            asset_type = asset.get('asset_type', '')
+            os_kernel = os_info.get('full_kernel_version', '')
+            bios_uuid = asset.get('bios_uuid', '')
+            scoping_details = asset.get('scoping_details', {}).get('worksite', {})
+            worksite_mod = scoping_details.get('modified', '')
+            worksite_name = scoping_details.get('name', '')
+            last_seen = asset.get('last_seen', '')
+            mssp_tenant = asset.get('mssp_tenant_name', '')
+            status = asset.get('status', '')
+            instance_id = asset.get('instance_is', '')
+            agent_info = asset.get('agent', {})
+            agent_last_seen = agent_info.get('agent_last_seen', '')
+            agent_version = agent_info.get('agent_version', '')
+            comments = asset.get('comments', '')
+            orchestration_metadata = asset.get('orchestration_metadata', {})
+            orc_asset_type = orchestration_metadata.get('asset_type', '')
+            orc_dev_name = orchestration_metadata.get('f5_device_hostname', '')
+            orc_partition = orchestration_metadata.get('partition', '')
+            orc_vs_name = orchestration_metadata.get('vs_name', '')
 
-        custom_attributes = {
-            'assetType': asset_type,
-            'osInfo.fullKernelVersion': os_kernel,
-            'biosUuid': bios_uuid,
-            'scopingDetails.worksite.modified': worksite_mod,
-            'scopingDetails.worksite.name': worksite_name,
-            'lastSeenTS': last_seen,
-            'msspTenantName': mssp_tenant,
-            'status': status,
-            'instanceId': instance_id,
-            'agentLastSeenTS': agent_last_seen,
-            'agentVersion': agent_version,
-            'orchestrationMetadata.assetType': orc_asset_type,
-            'orchestrationMetadata.f5DeviceHostname': orc_dev_name,
-            'orchestrationMetadata.partition': orc_partition,
-            'orchestrationMetadata.vsName': orc_vs_name
-        }
+            custom_attributes = {
+                'assetType': asset_type,
+                'osInfo.fullKernelVersion': os_kernel,
+                'biosUuid': bios_uuid,
+                'scopingDetails.worksite.modified': worksite_mod,
+                'scopingDetails.worksite.name': worksite_name,
+                'lastSeenTS': last_seen,
+                'msspTenantName': mssp_tenant,
+                'status': status,
+                'instanceId': instance_id,
+                'agentLastSeenTS': agent_last_seen,
+                'agentVersion': agent_version,
+                'orchestrationMetadata.assetType': orc_asset_type,
+                'orchestrationMetadata.f5DeviceHostname': orc_dev_name,
+                'orchestrationMetadata.partition': orc_partition,
+                'orchestrationMetadata.vsName': orc_vs_name
+            }
 
-        ## Additional custom attributes to implement:
-        # label_groups = asset.get('label_groups', [])
-        # orchestration_details = asset.get('orchestration_details', [])
-        # labels = asset.get('labels', [])
+            ## Additional custom attributes to implement:
+            # label_groups = asset.get('label_groups', [])
+            # orchestration_details = asset.get('orchestration_details', [])
+            # labels = asset.get('labels', [])
 
 
-        # Build assets for import
-        assets_import.append(
-            ImportAsset(
-                id=asset_id,
-                hostnames=[hostname],
-                os=os,
-                first_seen_ts=first_seen,
-                networkInterfaces=interfaces,
-                customAttributes=custom_attributes
+            # Build assets for import
+            assets_import.append(
+                ImportAsset(
+                    id=asset_id,
+                    hostnames=[hostname],
+                    os=os,
+                    first_seen_ts=first_seen,
+                    networkInterfaces=interfaces,
+                    customAttributes=custom_attributes
+                )
             )
-        )
     return assets_import
 
 def build_network_interface(ips, mac):
