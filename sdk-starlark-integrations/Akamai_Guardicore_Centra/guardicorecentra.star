@@ -118,7 +118,6 @@ def get_assets(token):
         if response.status_code != 200:
             print('failed to retrieve assets ' + str(start) + ' to ' + str(start + results_per_page), 'status code: ' + str(response.status_code))
             break
-            return None
         else:
             data = json_decode(response.body)
             assets = data['objects']
