@@ -87,7 +87,6 @@ def build_assets(assets, creds):
         custom_attributes['hardware.systemDiskSpaceAvailableMb'] = hw.get('SystemDiskSpaceAvailableMb', '')
         custom_attributes['hardware.totalDiskSpaceMb'] = hw.get('TotalDiskSpaceMb', '')
         custom_attributes['hardware.totalDiskSpaceAvailableMb'] = hw.get('TotalDiskSpaceAvailableMb', '')
-        custom_attributes['hardware.'] = hw.get('', '')
 
         # logical_disks = hw.get('LogicalDisks', [])
         # optical_drives = hw.get('OpticalDrives', [])
