@@ -14,11 +14,13 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 ##  Snow License Manager requirements
 
-**License Manager Instance URL** - The domain or IP of the Snow Atlas web server e.g. "https://<region>.snowsoftware.io" (defined within the starlark script as `ATLAS_BASE_URL`)
+**License Manager Instance URL** - The domain or IP of the Snow Atlas web server (defined within the starlark script as `SNOW_BASE_URL`)
 
-`client_id` - username for API basic auth (configured in Credentials section of runZero)
+`Snow customer ID` - Numeric customer ID for asset retrieval. Found in `https://<snow license manager URL>/api/customers/` API endpoint. (defined within the starlark script as `SNOW_CUSTOMER_ID`)
 
-`client_secret` - password for API basic auth (configured in Credentials section of runZero)
+`username` - username for API basic auth (configured in Credentials section of runZero)
+
+`password` - password for API basic auth (configured in Credentials section of runZero)
 
 ## Snow License Manager API Docs
 
@@ -28,9 +30,11 @@ NA
 
 ### Snow License Manager configuration
 
-1. Determine the proper Snow Atlas URL:
+1. Determine the proper Snow License Manager URL:
     - Identify the url for your Snow License Manager instance.
-    - Assign the URL to `SNOW_BASE_URL` within the starlark script 
+    - Assign the URL to `SNOW_BASE_URL` within the starlark script
+    - Identify the Customer ID to use for asset retrieval
+    - Assign the Customer ID to `SNOW_CUSTOMER_ID` within the starlark script (multiple scripts can be created to import from different Customer IDs)
 2. Create a valid username:password login to be used to authenticate to the API endpoints
     - Copy the username; this will be used as the value for `access_key` when creating the Custom Integration credentials in the runZero console (see below)
     - Copy the password; this will be used as the value for `access_secret` when creating the Custom Integration credentials in the runZero console (see below)
