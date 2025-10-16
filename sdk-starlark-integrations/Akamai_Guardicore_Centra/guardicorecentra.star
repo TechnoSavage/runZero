@@ -127,7 +127,7 @@ def get_assets(token):
                 start = 0
                 last_return = 1000
                 break
-    # Return all 'status:off' assets
+    # Return all 'status:off' assets. Remove this while loop to restrict import to only status 'on' assets.
     while True:
         url = CENTRA_BASE_URL + '/api/v4.0/assets?'
         headers = {'Accept': 'application/json',

@@ -38,6 +38,12 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 1. (OPTIONAL) - make any neccessary changes to the script to align with your environment. 
     - Modify API calls as needed to filter assets
+    >- The script is configured to return assets with a status of 'On' and 'Off' by default.
+    >- Assets with a Status of 'Deleted' are ignored (Centra retains these records indefinitely)
+    >- If status 'Off" assets are not desired the user can remove the while loop in the get_assets function as indicated by the comment.
+    >- If a user wants to import all assets, including deleted assets:
+    >>- Remove the second while loop as above
+    >>- Remove the "'status': 'on'" parameter from the GET request in the remaining while loop
     - Modify datapoints uploaded to runZero as needed 
 2. [Create the Credential for the Custom Integration](https://console.runzero.com/credentials)
     - Select the type `Custom Integration Script Secrets`
