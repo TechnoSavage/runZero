@@ -328,6 +328,11 @@ source:qualys AND @qualys.dev.host.trackingMethod:="IP"
 NOT @qualys.dev.host.trackingMethod:="AGENT" AND (type:server OR type:laptop OR type:desktop)
 ```
 
+### Qualys agent not installed but endpoint scanned by Qualys:
+```
+source:qualys and @qualys.dev.host.trackingMethod:="IP" and (type:server or type:laptop or type:desktop)
+```
+
 ## Google Workspace
 
 ### Assets where Google Workspace reports developer options are enabled:
