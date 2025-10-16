@@ -330,7 +330,7 @@ NOT @qualys.dev.host.trackingMethod:="AGENT" AND (type:server OR type:laptop OR 
 
 ### Qualys agent not installed but endpoint scanned by Qualys:
 ```
-source:qualys and @qualys.dev.host.trackingMethod:="IP" and (type:server or type:laptop or type:desktop)
+source:qualys AND @qualys.dev.host.trackingMethod:="IP" AND (type:server OR type:laptop OR type:desktop)
 ```
 
 ## Google Workspace
