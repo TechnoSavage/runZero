@@ -1,7 +1,8 @@
 load('runzero.types', 'ImportAsset', 'NetworkInterface')
+load('http', http_get='get', http_post='post', 'url_encode')
 load('json', json_encode='encode', json_decode='decode')
 load('net', 'ip_address')
-load('http', http_get='get', http_post='post', 'url_encode')
+load('time', 'parse_time')
 load('uuid', 'new_uuid')
 
 #Change the URL to match your Guardicore Centra server
@@ -16,6 +17,12 @@ def build_assets(assets):
         os_info = asset.get('os_info', {})
         os = os_info.get('type', '')
         first_seen = asset.get('first_seen', '')
+        #reformat first_seen timestamp for runZero parsing
+        if first_seen != '':
+            trim_decimal = first_seen.split('.')
+            split_space = trim_decimal[0]
+            reformat = split_space[0] + 'T' + split_space[1] + 'Z'
+            first_seen = parse_time(reformat)
 
         # create the network interfaces
         interfaces = []
