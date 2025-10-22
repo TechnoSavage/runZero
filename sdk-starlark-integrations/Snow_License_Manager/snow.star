@@ -1,8 +1,9 @@
 load('runzero.types', 'ImportAsset', 'NetworkInterface', 'Software')
-load('json', json_encode='encode', json_decode='decode')
 load('base64', base64_encode='encode', base64_decode='decode')
-load('net', 'ip_address')
+load('flatten_json', 'flatten')
 load('http', http_get='get', http_post='post', 'url_encode')
+load('json', json_encode='encode', json_decode='decode')
+load('net', 'ip_address')
 load('uuid', 'new_uuid')
 
 #Change the URL to match your Snow Software License Manager server
@@ -88,7 +89,7 @@ def build_assets(assets, creds):
         custom_attributes['hardware.totalDiskSpaceMb'] = hw.get('TotalDiskSpaceMb', '')
         custom_attributes['hardware.totalDiskSpaceAvailableMb'] = hw.get('TotalDiskSpaceAvailableMb', '')
 
-        # logical_disks = hw.get('LogicalDisks', [])
+        # logical_disks = hw.get('LogicalDisks', {})
         # optical_drives = hw.get('OpticalDrives', [])
         # display_adapters = hw.get('DisplayAdapters', [])
         # monitors = hw.get('Monitors', [])
