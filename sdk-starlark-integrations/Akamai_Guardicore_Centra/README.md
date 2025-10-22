@@ -22,7 +22,7 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 ## Guardicore Centra API Docs
 
-- Unfortunately locked behind a customer login portal
+- requires customer account
 
 ## Steps
 
