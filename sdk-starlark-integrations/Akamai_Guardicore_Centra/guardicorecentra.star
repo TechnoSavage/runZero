@@ -40,6 +40,13 @@ def build_assets(assets):
         worksite_mod = scoping_details.get('modified', '')
         worksite_name = scoping_details.get('name', '')
         last_seen = asset.get('last_seen', '')
+        #reformat last_seen timestamp for runZero parsing (create unix time for over/under searching)
+        if last_seen != '':
+            trim_decimal = last_seen.split('.')
+            new_time = trim_decimal[0]
+            new_time = new_time.split(' ')
+            reformat = new_time[0] + 'T' + new_time[1] + 'Z'
+            last_seen = parse_time(reformat)
         mssp_tenant = asset.get('mssp_tenant_name', '')
         status = asset.get('status', '')
         instance_id = asset.get('instance_is', '')
