@@ -13,14 +13,13 @@ def build_assets(assets):
     assets_import = []
     for asset in assets:
         asset_id = str(asset.get('id', new_uuid))
-        hostname = asset.get('name', '')
         os_info = asset.get('os_info', {})
+        hostname = asset.get('name', '')
         os = os_info.get('type', '')
         first_seen = asset.get('first_seen', '')
         #reformat first_seen timestamp for runZero parsing
         if first_seen != '':
-            trim_decimal = first_seen.split('.')
-            split_space = trim_decimal[0]
+            split_space = first_seen.split(' ')
             reformat = split_space[0] + 'T' + split_space[1] + 'Z'
             first_seen = parse_time(reformat)
 
@@ -33,45 +32,47 @@ def build_assets(assets):
             interfaces.append(interface)
 
         # Retrieve and map custom attributes
-        asset_type = asset.get('asset_type', '')
-        os_kernel = os_info.get('full_kernel_version', '')
-        bios_uuid = asset.get('bios_uuid', '')
+        agent_info = asset.get('agent', {})
+        orchestration_metadata = asset.get('orchestration_metadata', {})
         scoping_details = asset.get('scoping_details', {}).get('worksite', {})
-        worksite_mod = scoping_details.get('modified', '')
-        worksite_name = scoping_details.get('name', '')
+        agent_id = agent_info.get('id', '')
+        agent_last_seen = agent_info.get('agent_last_seen', '') # Will have to format timestamp
+        agent_version = agent_info.get('agent_version', '')
+        asset_type = asset.get('asset_type', '')
+        bios_uuid = asset.get('bios_uuid', '')
+        comments = asset.get('comments', '')
+        instance_id = asset.get('instance_is', '')
         last_seen = asset.get('last_seen', '')
-        #reformat last_seen timestamp for runZero parsing (create unix time for over/under searching)
+        #reformat last_seen timestamp for runZero parsing
         if last_seen != '':
-            trim_decimal = last_seen.split('.')
-            new_time = trim_decimal[0]
-            new_time = new_time.split(' ')
+            new_time = last_seen.split(' ')
             reformat = new_time[0] + 'T' + new_time[1] + 'Z'
             last_seen = parse_time(reformat)
         mssp_tenant = asset.get('mssp_tenant_name', '')
-        status = asset.get('status', '')
-        instance_id = asset.get('instance_is', '')
-        agent_info = asset.get('agent', {})
-        agent_last_seen = agent_info.get('agent_last_seen', '')
-        agent_version = agent_info.get('agent_version', '')
-        comments = asset.get('comments', '')
-        orchestration_metadata = asset.get('orchestration_metadata', {})
         orc_asset_type = orchestration_metadata.get('asset_type', '')
         orc_dev_name = orchestration_metadata.get('f5_device_hostname', '')
         orc_partition = orchestration_metadata.get('partition', '')
         orc_vs_name = orchestration_metadata.get('vs_name', '')
+        os_kernel = os_info.get('full_kernel_version', '')
+        status = asset.get('status', '')
+        worksite_mod = scoping_details.get('modified', '')
+        worksite_name = scoping_details.get('name', '')
+        
 
         custom_attributes = {
+            'agent.Id': agent_id,
+            'agent.LastSeenTS': agent_last_seen,
+            'agent.Version': agent_version,
             'assetType': asset_type,
-            'osInfo.fullKernelVersion': os_kernel,
             'biosUuid': bios_uuid,
-            'scopingDetails.worksite.modified': worksite_mod,
-            'scopingDetails.worksite.name': worksite_name,
+            'comments': comments,
+            'instanceId': instance_id,
             'lastSeenTS': last_seen,
             'msspTenantName': mssp_tenant,
+            'osInfo.fullKernelVersion': os_kernel,
+            'scopingDetails.worksite.modified': worksite_mod,
+            'scopingDetails.worksite.name': worksite_name,
             'status': status,
-            'instanceId': instance_id,
-            'agentLastSeenTS': agent_last_seen,
-            'agentVersion': agent_version,
             'orchestrationMetadata.assetType': orc_asset_type,
             'orchestrationMetadata.f5DeviceHostname': orc_dev_name,
             'orchestrationMetadata.partition': orc_partition,
@@ -126,7 +127,8 @@ def get_assets(token):
                     'Authorization': 'Bearer ' + token}
         params = {'max_results': results_per_page,
                   'start_at': start,
-                  'status': 'on'}
+                  'status': 'on',
+                  'expand': 'agent'}
         response = http_get(url, headers=headers, params=params)
         if response.status_code != 200:
             print('failed to retrieve "on" assets ' + str(start) + ' to ' + str(start + results_per_page), 'status code: ' + str(response.status_code))
@@ -148,7 +150,8 @@ def get_assets(token):
                     'Authorization': 'Bearer ' + token}
         params = {'max_results': results_per_page,
                   'start_at': start,
-                  'status': 'off'}
+                  'status': 'off',
+                  'expand': 'agent'}
         response = http_get(url, headers=headers, params=params)
         if response.status_code != 200:
             print('failed to retrieve "off" assets ' + str(start) + ' to ' + str(start + results_per_page), 'status code: ' + str(response.status_code))
