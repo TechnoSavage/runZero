@@ -20,8 +20,7 @@ def build_assets(assets):
         #reformat first_seen timestamp for runZero parsing
         if first_seen != '':
             split_space = first_seen.split(' ')
-            reformat = split_space[0] + 'T' + split_space[1] + 'Z'
-            first_seen = parse_time(reformat)
+            first_seen = parse_time(split_space[0] + 'T' + split_space[1] + 'Z')
 
         # create the network interfaces
         interfaces = []
@@ -36,7 +35,12 @@ def build_assets(assets):
         orchestration_metadata = asset.get('orchestration_metadata', {})
         scoping_details = asset.get('scoping_details', {}).get('worksite', {})
         agent_id = agent_info.get('id', '')
-        agent_last_seen = agent_info.get('agent_last_seen', '') # Will have to format timestamp
+        agent_last_seen = agent_info.get('agent_last_seen', '')
+        #reformat last_seen timestamp for runZero parsing
+        if agent_last_seen != '':
+            strip_ms = agent_last_seen.split('.')
+            split_space = strip_ms[0].split(' ')
+            agent_last_seen = parse_time(split_space[0] + 'T' + split_space[1] + 'Z')
         agent_version = agent_info.get('agent_version', '')
         asset_type = asset.get('asset_type', '')
         bios_uuid = asset.get('bios_uuid', '')
@@ -45,9 +49,9 @@ def build_assets(assets):
         last_seen = asset.get('last_seen', '')
         #reformat last_seen timestamp for runZero parsing
         if last_seen != '':
-            new_time = last_seen.split(' ')
-            reformat = new_time[0] + 'T' + new_time[1] + 'Z'
-            last_seen = parse_time(reformat)
+            strip_ms = last_seen.split('.')
+            split_space = strip_ms[0].split(' ')
+            last_seen = parse_time(split_space[0] + 'T' + split_space[1] + 'Z')
         mssp_tenant = asset.get('mssp_tenant_name', '')
         orc_asset_type = orchestration_metadata.get('asset_type', '')
         orc_dev_name = orchestration_metadata.get('f5_device_hostname', '')
@@ -79,11 +83,18 @@ def build_assets(assets):
             'orchestrationMetadata.vsName': orc_vs_name
         }
 
-        ## Additional custom attributes to implement:
-        # label_groups = asset.get('label_groups', [])
-        # orchestration_details = asset.get('orchestration_details', [])
-        # labels = asset.get('labels', [])
-
+        labels = asset.get('labels', [])
+        for item in labels:
+            for k, v in item.items():
+                custom_attributes['label.' + str(labels.index(item)) + '.' + k] = v
+        label_groups = asset.get('label_groups', [])
+        for group in label_groups:
+            for k, v in group.items():
+                custom_attributes['labelGroup.' + str(label_groups.index(group)) + '.' + k] = v
+        orchestration_details = asset.get('orchestration_details', [])
+        for detail in orchestration_details:
+            for k, v in detail.items():
+                custom_attributes['orchestrationDetails.' + str(orchestration_details.index(detail)) + '.' + k] = v
 
         # Build assets for import
         assets_import.append(
