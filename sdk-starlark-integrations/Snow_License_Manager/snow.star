@@ -52,6 +52,13 @@ def build_assets(assets, creds):
         is_server = item.get('IsServer', '')
         most_freq_user = item.get('MostFrequentUserId', '')
         most_recent_user = item.get('MostRecentUserId', '')
+        logical_disk = hw.get('LogicalDisks', {}).get('LogicalDisk', {})
+        disk_name = logical_disk.get('Name', '')
+        disk_size = logical_disk.get('SizeMb', '')
+        disk_vol = logical_disk.get('VolumeName', '')
+        optical_drives = hw.get('OpticalDrives', {}).get('OpticalDrive', {})
+        drive_name = optical_drives.get('Name', '')
+        drive_type = optical_drives.get('Type', '')
 
         custom_attributes = {
             'organization': organization,
@@ -72,8 +79,14 @@ def build_assets(assets, creds):
             'isPortable': is_portable,
             'isServer': is_server,
             'mostFrequentUserId': most_freq_user,
-            'mostRecentUserId': most_recent_user
+            'mostRecentUserId': most_recent_user,
+            'logicalDisk.name': disk_name,
+            'logicalDisk.sizeMb': disk_size,
+            'logicalDisk.volumeName': disk_vol,
+            'opticalDrive.name': drive_name,
+            'opticalDrive.type': drive_type
         }
+
         hw = item.get('Hardware', {})
         custom_attributes['hardware.biosSerialNumber'] = hw.get('BiosSerialNumber', '')
         custom_attributes['hardware.biosVersion'] = hw.get('BiosVersion', '')
@@ -89,10 +102,14 @@ def build_assets(assets, creds):
         custom_attributes['hardware.totalDiskSpaceMb'] = hw.get('TotalDiskSpaceMb', '')
         custom_attributes['hardware.totalDiskSpaceAvailableMb'] = hw.get('TotalDiskSpaceAvailableMb', '')
 
-        # logical_disks = hw.get('LogicalDisks', {})
-        # optical_drives = hw.get('OpticalDrives', [])
-        # display_adapters = hw.get('DisplayAdapters', [])
-        # monitors = hw.get('Monitors', [])
+        display_adapters = hw.get('DisplayAdapters', {}).get('DisplayAdapter', [])
+        for adapter in display_adapters:
+            for k, v in adapter:
+                custom_attributes['displayAdapter.' + str(display_adapters.index[adapter]) + '.' + k] = v
+        monitors = hw.get('Monitors', {}).get('Monitor', [])
+        for monitor in monitors:
+            for k, v in monitor:
+                custom_attributes['monitor.' + str(monitors.index[monitor]) + '.' + k] = v
 
 
         # Retrieve software information for asset
