@@ -12,8 +12,9 @@ RUNZERO_REDIRECT = 'https://console.runzero.com/'
 def build_assets(assets):
     assets_import = []
     for asset in assets:
-        asset_id = str(asset.get('id', new_uuid))
+        agent_info = asset.get('agent', {})
         os_info = asset.get('os_info', {})
+        asset_id = agent_info.get('id', '')
         hostname = asset.get('name', '')
         os = os_info.get('type', '')
         first_seen = asset.get('first_seen', '')
@@ -31,12 +32,12 @@ def build_assets(assets):
             interfaces.append(interface)
 
         # Retrieve and map custom attributes
-        agent_info = asset.get('agent', {})
+        
         orchestration_metadata = asset.get('orchestration_metadata', {})
         scoping_details = asset.get('scoping_details', {}).get('worksite', {})
         agent_id = agent_info.get('id', '')
         agent_last_seen = agent_info.get('agent_last_seen', '')
-        #reformat last_seen timestamp for runZero parsing
+        #reformat agent_last_seen timestamp for runZero parsing
         if agent_last_seen != '':
             strip_ms = agent_last_seen.split('.')
             split_space = strip_ms[0].split(' ')
@@ -49,8 +50,7 @@ def build_assets(assets):
         last_seen = asset.get('last_seen', '')
         #reformat last_seen timestamp for runZero parsing
         if last_seen != '':
-            strip_ms = last_seen.split('.')
-            split_space = strip_ms[0].split(' ')
+            split_space = last_seen.split(' ')
             last_seen = parse_time(split_space[0] + 'T' + split_space[1] + 'Z')
         mssp_tenant = asset.get('mssp_tenant_name', '')
         orc_asset_type = orchestration_metadata.get('asset_type', '')
@@ -103,6 +103,7 @@ def build_assets(assets):
                 hostnames=[hostname],
                 os=os,
                 first_seen_ts=first_seen,
+                last_seen_ts=last_seen,
                 networkInterfaces=interfaces,
                 customAttributes=custom_attributes
             )
