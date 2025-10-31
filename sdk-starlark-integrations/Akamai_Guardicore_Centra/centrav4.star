@@ -103,7 +103,6 @@ def build_assets(assets):
                 hostnames=[hostname],
                 os=os,
                 first_seen_ts=first_seen,
-                last_seen_ts=last_seen,
                 networkInterfaces=interfaces,
                 customAttributes=custom_attributes
             )
