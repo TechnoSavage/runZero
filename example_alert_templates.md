@@ -36,6 +36,7 @@
 
 <h2>Explorer Details</h2>
 <ul>
+<li>
 Internal IP: {{event.agent_internal_ip}}
 External IP: {{event.agent_external_ip}}
 Explorer OS: {{event.agent_os}}
@@ -48,6 +49,7 @@ Explorer Organization: {{event.organization_name}}
 Explorer Organization UUID: {{event.organization_id}}
 Explorer Site: {{event.site_name}}
 Explorer Site UUID {{event.site_id}}
+</li>
 </ul>
 ```
 
@@ -66,6 +68,7 @@ Explorer Site UUID {{event.site_id}}
 
 <h2>Explorer Details</h2>
 <ul>
+<li>
 Duration offline: {{event.agent_offline_time}}	
 Internal IP: {{event.agent_internal_ip}}
 External IP: {{event.agent_external_ip}}
@@ -79,6 +82,7 @@ Explorer Organization: {{event.organization_name}}
 Explorer Organization UUID: {{event.organization_id}}
 Explorer Site: {{event.site_name}}
 Explorer Site UUID {{event.site_id}}
+</li>
 </ul>
 ```
 
