@@ -1,9 +1,9 @@
 load('runzero.types', 'ImportAsset', 'NetworkInterface', 'Software')
 load('base64', base64_encode='encode', base64_decode='decode')
-load('flatten_json', 'flatten')
 load('http', http_get='get', http_post='post', 'url_encode')
 load('json', json_encode='encode', json_decode='decode')
 load('net', 'ip_address')
+load('time', 'parse_time')
 load('uuid', 'new_uuid')
 
 #Change the URL to match your Snow Software License Manager server
@@ -38,6 +38,9 @@ def build_assets(assets, creds):
         is_virtual = item.get('IsVirtual', '')
         status = item.get('Status', '')
         last_scan_date = item.get('LastScanDate', '')
+        # Reformat last_scan_date timestamp for runZero parsing
+        if last_scan_date != '':
+            last_scan_date = parse_time(last_scan_date + 'Z')
         updated_by = item.get('UpdatedBy', '')
         updated_date = item.get('UpdatedData', '')
         domain = item.get('Domain', '')
@@ -65,7 +68,7 @@ def build_assets(assets, creds):
             'orgChecksum': org_checksum,
             'isVirtual': is_virtual,
             'status': status,
-            'lastScanDate': last_scan_date,
+            'lastScanDate': last_scan_date.unix,
             'updatedBy': updated_by,
             'updatedDate': updated_date,
             'domain': domain,
@@ -90,7 +93,13 @@ def build_assets(assets, creds):
         hw = item.get('Hardware', {})
         custom_attributes['hardware.biosSerialNumber'] = hw.get('BiosSerialNumber', '')
         custom_attributes['hardware.biosVersion'] = hw.get('BiosVersion', '')
-        custom_attributes['hardware.biosDate'] = hw.get('BiosDate', '')
+        bios_date = hw.get('BiosDate', '')
+        #Reformat bios_date timestamp for runZero parsing
+        if bios_date != '':
+            bios_date_parsed = parse_time(bios_date + 'Z')
+            custom_attributes['hardware.biosDate'] = bios_date_parsed.unix
+        else:
+            custom_attributes['hardware.biosDate'] = bios_date
         custom_attributes['hardware.processorType'] = hw.get('ProcessorType', '')
         custom_attributes['hardware.numberOfProcessors'] = hw.get('NumberOfProcessors', '')
         custom_attributes['hardware.coresPerProcessor.'] = hw.get('CoresPerProcessor', '')
@@ -170,9 +179,21 @@ def build_app(software_entry):
     bundled_app_id = app.get('BundleApplicationId', '')
     bundled_app_name = app.get('BundleApplicationName', '')
     last_used = app.get('LastUsed', '')
+    # Reformat last_used timestamp for runZero parsing
+    if last_used != '':
+        last_used = parse_time(last_used + 'Z"')
     first_used = app.get('FirstUsed', '')
+    # Reformat first_used timestamp for runZero parsing
+    if first_used != '':
+        first_used = parse_time(first_used + 'Z')
     install_date = app.get('InstallDate', '')
+    # Reformat install_date timestamp for runZero parsing
+    if install_date != '':
+        install_date = parse_time(install_date = 'Z')
     discvovered_date = app.get('DiscoveredDate', '')
+    # Reformat discovered_date timestamp for runZero parsing
+    if discovered_date != '':
+        discovered_date = parse_time(discovered_date + 'Z')
     run = app.get('Run', '')
     avg_usage_time = app.get('AvgUsageTime', '')
     users = app.get('Users', '')
@@ -193,10 +214,10 @@ def build_app(software_entry):
         'family.name': family_name,
         'bundled.application.id': bundled_app_id,
         'bundled.application.name': bundled_app_name,
-        'last.used': last_used,
-        'first.used': first_used,
-        'install.date': install_date,
-        'discovered.date': discvovered_date,
+        'last.used': last_used.unix,
+        'first.used': first_used.unix,
+        'install.date': install_date.unix,
+        'discovered.date': discvovered_date.unix,
         'run': run,
         'average.usage.time': avg_usage_time,
         'users': users,
