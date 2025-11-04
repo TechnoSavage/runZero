@@ -1,5 +1,9 @@
 [Alert object and field reference](https://www.runzero.com/docs/creating-alert-templates/#objects-and-fields-reference)
 
+[HTML Explorer offline template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-explorer-offline)
+
+[HTML Explorer reconnect template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-explorer-reconnect)
+
 [HTML new asset template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-new-asset-alerts)
 
 [HTML changed asset template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#html-template-for-changed-asset-alerts)
@@ -16,6 +20,67 @@
 
 [JSON service query template](https://github.com/TechnoSavage/runZero/blob/main/example_alert_templates.md#json-template-for-service-query-alerts-and-webhooks)
 
+
+# HTML template for Explorer offline
+
+## Subject 
+
+```
+ Explorer {{event.agent_name}} is offline	
+```
+
+## Body
+
+```
+<h1>{{event.agent_name}}</h1>
+
+<h2>Explorer Details</h2>
+<ul>
+Internal IP: {{event.agent_internal_ip}}
+External IP: {{event.agent_external_ip}}
+Explorer OS: {{event.agent_os}}
+Host UUID: {{event.agent_host_id}}	
+Explorer UUID: {{event.agent_id}}	
+Explorer last seen (epoch time): {{event.agent_last_seen}}
+Exlorer Tags: {{event.agent_tags}}
+Explorer version: {{event.agent_version}}
+Explorer Organization: {{event.organization_name}}
+Explorer Organization UUID: {{event.organization_id}}
+Explorer Site: {{event.site_name}}
+Explorer Site UUID {{event.site_id}}
+</ul>
+```
+
+# HTML template for Explorer reconnect
+
+## Subject 
+
+```
+ Explorer {{event.agent_name}} is back online	
+```
+
+## Body
+
+```
+<h1>{{event.agent_name}}</h1>
+
+<h2>Explorer Details</h2>
+<ul>
+Duration offline: {{event.agent_offline_time}}	
+Internal IP: {{event.agent_internal_ip}}
+External IP: {{event.agent_external_ip}}
+Explorer OS: {{event.agent_os}}
+Host UUID: {{event.agent_host_id}}	
+Explorer UUID: {{event.agent_id}}	
+Explorer last seen (epoch time): {{event.agent_last_seen}}
+Exlorer Tags: {{event.agent_tags}}
+Explorer version: {{event.agent_version}}
+Explorer Organization: {{event.organization_name}}
+Explorer Organization UUID: {{event.organization_id}}
+Explorer Site: {{event.site_name}}
+Explorer Site UUID {{event.site_id}}
+</ul>
+```
 
 # HTML template for new asset alerts
 
