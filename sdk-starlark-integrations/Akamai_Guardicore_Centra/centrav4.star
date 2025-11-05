@@ -9,8 +9,9 @@ load('uuid', 'new_uuid')
 CENTRA_BASE_URL = 'https://<Guardicore Centra URL>'
 RUNZERO_REDIRECT = 'https://console.runzero.com/'
 
-def build_assets(assets):
+def build_assets(assets, token):
     assets_import = []
+    label_mapping = {}
     for asset in assets:
         agent_info = asset.get('agent', {})
         os_info = asset.get('os_info', {})
@@ -39,8 +40,7 @@ def build_assets(assets):
         agent_last_seen = agent_info.get('agent_last_seen', '')
         #reformat agent_last_seen timestamp for runZero parsing
         if agent_last_seen != '':
-            strip_ms = agent_last_seen.split('.')
-            split_space = strip_ms[0].split(' ')
+            split_space = agent_last_seen.split(' ')
             agent_last_seen = parse_time(split_space[0] + 'T' + split_space[1] + 'Z')
         agent_version = agent_info.get('agent_version', '')
         asset_type = asset.get('asset_type', '')
@@ -61,17 +61,30 @@ def build_assets(assets):
         status = asset.get('status', '')
         worksite_mod = scoping_details.get('modified', '')
         worksite_name = scoping_details.get('name', '')
+
+        labels = asset.get('labels', [])
+        label_guids = [v for item in labels for k,v in item.items() if k == 'id']
+        label_names = []
+        for guid in label_guids:
+            name = label_mapping.get(guid, None)
+            if not name:
+                new_mapping = get_labels(guid, token)
+                for k, v in new_mapping.items():
+                    label_mapping[k] = v
+                name = label_mapping.get(guid)
+            name.append(label_names)
         
 
         custom_attributes = {
             'agent.Id': agent_id,
-            'agent.LastSeenTS': agent_last_seen,
+            'agent.LastSeenTS': agent_last_seen.unix,
             'agent.Version': agent_version,
             'assetType': asset_type,
             'biosUuid': bios_uuid,
             'comments': comments,
             'instanceId': instance_id,
-            'lastSeenTS': last_seen,
+            'labels': label_names,
+            'lastSeenTS': last_seen.unix,
             'msspTenantName': mssp_tenant,
             'osInfo.fullKernelVersion': os_kernel,
             'scopingDetails.worksite.modified': worksite_mod,
@@ -83,10 +96,6 @@ def build_assets(assets):
             'orchestrationMetadata.vsName': orc_vs_name
         }
 
-        labels = asset.get('labels', [])
-        for item in labels:
-            for k, v in item.items():
-                custom_attributes['label.' + str(labels.index(item)) + '.' + k] = v
         label_groups = asset.get('label_groups', [])
         for group in label_groups:
             for k, v in group.items():
@@ -124,6 +133,21 @@ def build_network_interface(ips, mac):
         return NetworkInterface(ipv4Addresses=ip4s, ipv6Addresses=ip6s)
     else:
         return NetworkInterface(macAddress=mac, ipv4Addresses=ip4s, ipv6Addresses=ip6s)
+
+def get_labels(guid, token):
+    url = CENTRA_BASE_URL + '/api/v4.0/labels/' + guid + '?'
+    headers = {'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token}
+    params = {'asset_limit': 1}
+    response = http_get(url, headers=headers, params=params)
+    if response.status_code != 200:
+        print('failed to retrieve label info for  ' + guid, 'status code: ' + str(response.status_code))
+    data = json_decode(response.body)
+    label_info = data['objects']
+    label_key = label_info[0].get('key', '')
+    label_value = label_info[0].get('value', '')
+    label_mapping = { guid: label_key + ': ' + label_value }
+    return label_mapping
 
 def get_assets(token):
     assets_all = []
@@ -203,7 +227,7 @@ def main(*args, **kwargs):
     assets = get_assets(token)
     
     # Format asset list for import into runZero
-    import_assets = build_assets(assets)
+    import_assets = build_assets(assets, token)
     if not import_assets:
         print('no assets')
         return None
