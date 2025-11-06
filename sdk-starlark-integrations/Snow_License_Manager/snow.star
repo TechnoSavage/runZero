@@ -33,84 +33,89 @@ def build_assets(assets, creds):
             interfaces.append(interface)
 
         # Retrieve and map custom attributes
-        organization = item.get('Organization', '')
-        org_checksum = item.get('OrgChecksum', '')
-        is_virtual = item.get('IsVirtual', '')
-        status = item.get('Status', '')
-        last_scan_date = item.get('LastScanDate', '')
-        # Reformat last_scan_date timestamp for runZero parsing
-        if last_scan_date != '':
-            last_scan_date = parse_time(last_scan_date + 'Z')
-        updated_by = item.get('UpdatedBy', '')
-        updated_date = item.get('UpdatedData', '')
-        domain = item.get('Domain', '')
-        total_disk_space = item.get('TotalDiskSpace', '')
-        physical_memory = item.get('PhyscialMemory', '')
-        processor_type = item.get('ProcessorType', '')
-        processor_count = item.get('ProcessorCount', '')
-        core_count = item.get('CoreCount', '')
-        bios_sn = item.get('BiosSerialNumber', '')
-        hyperv_name = item.get('HypervisorName', '')
-        is_portable = item.get('IsPortable', '')
-        is_server = item.get('IsServer', '')
-        most_freq_user = item.get('MostFrequentUserId', '')
-        most_recent_user = item.get('MostRecentUserId', '')
-        logical_disk = hw.get('LogicalDisks', {}).get('LogicalDisk', {})
-        disk_name = logical_disk.get('Name', '')
-        disk_size = logical_disk.get('SizeMb', '')
-        disk_vol = logical_disk.get('VolumeName', '')
-        optical_drives = hw.get('OpticalDrives', {}).get('OpticalDrive', {})
-        drive_name = optical_drives.get('Name', '')
-        drive_type = optical_drives.get('Type', '')
-
-        custom_attributes = {
-            'organization': organization,
-            'orgChecksum': org_checksum,
-            'isVirtual': is_virtual,
-            'status': status,
-            'lastScanDate': last_scan_date.unix,
-            'updatedBy': updated_by,
-            'updatedDate': updated_date,
-            'domain': domain,
-            'totalDiskSpace': total_disk_space,
-            'physicalMemory': physical_memory,
-            'processorType': processor_type,
-            'processorCount': processor_count,
-            'coreCount': core_count,
-            'biosSerialNumber': bios_sn,
-            'hypervisorName': hyperv_name,
-            'isPortable': is_portable,
-            'isServer': is_server,
-            'mostFrequentUserId': most_freq_user,
-            'mostRecentUserId': most_recent_user,
-            'logicalDisk.name': disk_name,
-            'logicalDisk.sizeMb': disk_size,
-            'logicalDisk.volumeName': disk_vol,
-            'opticalDrive.name': drive_name,
-            'opticalDrive.type': drive_type
-        }
-
         hw = item.get('Hardware', {})
-        custom_attributes['hardware.biosSerialNumber'] = hw.get('BiosSerialNumber', '')
-        custom_attributes['hardware.biosVersion'] = hw.get('BiosVersion', '')
+        logical_disk = hw.get('LogicalDisks', {}).get('LogicalDisk', {})
+        optical_drives = hw.get('OpticalDrives', {}).get('OpticalDrive', {})
         bios_date = hw.get('BiosDate', '')
         #Reformat bios_date timestamp for runZero parsing
         if bios_date != '':
-            bios_date_parsed = parse_time(bios_date + 'Z')
-            custom_attributes['hardware.biosDate'] = bios_date_parsed.unix
-        else:
-            custom_attributes['hardware.biosDate'] = bios_date
-        custom_attributes['hardware.processorType'] = hw.get('ProcessorType', '')
-        custom_attributes['hardware.numberOfProcessors'] = hw.get('NumberOfProcessors', '')
-        custom_attributes['hardware.coresPerProcessor.'] = hw.get('CoresPerProcessor', '')
-        custom_attributes['hardware.physicalMemoryMb'] = hw.get('PhysicalMemoryMb', '')
-        custom_attributes['hardware.memorySlots'] = hw.get('MemorySlots', '')
-        custom_attributes['hardware.memorySlotsAvailable'] = hw.get('MemorySlotsAvailable', '')
-        custom_attributes['hardware.systemDiskSpaceMb'] = hw.get('SystemDiskSpaceMb', '')
-        custom_attributes['hardware.systemDiskSpaceAvailableMb'] = hw.get('SystemDiskSpaceAvailableMb', '')
-        custom_attributes['hardware.totalDiskSpaceMb'] = hw.get('TotalDiskSpaceMb', '')
-        custom_attributes['hardware.totalDiskSpaceAvailableMb'] = hw.get('TotalDiskSpaceAvailableMb', '')
+            bios_date = parse_time(bios_date + 'Z').unix
+        bios_sn = item.get('BiosSerialNumber', '')
+        bios_version = hw.get('BiosVersion', '')
+        core_count = item.get('CoreCount', '')
+        cores_per_proc = hw.get('CoresPerProcessor', '')
+        disk_name = logical_disk.get('Name', '')
+        disk_size = logical_disk.get('SizeMb', '')
+        disk_vol = logical_disk.get('VolumeName', '')
+        domain = item.get('Domain', '')
+        drive_name = optical_drives.get('Name', '')
+        drive_type = optical_drives.get('Type', '')
+        hyperv_name = item.get('HypervisorName', '')
+        is_portable = item.get('IsPortable', '')
+        is_server = item.get('IsServer', '')
+        is_virtual = item.get('IsVirtual', '')
+        last_scan_date = item.get('LastScanDate', '')
+        # Reformat last_scan_date timestamp for runZero parsing
+        if last_scan_date != '':
+            last_scan_date = parse_time(last_scan_date + 'Z').unix
+        memory_slots = hw.get('MemorySlots', '')
+        memory_slots_avail = hw.get('MemorySlotsAvailable', '')
+        most_freq_user = item.get('MostFrequentUserId', '')
+        most_recent_user = item.get('MostRecentUserId', '')
+        number_of_procs = hw.get('NumberOfProcessors', '')
+        organization = item.get('Organization', '')
+        org_checksum = item.get('OrgChecksum', '')
+        processor_count = item.get('ProcessorCount', '')
+        physical_memory = item.get('PhysicalMemory', '')
+        physical_memory_mb = hw.get('PhysicalMemoryMb', '')
+        processor_type = item.get('ProcessorType', '')
+        status = item.get('Status', '')
+        system_disk_space_mb = hw.get('SystemDiskSpaceMb', '')
+        system_disk_space_avail_mb = hw.get('SystemDiskSpaceAvailableMb', '')
+        total_disk_space = item.get('TotalDiskSpace', '')
+        total_disk_space_mb = hw.get('TotalDiskSpaceMb', '')
+        total_disk_space_avail_mb = hw.get('TotalDiskSpaceAvailableMb', '')
+        updated_by = item.get('UpdatedBy', '')
+        updated_date = item.get('UpdatedData', '')
 
+        custom_attributes = {
+            'biosDate': bios_date,
+            'biosSerialNumber': bios_sn,
+            'biosVersion': bios_version,
+            'coreCount': core_count,
+            'coresPerProcessor': cores_per_proc,
+            'domain': domain,
+            'hypervisorName': hyperv_name,
+            'isPortable': is_portable,
+            'isServer': is_server,
+            'isVirtual': is_virtual,
+            'lastScanDate': last_scan_date,
+            'logicalDisk.name': disk_name,
+            'logicalDisk.sizeMb': disk_size,
+            'logicalDisk.volumeName': disk_vol,
+            'memorySlots': memory_slots,
+            'memorySlotsAvailable': memory_slots_avail,
+            'mostFrequentUserId': most_freq_user,
+            'mostRecentUserId': most_recent_user,
+            'numberOfProcessors': number_of_procs,
+            'opticalDrive.name': drive_name,
+            'opticalDrive.type': drive_type,
+            'organization': organization,
+            'orgChecksum': org_checksum,
+            'processorCount': processor_count,
+            'physicalMemory': physical_memory,
+            'physicalMemoryMb': physical_memory_mb,
+            'processorType': processor_type,
+            'status': status,
+            'systemDiskSpaceMb': system_disk_space_mb,
+            'systemDiskSpaceAvailableMb': system_disk_space_avail_mb,
+            'totalDiskSpace': total_disk_space,
+            'totalDiskSpaceMb': total_disk_space_mb,
+            'totalDiskSpaceAvailableMb': total_disk_space_avail_mb,
+            'updatedBy': updated_by,
+            'updatedDate': updated_date
+        }
+        
         display_adapters = hw.get('DisplayAdapters', {}).get('DisplayAdapter', [])
         for adapter in display_adapters:
             for k, v in adapter:
@@ -119,7 +124,6 @@ def build_assets(assets, creds):
         for monitor in monitors:
             for k, v in monitor:
                 custom_attributes['monitor.' + str(monitors.index[monitor]) + '.' + k] = v
-
 
         # Retrieve software information for asset
         # create software entries
@@ -181,19 +185,19 @@ def build_app(software_entry):
     last_used = app.get('LastUsed', '')
     # Reformat last_used timestamp for runZero parsing
     if last_used != '':
-        last_used = parse_time(last_used + 'Z"')
+        last_used = parse_time(last_used + 'Z"').unix
     first_used = app.get('FirstUsed', '')
     # Reformat first_used timestamp for runZero parsing
     if first_used != '':
-        first_used = parse_time(first_used + 'Z')
+        first_used = parse_time(first_used + 'Z').unix
     install_date = app.get('InstallDate', '')
     # Reformat install_date timestamp for runZero parsing
     if install_date != '':
-        install_date = parse_time(install_date = 'Z')
+        install_date = parse_time(install_date + 'Z').unix
     discvovered_date = app.get('DiscoveredDate', '')
     # Reformat discovered_date timestamp for runZero parsing
     if discovered_date != '':
-        discovered_date = parse_time(discovered_date + 'Z')
+        discovered_date = parse_time(discovered_date + 'Z').unix
     run = app.get('Run', '')
     avg_usage_time = app.get('AvgUsageTime', '')
     users = app.get('Users', '')
@@ -214,10 +218,10 @@ def build_app(software_entry):
         'family.name': family_name,
         'bundled.application.id': bundled_app_id,
         'bundled.application.name': bundled_app_name,
-        'last.used': last_used.unix,
-        'first.used': first_used.unix,
-        'install.date': install_date.unix,
-        'discovered.date': discvovered_date.unix,
+        'last.used': last_used,
+        'first.used': first_used,
+        'install.date': install_date,
+        'discovered.date': discvovered_date,
         'run': run,
         'average.usage.time': avg_usage_time,
         'users': users,
