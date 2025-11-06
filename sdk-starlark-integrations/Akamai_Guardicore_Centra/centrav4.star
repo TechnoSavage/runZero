@@ -72,7 +72,7 @@ def build_assets(assets, token):
                 for k, v in new_mapping.items():
                     label_mapping[k] = v
                 name = label_mapping.get(guid, '')
-            name.append(label_names)
+            label_names.append(name)
         
 
         custom_attributes = {
