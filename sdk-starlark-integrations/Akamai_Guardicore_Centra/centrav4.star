@@ -15,7 +15,7 @@ def build_assets(assets, token):
     for asset in assets:
         agent_info = asset.get('agent', {})
         os_info = asset.get('os_info', {})
-        asset_id = agent_info.get('id', '')
+        asset_id = agent_info.get('id', str(new_uuid))
         hostname = asset.get('name', '')
         os = os_info.get('type', '')
         first_seen = asset.get('first_seen', '')
@@ -41,7 +41,7 @@ def build_assets(assets, token):
         #reformat agent_last_seen timestamp for runZero parsing
         if agent_last_seen != '':
             split_space = agent_last_seen.split(' ')
-            agent_last_seen = parse_time(split_space[0] + 'T' + split_space[1] + 'Z')
+            agent_last_seen = parse_time(split_space[0] + 'T' + split_space[1] + 'Z').unix
         agent_version = agent_info.get('agent_version', '')
         asset_type = asset.get('asset_type', '')
         bios_uuid = asset.get('bios_uuid', '')
@@ -51,7 +51,7 @@ def build_assets(assets, token):
         #reformat last_seen timestamp for runZero parsing
         if last_seen != '':
             split_space = last_seen.split(' ')
-            last_seen = parse_time(split_space[0] + 'T' + split_space[1] + 'Z')
+            last_seen = parse_time(split_space[0] + 'T' + split_space[1] + 'Z').unix
         mssp_tenant = asset.get('mssp_tenant_name', '')
         orc_asset_type = orchestration_metadata.get('asset_type', '')
         orc_dev_name = orchestration_metadata.get('f5_device_hostname', '')
@@ -71,20 +71,20 @@ def build_assets(assets, token):
                 new_mapping = get_labels(guid, token)
                 for k, v in new_mapping.items():
                     label_mapping[k] = v
-                name = label_mapping.get(guid)
+                name = label_mapping.get(guid, '')
             name.append(label_names)
         
 
         custom_attributes = {
             'agent.Id': agent_id,
-            'agent.LastSeenTS': agent_last_seen.unix,
+            'agent.LastSeenTS': agent_last_seen,
             'agent.Version': agent_version,
             'assetType': asset_type,
             'biosUuid': bios_uuid,
             'comments': comments,
             'instanceId': instance_id,
             'labels': label_names,
-            'lastSeenTS': last_seen.unix,
+            'lastSeenTS': last_seen,
             'msspTenantName': mssp_tenant,
             'osInfo.fullKernelVersion': os_kernel,
             'scopingDetails.worksite.modified': worksite_mod,
