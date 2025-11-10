@@ -35,22 +35,18 @@
 <h1>{{event.agent_name}}</h1>
 
 <h2>Explorer Details</h2>
-<ul>
-<li>
-Internal IP: {{event.agent_internal_ip}}
-External IP: {{event.agent_external_ip}}
-Explorer OS: {{event.agent_os}}
-Host UUID: {{event.agent_host_id}}	
-Explorer UUID: {{event.agent_id}}	
-Explorer last seen (epoch time): {{event.agent_last_seen}}
-Exlorer Tags: {{event.agent_tags}}
-Explorer version: {{event.agent_version}}
-Explorer Organization: {{event.organization_name}}
-Explorer Organization UUID: {{event.organization_id}}
-Explorer Site: {{event.site_name}}
-Explorer Site UUID {{event.site_id}}
-</li>
-</ul>
+Internal IP: {{event.agent_internal_ip}}<br>
+External IP: {{event.agent_external_ip}}<br>
+Explorer OS: {{event.agent_os}}<br>
+Host UUID: {{event.agent_host_id}}<br>
+Explorer UUID: {{event.agent_id}}<br>
+Explorer last seen (epoch time): {{event.agent_last_seen}}<br>
+Exlorer Tags: {{event.agent_tags}}<br>
+Explorer version: {{event.agent_version}}<br>
+Explorer Organization: {{event.organization_name}}<br>
+Explorer Organization UUID: {{event.organization_id}}<br>
+Explorer Site: {{event.site_name}}<br>
+Explorer Site UUID {{event.site_id}}<br>
 ```
 
 # HTML template for Explorer reconnect
@@ -67,23 +63,19 @@ Explorer Site UUID {{event.site_id}}
 <h1>{{event.agent_name}}</h1>
 
 <h2>Explorer Details</h2>
-<ul>
-<li>
-Duration offline: {{event.agent_offline_time}}	
-Internal IP: {{event.agent_internal_ip}}
-External IP: {{event.agent_external_ip}}
-Explorer OS: {{event.agent_os}}
-Host UUID: {{event.agent_host_id}}	
-Explorer UUID: {{event.agent_id}}	
-Explorer last seen (epoch time): {{event.agent_last_seen}}
-Exlorer Tags: {{event.agent_tags}}
-Explorer version: {{event.agent_version}}
-Explorer Organization: {{event.organization_name}}
-Explorer Organization UUID: {{event.organization_id}}
-Explorer Site: {{event.site_name}}
-Explorer Site UUID {{event.site_id}}
-</li>
-</ul>
+Duration offline: {{event.agent_offline_time}}<br>
+Internal IP: {{event.agent_internal_ip}}<br>
+External IP: {{event.agent_external_ip}}<br>
+Explorer OS: {{event.agent_os}}<br>
+Host UUID: {{event.agent_host_id}}<br>
+Explorer UUID: {{event.agent_id}}<br>
+Explorer last seen (epoch time): {{event.agent_last_seen}}<br>
+Exlorer Tags: {{event.agent_tags}}<br>
+Explorer version: {{event.agent_version}}<br>
+Explorer Organization: {{event.organization_name}}<br>
+Explorer Organization UUID: {{event.organization_id}}<br>
+Explorer Site: {{event.site_name}}<br>
+Explorer Site UUID {{event.site_id}}<br>
 ```
 
 # HTML template for new asset alerts
