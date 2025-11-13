@@ -104,33 +104,46 @@ def build_assets(assets, creds):
             'updatedDate': updated_date
         }
         
-        logical_disks = hw.get('LogicalDisks', [])
-        if not logical_disks:
-            logical_disks = []
-        for disk in logical_disks:
-            for k, v in disk.items():
-                custom_attributes['logicalDisks.' + str(logical_disks.index[disk]) + '.' + k] = v
+        logical_disks = hw.get('LogicalDisks', None)
+        if logical_disks and type(logical_disks) == 'list':
+            for disk in logical_disks:
+                if disk:
+                    for k, v in disk.items():
+                        custom_attributes['logicalDisks.' + str(logical_disks.index(disk)) + '.' + k] = v
+        if logical_disks and type(logical_disks) == 'dict':
+            for k, v in logical_disks.items():
+                custom_attributes['logicalDisks.0.' + k] = v
 
-        optical_drives = hw.get('OpticalDrives', [])
-        if not optical_drives:
-            optical_drives = []
-        for drive in optical_drives:
-            for k, v in drive.items():
-                custom_attributes['opticalDrives.' + str(optical_drives.index[drive]) + '.' + k] = v
 
-        display_adapters = hw.get('DisplayAdapters', [])
-        if not display_adapters:
-            display_adapters = []
-        for adapter in display_adapters:
-            for k, v in adapter.items():
-                custom_attributes['displayAdapter.' + str(display_adapters.index[adapter]) + '.' + k] = v
+        optical_drives = hw.get('OpticalDrives', None)
+        if optical_drives and type(optical_drives) == 'list':
+            for drive in optical_drives:
+                if drive:
+                    for k, v in drive.items():
+                        custom_attributes['opticalDrives.' + str(optical_drives.index(drive)) + '.' + k] = v
+        if optical_drives and type(optical_drives) == 'dict':
+            for k, v in optical_drives.items():
+                    custom_attributes['opticalDrives.0.' + k] = v
 
-        monitors = hw.get('Monitors', [])
-        if not monitors:
-            monitors = []
-        for monitor in monitors:
-            for k, v in monitor.items():
-                custom_attributes['monitor.' + str(monitors.index[monitor]) + '.' + k] = v
+        display_adapters = hw.get('DisplayAdapters', None)
+        if display_adapters and type(display_adapters) == 'list':
+            for adapter in display_adapters:
+                if adapter:
+                    for k, v in adapter.items():
+                        custom_attributes['displayAdapter.' + str(display_adapters.index(adapter)) + '.' + k] = v
+        if display_adapters and type(display_adapters) == 'dict':
+            for k, v in display_adapters.items():
+                    custom_attributes['displayAdapter.0.' + k] = v
+
+        monitors = hw.get('Monitors', None)
+        if monitors and type(monitors) == 'list':
+            for monitor in monitors:
+                if monitor:
+                    for k, v in monitor.items():
+                        custom_attributes['monitor.' + str(monitors.index(monitor)) + '.' + k] = v
+        if monitors and type(monitors) == 'dict':
+            for k, v in monitors.items():
+                    custom_attributes['monitor.0.' + k] = v
 
         # Retrieve software information for asset
         # create software entries
