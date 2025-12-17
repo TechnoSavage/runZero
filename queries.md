@@ -571,23 +571,23 @@ product:sql OR product:mariadb OR product:mongodb OR product:oracledb OR product
 
 ### EPSS score search
 
-'''
+```
 epss_score:>0.6
-'''
+```
 
 ### Filter by presence on KEV
 
-'''
+```
 kev:cisa
-'''
+```
 
-'''
+```
 kev:vulncheck
-'''
+```
 
-'''
+```
 kev:any
-'''
+```
 
 ### Identify external exposure or exposed private keys
 
