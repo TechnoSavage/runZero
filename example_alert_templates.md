@@ -83,7 +83,7 @@ Explorer Site UUID {{event.site_id}}<br>
 ## Subject
 
 ```
-{{assets_new}} new asset(s) found during the last scan of {{rule.name}}
+{{rule.name}}: {{scan.assets_new}} new asset(s) found during the last scan of {{scan.name}}
 ```
 
 ## Body
@@ -94,7 +94,10 @@ Explorer Site UUID {{event.site_id}}<br>
 <h2>Scan Results</h2>
 {{#scan}}
 <ul>
-<li>{{assets_new}} new assets</li>
+<li>
+  Scan Task: {{scan.name}}<br>
+  {{assets_new}} new assets<br>
+</li>
 </ul>
 {{/scan}}
 
@@ -115,15 +118,16 @@ Explorer Site UUID {{event.site_id}}<br>
 {{/report.new}}
 </ul>
 
-<p><a href="{{search.url}}">View assets in console</a></p>
+<p><a href="{{search.url}}">View assets in the console</a></p>
 <p><a href="{{task.url}}">View the scan results</a></p>
 ```
 
 # HTML template for changed asset alerts
 
 ## Subject
+
 ```
-{{assets_changed}} asset(s) have changed since the last scan {{rule.name}}
+{{rule.name}}: {{scan.assets_changed}} asset(s) have changed since the last scan of {{scan.name}}
 ```
 
 ## Body
@@ -133,7 +137,10 @@ Explorer Site UUID {{event.site_id}}<br>
 <h2>Scan Results</h2>
 {{#scan}}
 <ul>
-<li>{{assets_chaged}} changed assets</li>
+<li>
+  Scan Task: {{scan.name}}<br>
+  {{assets_changed}} changed assets<br>
+</li>
 </ul>
 {{/scan}}
 
@@ -150,11 +157,11 @@ Explorer Site UUID {{event.site_id}}<br>
 </li>
 {{/report.changed}}
 {{^report.changed}}
-<li>No new assets have changed configuration since the last scan.</li>
+<li>No assets have changed configuration since the last scan.</li>
 {{/report.changed}}
 </ul>
 
-<p><a href="{{search.url}}">View assets in console</a></p>
+<p><a href="{{search.url}}">View assets in the console</a></p>
 <p><a href="{{task.url}}">View the scan results</a></p>
 ```
 
@@ -163,7 +170,7 @@ Explorer Site UUID {{event.site_id}}<br>
 ## Subject
 
 ```
-{{assets_offline}} asset(s) were offline during the last scan of {{rule.name}}
+{{rule.name}}: {{scan.assets_offline}} asset(s) were offline during the last scan of {{scan.name}}
 ```
 
 ## Body
@@ -174,7 +181,10 @@ Explorer Site UUID {{event.site_id}}<br>
 <h2>Scan Results</h2>
 {{#scan}}
 <ul>
-<li>{{assets_offline}} offline assets</li>
+<li>
+  Scan Task: {{scan.name}}<br>
+  {{assets_offline}} offline assets<br>
+</li>
 </ul>
 {{/scan}}
 
@@ -191,11 +201,11 @@ Explorer Site UUID {{event.site_id}}<br>
 </li>
 {{/report.offline}}
 {{^report.offline}}
-<li>No assets were offline at the time of the last scan.</li>
+<li>No previously seen assets were offline at the time of the last scan.</li>
 {{/report.offline}}
 </ul>
 
-<p><a href="{{search.url}}">View offline assets in console</a></p>
+<p><a href="{{search.url}}">View offline assets in the console</a></p>
 <p><a href="{{task.url}}">View the scan results</a></p>
 ```
 
@@ -204,7 +214,7 @@ Explorer Site UUID {{event.site_id}}<br>
 ## Subject
 
 ```
-{{assets_offline}} asset(s) were offline during the last scan of {{rule.name}}
+{{rule.name}}: {{scan.assets_online}} asset(s) were online during the last scan of {{scan.name}}
 ```
 
 ## Body
@@ -216,14 +226,15 @@ Explorer Site UUID {{event.site_id}}<br>
 <h2>Scan Results</h2>
 {{#scan}}
 <ul>
-<li>{{assets_online}} online assets</li>
-<li>{{assets_offline}} offline assets</li>
-<li>{{assets_changed}} modified assets</li>
+<li>
+  Scan Task: {{scan.name}}<br>
+  {{assets_online}} online assets<br>
+</li>
 </ul>
 {{/scan}}
 
 
-<h2>Offline assets are back online</h2>
+<h2>assets online</h2>
 <ul>
 {{#report.online}}
 <li>{{names}}<br>
@@ -236,11 +247,11 @@ Explorer Site UUID {{event.site_id}}<br>
 </li>
 {{/report.online}}
 {{^report.online}}
-<li>No offline devices have come online since last scan.</li>
+<li>No offline devices have come online since the last scan.</li>
 {{/report.online}}
 </ul>
 
-<p><a href="{{search.url}}">View offline assets in console</a></p>
+<p><a href="{{search.url}}">View online assets in the console</a></p>
 <p><a href="{{task.url}}">View the scan results</a></p>
 ```
 
