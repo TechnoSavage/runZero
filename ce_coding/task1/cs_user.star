@@ -104,16 +104,17 @@ def main(*args, **kwargs):
     client_id = kwargs['access_key']
     client_secret = kwargs['access_secret']
     token = get_token(client_id, client_secret)
-    # Check for existence of Crowdstrike User ownership group; create if not found
-    owner_groups = get_owner_groups(token)
-    group_id = None
-    for group in owner_groups:
-        if group['name'] == 'Crowdstrike User':
-            group_id = group['id']
-    if not group_id:             
-        group_id = create_owner_group(token, 'Crowdstrike User')
-    org_ids = get_orgs(token)
-    for oid in org_ids:
-        assets = get_assets(token, oid)
-        owners = get_recent_user(assets)
-        assignment = parse_owners(token, owners, group_id)
+    if token:
+        # Check for existence of Crowdstrike User ownership group; create if not found
+        owner_groups = get_owner_groups(token)
+        group_id = None
+        for group in owner_groups:
+            if group['name'] == 'Crowdstrike User':
+                group_id = group['id']
+        if not group_id:             
+            group_id = create_owner_group(token, 'Crowdstrike User')
+        org_ids = get_orgs(token)
+        for oid in org_ids:
+            assets = get_assets(token, oid)
+            owners = get_recent_user(assets)
+            assignment = parse_owners(token, owners, group_id)
