@@ -120,7 +120,8 @@ def build_assets(assets, token):
                 os=os,
                 first_seen_ts=first_seen,
                 networkInterfaces=interfaces,
-                customAttributes=custom_attributes
+                customAttributes=custom_attributes,
+                tags=tags
             )
         )
     return assets_import
