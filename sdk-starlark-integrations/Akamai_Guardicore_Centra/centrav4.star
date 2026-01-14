@@ -73,6 +73,13 @@ def build_assets(assets, token):
                     label_mapping[k] = v
                 name = label_mapping.get(guid, '')
             label_names.append(name)
+
+        tags = []
+        for label in label_names:
+            split_tag = label.split(':').strip()
+            reformat = split_tag[0] + '=' + split_tag[1]
+            tag_string = tag_string + ' ' + reformat
+            tags.append(tag_string)
         
 
         custom_attributes = {
