@@ -3,7 +3,6 @@ load('base64', base64_encode='encode', base64_decode='decode')
 load('http', http_get='get', http_post='post', 'url_encode')
 load('json', json_encode='encode', json_decode='decode')
 load('net', 'ip_address')
-load('time', 'parse_time')
 load('uuid', 'new_uuid')
 
 SWIS_BASE_URL = 'https://localhost:17774'
