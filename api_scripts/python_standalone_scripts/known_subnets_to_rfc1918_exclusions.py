@@ -51,6 +51,7 @@ def extract_site_scopes(sites):
     Extract site scope and subnets.
 
     :param sites: A list, list of site config dicts from the API.
+    :returns: A list, list of scan targets from site configs
     """
     exclusion_list = []
     for site in sites:
