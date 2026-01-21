@@ -1,6 +1,6 @@
 """
 EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE!
-known_subnets_to_rfc1918.py version 1.0
+known_subnets_to_rfc1918_exclusions.py version 1.0
 Fetch all site scopes and registered subnets across all orgs in an Account and apply them to a specific site exclusion list e.g. RFC1918 scan
 """
 import ipaddress
