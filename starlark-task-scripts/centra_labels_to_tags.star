@@ -1,4 +1,5 @@
 # This script is a functional extension of the Guardicore Centra integration found here: https://github.com/TechnoSavage/runZero/tree/main/sdk-starlark-integrations/Akamai_Guardicore_Centra
+# !!!!! The functionality of this script has been built directly into the Centra integration and is no longer needed.
 
 load('json', json_encode='encode', json_decode='decode')
 load('http', http_get='get', http_patch='patch', http_post='post', 'url_encode')
