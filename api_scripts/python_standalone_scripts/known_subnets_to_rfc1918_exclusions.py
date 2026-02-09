@@ -62,7 +62,8 @@ def extract_site_scopes(sites):
                 exclusion_list.extend(scope)
             #site subnets includes registered subnets for the site
             if site['subnets']:
-                subnets = [k for k, v in site['subnets'].items()]
+                #subnets = [k for k, v in site['subnets'].items()]
+                subnets = list(site['subnets'].keys())
                 exclusion_list.extend(subnets)
     return exclusion_list
 
