@@ -33,7 +33,7 @@ def get_sites(token):
     """
     url = f"{RUNZERO_BASE_URL}/api/v1.0/account/sites"
     headers = {'Accept': 'application/json',
-               'Authorization': 'Bearer ' + token}
+               'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
@@ -71,7 +71,7 @@ def parse_scopes(scopes):
     Remove any non RFC1918 address ranges from site scope and subnet configurations
     
     :param scopes: A List, list of site scan targets.
-    :returns: A List, list of domains and RFC1918 addresses and address ranges
+    :returns: A List, list of domains and RFC1918 addresses and address ranges.
     """
     exclusions = ''
     for target in scopes:
