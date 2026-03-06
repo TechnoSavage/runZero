@@ -70,3 +70,8 @@ pipenv install -r requirements.txt
 ```
 pipenv shell
 ```
+
+## To Do
+
+- Implement logging for all python scripts
+- Standardize on snake case for all python function and variable names
