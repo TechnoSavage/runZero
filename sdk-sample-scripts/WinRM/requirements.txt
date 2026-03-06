@@ -1,0 +1,4 @@
+flatten_json>=0.1.14
+pywinrm>=5.0
+runzero-sdk>=0.8.6
+xmltodict>=0.14.2
