@@ -45,7 +45,9 @@ git clone https://github.com/TechnoSavage/runZero.git
    - *Client ID* - Copy the Client ID to the value for `access_key` when creating the Custom Integration credentials in the runZero console (see below).
    - *Client secret* - Copy the Client secret to the the value for `access_secret` when creating the Custom Integration credentials in the runZero console (see below)
 
-***Warning***: For security reasons, the Client Secret will not be visible again once you close this panel, so make sure you copy it before clicking 8. Finish and close.
+***Warning***: For security reasons, the Client Secret will not be visible again once you close this panel, so make sure you copy it before clicking 
+
+8. Finish and close.
 9. After completing the App Registration process, you will get the tenant hostname and tenant ID from the Auth URL. Copy the tenant ID to the value for the `NEURONS_TENANT_ID` variable in the custom integration script.
 
 [How to authenticate to Neurons API](https://help.ivanti.com/ht/help/en_US/CLOUD/api/Shared-Content/authenticate_api.htm)
