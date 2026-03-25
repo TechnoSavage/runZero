@@ -31,28 +31,20 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 ### Ivanti Neurons configuration
 
-1. Determine the proper Endpoint Manager URL:
-    - Assign the URL to `NEURONS_BASE_URL` within the starlark script
-2. Using an Ivanti Neurons API requires authentication configuration to your Ivanti Neurons tenant. When you first use the API, you need to create an App Registration in the Ivanti Neurons console.
-2. Create login credentials with necessary, read-only access to retrieve JWT token for API access: 
-    - Copy the username to the value for `access_key` when creating the Custom Integration credentials in the runZero console (see below)
-    - Copy the password to the the value for `access_secret` when creating the Custom Integration credentials in the runZero console (see below)
+**Create a new app registration in the Neurons Console:**
+1. In Ivanti Neurons, navigate to Admin > App Registrations.
+2. Select New registration to open the New app registration panel.
+3. From the drop-down, select Custom App.
+4. Click Continue.
+5. In the Custom App panel, optionally enter a Description for the registration e.g. "runZero integration"
+6. Click Register to generate the authentication settings.
+7. In the Complete this registration panel, the authentication settings, required to complete the registration, are provided:
+   - *Neurons Auth URL* - Copy this to the value for the `NEURONS_AUTH_URL` variable in the custom integration script.
+   - *Client ID* - Copy the Client ID to the value for `access_key` when creating the Custom Integration credentials in the runZero console (see below).
+   - *Client secret* - Copy the Client secret to the the value for `access_secret` when creating the Custom Integration credentials in the runZero console (see below)
 
-New registration
-In Ivanti Neurons, navigate to Admin > App Registrations.
-Select New registration to open the New app registration panel.
-From the drop-down, select Custom App.
-Click Continue.
-In the Custom App panel, optionally enter a Description for the registration.
-Click Register to generate the authentication settings.
-In the Complete this registration panel, the authentication settings, required to complete the registration, are provided:
-Neurons Auth URL
-Client ID
-Client secret
-Copy or record all of the registration settings. You need to enter these settings in the Get Neurons Token API to validate the authentication.
-Warning: For security reasons, the Client Secret will not be visible again once you close this panel, so make sure you copy it before clicking Finish and close.
-Once you have made a copy of the settings click Finish and close.
-After completing the App Registration process, you will get the tenant hostname and tenant ID from the Auth URL.
+***Warning***: For security reasons, the Client Secret will not be visible again once you close this panel, so make sure you copy it before clicking 8. Finish and close.
+9. After completing the App Registration process, you will get the tenant hostname and tenant ID from the Auth URL. Copy the tenant ID to the value for the `NEURONS_TENANT_ID` variable in the custom integration script.
 
 [How to authenticate to Neurons API](https://help.ivanti.com/ht/help/en_US/CLOUD/api/Shared-Content/authenticate_api.htm)
 
@@ -64,8 +56,8 @@ After completing the App Registration process, you will get the tenant hostname 
 2. [Create the Credential for the Custom Integration](https://console.runzero.com/credentials)
     - Select the type `Custom Integration Script Secrets`
     - Both `access_key` and `access_secret` are required
-    - `access_key` corresponds to the Client ID provided when creating the Endpoint Manager Application Registration
-    -  `access_secret` corresponds to the Client secret provided when creating the Endpoint Manager Application Registration
+    - `access_key` corresponds to the Client ID provided when creating the app registration in the Neurons Console.
+    -  `access_secret` corresponds to the Client secret provided when creating the app registration in the Neurons Console.
 
 Paste the parameters to pass on the field below as described in documentation.
 
