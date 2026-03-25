@@ -1,5 +1,7 @@
 # Custom Integration: Ivanti Neurons - device inventory
 
+Retrieve devices from Ivanti Neurons API "People and Devices" devices API endpoint (https://<hostname>/api/apigatewaydataservices/v1/devices) to enrich asset inventory in runZero.
+
 ## Getting Started
 
 - Clone this repository
