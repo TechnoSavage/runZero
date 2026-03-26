@@ -20,12 +20,11 @@ def assign_owner(url, token, id, owner, owner_type):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.patch(url, headers=headers, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to add owner' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.josn()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error

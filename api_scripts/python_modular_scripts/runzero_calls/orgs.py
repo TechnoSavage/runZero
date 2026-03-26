@@ -1,4 +1,3 @@
-import json
 import requests
 
 def get_oids(url, token):
@@ -17,12 +16,11 @@ def get_oids(url, token):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve Organization IDs' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
@@ -49,9 +47,11 @@ def create_org(url, token):
 
     try:
         response = requests.put(url, headers=headers, data=payload)
-        content = response.content
-        data = json.loads(content)
-        return data
+        if not response.ok:
+            print('Unable to retrieve Organization IDs' + str(response))
+            exit()
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error

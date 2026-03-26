@@ -1,4 +1,3 @@
-import json
 import requests
 
 def nessus(url, token, siteID, scan, name, description=""):
@@ -24,11 +23,13 @@ def nessus(url, token, siteID, scan, name, description=""):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.put(url, headers=headers, params=params, data=payload, files=file)
+        if not response.ok:
+            return ('Unable to retrieve assets' + str(response))
         code = response.status_code
-        content = response.content
-        data = json.loads(content)
-        return(code, data)
+        content = response.json()
+        return(code, content)
     except ConnectionError as error:
+        content = "No response"
         raise error
     
 def pcap(url, token, siteID, capture, name, description=""):
@@ -55,11 +56,13 @@ def pcap(url, token, siteID, capture, name, description=""):
     try:
         with open(capture, 'rb') as file:
             response = requests.put(url, headers=headers, params=params, data=file, stream=True)
+        if not response.ok:
+            return ('Unable to retrieve assets' + str(response))
         code = response.status_code
-        content = response.content
-        data = json.loads(content)
-        return(code, data)
+        content = response.json()
+        return(code, content)
     except ConnectionError as error:
+        content = "No response"
         raise error
     
 def scan(url, token, site_id, scan, name, description=""):
@@ -84,10 +87,11 @@ def scan(url, token, site_id, scan, name, description=""):
     try:
         with open(scan, 'rb') as file:
             response = requests.put(url, params=params, headers=headers, data=file, stream=True)
+        if not response.ok:
+            return ('Unable to retrieve assets' + str(response))
         code = response.status_code
-        content = response.content
-        data = json.loads(content)
-        return(code, data)
+        content = response.json()
+        return(code, content)
     except ConnectionError as error:
-        content = "No Response"
+        content = "No response"
         raise error

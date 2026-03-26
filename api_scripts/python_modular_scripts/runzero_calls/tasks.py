@@ -1,4 +1,3 @@
-import json
 import requests
     
 def tasks(url, token, type=None, status=None): 
@@ -22,12 +21,11 @@ def tasks(url, token, type=None, status=None):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve tasks' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         raise error
     
@@ -50,7 +48,7 @@ def data(url, token, task_id, path):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, data=payload, stream=True)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve task data' + str(response))
             exit()
         with open( f'{path}scan_{task_id}.json.gz', 'wb') as f:
@@ -109,12 +107,11 @@ def new_scan(url, token, site_id, explorer, target_list, name, description, rate
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.put(url, headers=headers, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to create task' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
