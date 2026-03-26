@@ -1,4 +1,3 @@
-import json
 import requests
 
 def assign_owner(url, token, id, owner, owner_type):
@@ -23,7 +22,7 @@ def assign_owner(url, token, id, owner, owner_type):
         if not response.ok:
             print('Unable to add owner' + str(response))
             exit()
-        content = response.josn()
+        content = response.json()
         return content
     except ConnectionError as error:
         content = "No Response"
