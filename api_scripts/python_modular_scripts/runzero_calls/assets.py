@@ -1,5 +1,3 @@
-import json
-import pandas as pd
 import requests
 
 def get_assets(url, token, filter=" ", fields=" "):
@@ -22,11 +20,10 @@ def get_assets(url, token, filter=" ", fields=" "):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             return ('Unable to retrieve assets' + str(response))
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
