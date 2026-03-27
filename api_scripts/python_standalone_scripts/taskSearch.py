@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    taskSearch.py, version 0.9.1
+    taskSearch.py, version 0.9.2
     This script, when provided one or more IPs as an argument or in a file, will return the first and last tasks that discovered an asset,
     with relevant attributes, as well as any other task with a scope that could potentially discover the asset. Optionally the script can
     search task data of possible discovery tasks to determine if a task ever discoverd the IP and IPs can be automatically applied as exclusions
@@ -35,10 +35,10 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write temporary scan file downloads. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 0.9.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 0.9.2')
     return parser.parse_args()
 
-def assignTaskQuery(address):
+def assign_task_query(address):
     '''
         Return a task search query to filter tasks for any task that contains a scope
         containing the provided IP address.
@@ -59,7 +59,7 @@ def assignTaskQuery(address):
         return
     return query
 
-def targetList(args):
+def target_list(args):
     '''
         Return list of asset targets from arguments.
 
@@ -77,7 +77,7 @@ def targetList(args):
         exit()
     return targets
 
-def getAssets(url, token, address):
+def get_assets(url, token, address):
     '''
         Retrieve assets matching supplied IP address.
         
@@ -95,19 +95,18 @@ def getAssets(url, token, address):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve assets' + str(response))
             exit()
-        content = response.content
+        content = response.json()
         if len(content) == 0:
             content = json.dumps({"addresses":f"{address}", "id": "not found", "first_task_id":"NA", "last_task_id": "NA", "first_agent_id":"NA", "last_agent_id":"NA"})
-        data = json.loads(content)
-        return data
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
     
-def getTask(url, token, taskID):
+def get_task(url, token, taskID):
     '''
         Retrieve Task from Organization corresponding to supplied task_id.
 
@@ -123,16 +122,15 @@ def getTask(url, token, taskID):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve task' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         raise error
     
-def writeTaskData(url, token, taskID, path):
+def write_task_data(url, token, taskID, path):
     '''
         Download and write scan data (.json.gz) for each task ID provided.
 
@@ -151,7 +149,7 @@ def writeTaskData(url, token, taskID, path):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, data=payload, stream=True)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve task data' + str(response))
             exit()
         with open( f"{path}scan_{taskID}.json.gz", 'wb') as f:
@@ -163,7 +161,7 @@ def writeTaskData(url, token, taskID, path):
     except IOError as error:
         raise error
     
-def searchTaskData(address, taskID, path):
+def search_task_data(address, taskID, path):
     '''
         Search task data for any matches to address. 
     
@@ -181,7 +179,7 @@ def searchTaskData(address, taskID, path):
         else:
             return
 
-def deleteTaskData(taskID, path):
+def delete_task_data(taskID, path):
     '''
         Remove task data files created by writeTaskData funtion.
 
@@ -204,7 +202,7 @@ def deleteTaskData(taskID, path):
     except IOError as error:
         raise error
     
-def autoExclude(url, token, address, taskID):
+def auto_exclude(url, token, address, taskID):
     '''
         Apply address as exclusion to task corresponding to supplied task_id.
 
@@ -231,7 +229,7 @@ def autoExclude(url, token, address, taskID):
     except ConnectionError as error:
         raise error
 
-def getPossibleTasks(url, token, query): 
+def get_possible_tasks(url, token, query): 
     '''
         Retrieve Tasks from Organization corresponding to supplied token.
 
@@ -248,16 +246,15 @@ def getPossibleTasks(url, token, query):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve tasks' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         raise error
     
-def buildReportEntry(url, token, address, deepDiscovery, path, exclusion):
+def build_report_entry(url, token, address, deepDiscovery, path, exclusion):
     '''
         Build a report of the assets and related tasks data based on IP address.
      
@@ -268,12 +265,12 @@ def buildReportEntry(url, token, address, deepDiscovery, path, exclusion):
     '''
     
     entry = {}
-    discovered = getAssets(url, token, address)
+    discovered = get_assets(url, token, address)
     for key, value in discovered.items():
         entry[key] = value
     #First task discovery information
     if discovered['first_task_id'] != "NA":
-        firstTaskParams = getTask(url, token, discovered['first_task_id'])
+        firstTaskParams = get_task(url, token, discovered['first_task_id'])
         entry['first_discovered_task_id'] = firstTaskParams['id']
         entry['first_discovered_task_url'] = f'{url}/tasks/search/completed?task={firstTaskParams["id"]}'
         entry['first_discovered_task_organization_id'] = firstTaskParams['organization_id']
@@ -286,12 +283,12 @@ def buildReportEntry(url, token, address, deepDiscovery, path, exclusion):
         entry['first_discovered_task_type'] = firstTaskParams['type']
         entry['first_discovered_recurring'] = firstTaskParams['recur']
         if exclusion in ('limited', 'extended') and firstTaskParams['recur'] == 'true':
-            entry['excluded'] = autoExclude(url, token, address, firstTaskParams['id'])
+            entry['excluded'] = auto_exclude(url, token, address, firstTaskParams['id'])
         else:
             entry['first_discovery_excluded'] = 'not attempted'
     #Last task discovery information
     if discovered['last_task_id'] != "NA":
-        lastTaskParams = getTask(url, token, discovered['last_task_id'])
+        lastTaskParams = get_task(url, token, discovered['last_task_id'])
         entry['last_discovered_task_id'] = lastTaskParams['id']
         entry['last_discovered_task_url'] = f'{url}/tasks/search/completed?task={lastTaskParams["id"]}'
         entry['last_discovered_task_organization_id'] = lastTaskParams['organization_id']
@@ -304,14 +301,14 @@ def buildReportEntry(url, token, address, deepDiscovery, path, exclusion):
         entry['last_discovered_task_type'] = lastTaskParams['type']
         entry['last_discovered_recurring'] = lastTaskParams['recur']
         if exclusion in ('limited', 'extended') and lastTaskParams['recur'] == 'true':
-            entry['last_discovery_excluded'] = autoExclude(url, token, address, lastTaskParams['id'])
+            entry['last_discovery_excluded'] = auto_exclude(url, token, address, lastTaskParams['id'])
         else:
             entry['last_discovery_excluded'] = 'not attempted'
-    query = assignTaskQuery(address)
+    query = assign_task_query(address)
     if not query:
         exit()
     #Return all tasks whose scope could enumerate the target
-    possibleDiscoveryTasks = getPossibleTasks(url, token, query)
+    possibleDiscoveryTasks = get_possible_tasks(url, token, query)
     possibleList = []
     for task in possibleDiscoveryTasks:
         #Condition to exclude first and last discovery task details from appearing in possible matches
@@ -328,21 +325,21 @@ def buildReportEntry(url, token, address, deepDiscovery, path, exclusion):
             possible['task_type'] = task['type']
             possible['recurring'] = task['recur']
             if deepDiscovery:
-                writeTaskData(url, token, task['id'], path)
-                instances = searchTaskData(address, task['id'], path)
-                deleteTaskData(task['id'], path)
+                write_task_data(url, token, task['id'], path)
+                instances = search_task_data(address, task['id'], path)
+                delete_task_data(task['id'], path)
                 if instances:
                     possible['task_has_seen_ip'] = 'True'
                 else:
                     possible['task_has_seen_ip'] = 'False'
             if exclusion == 'extended' and task['recur'] == 'true':
-                possible['excluded'] = autoExclude(url, token, address, task['id'])
+                possible['excluded'] = auto_exclude(url, token, address, task['id'])
             possibleList.append(possible)
     entry['tasks_with_discovery_potential'] = possibleList
     return entry
 
 #Output formats require some finessing
-def outputFormat(format, fileName, data):
+def output_format(format, fileName, data):
     '''
         Determine output format and call function to write appropriate file.
         
@@ -354,22 +351,22 @@ def outputFormat(format, fileName, data):
     
     if format == 'json':
         fileName = f'{fileName}.json'
-        writeFile(fileName, json.dumps(data))
+        write_file(fileName, json.dumps(data))
     elif format == 'txt':
         fileName = f'{fileName}.txt'
         stringList = []
         for line in data:
             stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
-        writeFile(fileName, textFile)
+        write_file(fileName, textFile)
     elif format in ('csv', 'excel', 'html'):
-        writeDF(format, fileName, data)  
+        write_df(format, fileName, data)  
     else:
         for line in data:
             print(json.dumps(line, indent=4))
 
     
-def writeDF(format, fileName, data):
+def write_df(format, fileName, data):
     '''
         Write contents to output file. 
     
@@ -390,7 +387,7 @@ def writeDF(format, fileName, data):
     except IOError as error:
         raise error
     
-def writeFile(fileName, contents):
+def write_file(fileName, contents):
     '''
         Write contents to output file. 
     
@@ -405,7 +402,7 @@ def writeFile(fileName, contents):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
@@ -413,13 +410,10 @@ def main():
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
-    targets = targetList(args)
+    targets = target_list(args)
     #Asset query to report last task discovery
     report = []
     for address in targets:
-        entry = buildReportEntry(args.consoleURL, token, address, args.deep, args.path, args.exclude)
+        entry = build_report_entry(args.consoleURL, token, address, args.deep, args.path, args.exclude)
         report.append(entry)
-    outputFormat(args.output, fileName, report)
-
-if __name__ == "__main__":
-    main()
+    output_format(args.output, fileName, report)

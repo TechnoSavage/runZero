@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    lastUser2Owner.py, version 1.1
+    lastUser2Owner.py, version 1.2
     This script will search asset foreign attributes (EDR, MDM, etc.) for last logon user information
     and apply last logged on user as an asset owner type defined in the provided argument (e.g. Primary User)"""
 
@@ -18,10 +18,10 @@ def parseArgs():
     parser.add_argument('-k', '--key', dest='token', help='Prompt for Organization API key (do not enter at command line). This argument will override the .env file', 
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
     parser.add_argument('-t', '--type', help='Ownership type UUID that reported last users should be assigned to', required=True)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.2')
     return parser.parse_args()
     
-def getAssets(url, token, filter=" ", fields=" "):
+def get_assets(url, token, filter=" ", fields=" "):
     '''
         Retrieve assets using supplied query filter from Console and restrict to fields supplied.
         
@@ -41,17 +41,16 @@ def getAssets(url, token, filter=" ", fields=" "):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve assets' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
     
-def getUsers(data):
+def get_users(data):
     '''
         Search asset "foreign_attributes" and extract last user where available, discard the rest.
      
@@ -82,7 +81,7 @@ def getUsers(data):
     except TypeError as error:
         raise error
     
-def parseOwners(url, token, ownerList, owner_type):
+def parse_owners(url, token, ownerList, owner_type):
     '''
         Parse supplied ownership sources for most detailed owner info.
         Pass owner to assign function to assign owner info. 
@@ -105,10 +104,10 @@ def parseOwners(url, token, ownerList, owner_type):
             else:
                 best_owner = v
         if best_owner != '':
-            assignment = assignOwner(url, token, owner['id'], best_owner, owner_type)
+            assignment = assign_owner(url, token, owner['id'], best_owner, owner_type)
             return assignment
 
-def assignOwner(url, token, id, owner, owner_type):
+def assign_owner(url, token, id, owner, owner_type):
     '''
         Assign supplied owner name to asset ID under given owner_type.
         
@@ -127,17 +126,16 @@ def assignOwner(url, token, id, owner, owner_type):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.patch(url, headers=headers, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to add owner' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
 
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     token = args.token
     if token == None:
@@ -146,10 +144,7 @@ def main():
     query = "source:sentinelone or source:crowdstrike or source:googleworkspace"
     #fields to return in API call
     fields = "id, foreign_attributes"
-    assets = getAssets(args.consoleURL, token, query, fields)
-    results = getUsers(assets)
-    assignment = parseOwners(args.consoleURL, token, results, args.type)
+    assets = get_assets(args.consoleURL, token, query, fields)
+    results = get_users(assets)
+    assignment = parse_owners(args.consoleURL, token, results, args.type)
     print(assignment)
-
-if __name__ == "__main__":
-    main()

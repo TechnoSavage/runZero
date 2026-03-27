@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    softwareAsset_dedupe.py, version 2.1
+    softwareAsset_dedupe.py, version 2.2
     This script is created with the intention of deduplicating assets by UUID after running a query
     in the software portion of the runZero asset inventory. Specifically, this script is intended 
     assist when a user wants to find all assets that do NOT have a specific application installed.
@@ -17,10 +17,10 @@ import re
 def parseArgs():
     parser = argparse.ArgumentParser(description="Deduplicate assets from runZero software inventory JSONl export.")
     parser.add_argument('-f', '--file', metavar='<path>filename', dest='fileName', help='jsonl file exported from console, including absolute path', required=True)
-    parser.add_argument('--version', action='version', version='%(prog)s 2.1')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.2')
     return parser.parse_args()
 
-def parseFile(inputFile):
+def parse_file(inputFile):
     '''
         Read input file, parse contents and return list of JSON formatted
         assets. 
@@ -52,7 +52,7 @@ def parseFile(inputFile):
     except json.JSONDecodeError as error:
         raise error
 
-def writeFile(fileName, contents):
+def write_file(fileName, contents):
     '''
         Write contents to output file. 
     
@@ -67,12 +67,9 @@ def writeFile(fileName, contents):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     delFileExt = re.match("[^.]*", args.fileName)
     outputName = f"{delFileExt[0]}_deduped.json"
-    parsed = parseFile(args.fileName)
-    writeFile(outputName, json.dumps(parsed))
-
-if __name__ == "__main__":
-    main()
+    parsed = parse_file(args.fileName)
+    write_file(outputName, json.dumps(parsed))

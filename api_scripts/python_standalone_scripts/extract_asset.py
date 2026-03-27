@@ -44,11 +44,8 @@ def write_file(filename, contents):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     data = open_file(args.file)
     results = extract_asset(args.addresses, data)
     write_file(args.output, results)
-
-if __name__ == "__main__":
-    main()

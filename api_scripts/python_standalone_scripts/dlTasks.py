@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    dlTasks.py, version 2.5
+    dlTasks.py, version 2.6
     This script will download the scan data from the last 'n' processed tasks in an organization, 
     as specified by the user."""
 
@@ -21,10 +21,10 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_ORG_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('--version', action='version', version='%(prog)s 2.5')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.6')
     return parser.parse_args()
     
-def getTasks(url, type, token): 
+def get_tasks(url, type, token): 
     '''
         Retrieve Tasks from Organization corresponding to supplied token.
 
@@ -42,16 +42,15 @@ def getTasks(url, type, token):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve tasks' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         raise error
 
-def parseIDs(data, taskNo=1000):
+def parse_ids(data, taskNo=1000):
     '''
         Extract task IDs from supplied recent task data. 
     
@@ -67,7 +66,7 @@ def parseIDs(data, taskNo=1000):
     except TypeError as error:
         raise error
 
-def getData(url, token, taskID, path):
+def get_data(url, token, taskID, path):
     '''
         Download and write scan data (.json.gz) for each task ID provided.
 
@@ -86,7 +85,7 @@ def getData(url, token, taskID, path):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, data=payload, stream=True)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve task data' + str(response))
             exit()
         with open( f"{path}scan_{taskID}.json.gz", 'wb') as f:
@@ -97,15 +96,12 @@ def getData(url, token, taskID, path):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
-    taskInfo = getTasks(args.consoleURL, args.type, token)
-    idList = parseIDs(taskInfo, args.taskNo)
+    taskInfo = get_tasks(args.consoleURL, args.type, token)
+    idList = parse_ids(taskInfo, args.taskNo)
     for id in idList:
-        getData(args.consoleURL, token, id, args.path)
-
-if __name__ == "__main__":
-    main()
+        get_data(args.consoleURL, token, id, args.path)

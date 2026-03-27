@@ -1,6 +1,6 @@
 """
 EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE!
-known_subnets_to_rfc1918_exclusions.py version 1.0
+known_subnets_to_rfc1918_exclusions.py version 1.1
 Fetch all site scopes and registered subnets across all orgs in an Account and apply them to a specific site exclusion list e.g. RFC1918 scan
 """
 import ipaddress
@@ -36,12 +36,11 @@ def get_sites(token):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve sites' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
@@ -109,18 +108,17 @@ def patch_exclusions(token, exclusions):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.patch(url, headers=headers, params=params, data=payload)
-        content = response.content
-        data = json.loads(content)
-        return data
+        if not response.ok:
+            print('Unable to patch sites' + str(response))
+            exit()
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
 
-def main():
+if __name__ == "__main__":
     sites = get_sites(ACCOUNT_API_TOKEN)
     scopes = extract_site_scopes(sites)
     exclusions = parse_scopes(scopes)
     patch_exclusions(ACCOUNT_API_TOKEN, exclusions)
-
-if __name__ == "__main__":
-    main()

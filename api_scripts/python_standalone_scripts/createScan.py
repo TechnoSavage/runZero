@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    createScan.py, version 3.2
+    createScan.py, version 3.3
     Sample python script to set up and perform a scan task through the runZero API."""
 
 import argparse
@@ -24,10 +24,10 @@ def parseArgs():
     parser.add_argument('-n', '--name', help='Name for the scan task.', required=False, default='API Scan')
     parser.add_argument('-d', '--description', help='Description for scan task.', required=False)
     parser.add_argument('-r', '--rate', help='Scan rate for task.', required=False, default='1000')
-    parser.add_argument('--version', action='version', version='%(prog)s 3.2')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.3')
     return parser.parse_args()
     
-def readTargets(targetFile):
+def read_targets(targetFile):
     '''
         Read IP addresses, CIDR blocks, domains etc. from provided file
 
@@ -51,7 +51,7 @@ def readTargets(targetFile):
         return error 
 
 #This function only addresses basic settings for the scan in arguments and .env file. Adapt or modify as needed.
-def createScan(url, token, siteID, explorer, targetList, name, description, rate): 
+def create_scan(url, token, siteID, explorer, targetList, name, description, rate): 
     '''
         Create new scan task.
            
@@ -98,27 +98,23 @@ def createScan(url, token, siteID, explorer, targetList, name, description, rate
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.put(url, headers=headers, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to create task' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     token = args.token
     if token == None:
         token = getpass(prompt="Enter the Organization API Key: ")
-    targetList = readTargets(args.targetFile)
+    targetList = read_targets(args.targetFile)
     if type(targetList) is not list:
         print("Target file is invalid or does not exist.")
         exit()
-    response = createScan(args.consoleURL, token, args.site, args.explorer, targetList, args.name, args.description, args.rate)
+    response = create_scan(args.consoleURL, token, args.site, args.explorer, targetList, args.name, args.description, args.rate)
     print(response)
-    
-if __name__ == "__main__":
-    main()

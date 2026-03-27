@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    toggle_default_creds.py, version 1.0
+    toggle_default_creds.py, version 1.1
     Quickly enable/disable default credential checks for all recurring scan tasks."""
 
 import argparse
@@ -18,7 +18,7 @@ def parse_args():
     parser.add_argument('-e', '--enable', action='store_true', required=False)
     parser.add_argument('-d', '--disable', dest='enable', action='store_false', required=False)
     parser.set_defaults(enable=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.1')
     return parser.parse_args()
 
 def get_tasks(url, token): 
@@ -37,16 +37,15 @@ def get_tasks(url, token):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve tasks' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         raise error
     
-def parse_IDs(data, taskNo=1000):
+def parse_ids(data, taskNo=1000):
     '''
         Extract task IDs from supplied recent task data. 
     
@@ -86,21 +85,18 @@ def update_tasks(url, token, task_ids, enable):
             payload = json.dumps({"params": {"vscan-scope-default-login-http": state}})
             try:
                 response = requests.patch(url, headers=headers,data=payload)
-                if response.status_code != 200:
+                if not response.ok:
                     print(f"Unable to modify task {id}")
                 else:
                     print(f"Task {id} default login credential check set to {state}")
             except ConnectionError as error:
                 raise error
 
-def main():
+if __name__ == "__main__":
     args = parse_args()
     token = args.token
     if token == None:
         token = getpass(prompt="Enter the Organization API Key: ")
     task_data = get_tasks(args.consoleURL, token)
-    task_list = parse_IDs(task_data) 
+    task_list = parse_ids(task_data) 
     updated_tasks = update_tasks(args.consoleURL, token, task_list, args.enable)
-    
-if __name__ == "__main__":
-    main()

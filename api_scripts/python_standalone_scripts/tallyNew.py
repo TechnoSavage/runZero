@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    tallyNew.py, version 3.4
+    tallyNew.py, version 3.5
     Script to retrieve last 'N' completed tasks and tally new asset counts. """
 
 import argparse
@@ -23,10 +23,10 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='Output file format', choices=['txt', 'json', 'csv'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.4')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.5')
     return parser.parse_args()
 
-def getTasks(url, token): 
+def get_tasks(url, token): 
     '''
         Retrieve Tasks from Organization corresponding to supplied token.
 
@@ -41,17 +41,16 @@ def getTasks(url, token):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve tasks' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
 
-def parseTasks(data, taskNo=1000):
+def parse_tasks(data, taskNo=1000):
     '''
         Extract relevant fields from task data and tally new assets. 
     
@@ -85,7 +84,7 @@ def parseTasks(data, taskNo=1000):
     except TypeError as error:
         raise error
     
-def writeCSV(fileName, contents):
+def write_csv(fileName, contents):
     '''
         Write contents to output file. 
     
@@ -107,7 +106,7 @@ def writeCSV(fileName, contents):
     except IOError as error:
         raise error
 
-def writeFile(fileName, contents):
+def write_file(fileName, contents):
     '''
         Write contents to output file. 
     
@@ -122,7 +121,7 @@ def writeFile(fileName, contents):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
@@ -130,24 +129,21 @@ def main():
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
-    data = getTasks(args.consoleURL, token)
-    results = parseTasks(data, args.taskNo)
+    data = get_tasks(args.consoleURL, token)
+    results = parse_tasks(data, args.taskNo)
     if args.output == 'json':
         fileName = f'{fileName}.json'
-        writeFile(fileName, json.dumps(results))
+        write_file(fileName, json.dumps(results))
     elif args.output == 'txt':
         fileName = f'{fileName}.txt'
         stringList = []
         for line in results:
             stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
-        writeFile(fileName, textFile)
+        write_file(fileName, textFile)
     elif args.output == 'csv':
         fileName = f'{fileName}.csv'
-        writeCSV(fileName, results)  
+        write_csv(fileName, results)  
     else:
         for line in results:
             print(json.dumps(line, indent=4))
-
-if __name__ == "__main__":
-    main()

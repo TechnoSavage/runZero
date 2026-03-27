@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    scanSync.py, version 2.4
+    scanSync.py, version 2.5
     This script is designed to sync task data from one console to another by downloading the last 'n' successful tasks
     from one console and uploading them to another. Example use case, download external scan tasks from a SaaS console
     and import them into a self-hosted instance. The script will attempt to automatically delete local files it creates."""
@@ -31,10 +31,10 @@ def parseArgs():
                         required=False, default=os.environ["RUNZERO_SITE_ID"])
     parser.add_argument('-p', '--path', help='Path to save scan data to. This argument will override the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
-    parser.add_argument('--version', action='version', version='%(prog)s 2.4')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.5')
     return parser.parse_args()
     
-def getTasks(url, token, search): 
+def get_tasks(url, token, search): 
     '''
         Retrieve Tasks from Organization corresponding to supplied token.
 
@@ -51,16 +51,15 @@ def getTasks(url, token, search):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve tasks' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         raise error
 
-def parseIDs(data, taskNo=1000):
+def parse_ids(data, taskNo=1000):
     '''
         Extract task IDs from supplied task data. 
     
@@ -76,7 +75,7 @@ def parseIDs(data, taskNo=1000):
     except TypeError as error:
         raise error
 
-def getData(url, token, taskID, path):
+def get_data(url, token, taskID, path):
     '''
         Download and write scan data (.json.gz) for each task ID provided.
 
@@ -95,7 +94,7 @@ def getData(url, token, taskID, path):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, data=payload, stream=True)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve task data' + str(response))
             exit()
         with open( f'{path}scan_{taskID}.json.gz', 'wb') as f:
@@ -106,7 +105,7 @@ def getData(url, token, taskID, path):
     except IOError as error:
         raise error
         
-def uploadData(url, token, site_id, path, taskData):
+def upload_data(url, token, site_id, path, taskData):
     '''
         Upload task Data to console.
 
@@ -127,17 +126,16 @@ def uploadData(url, token, site_id, path, taskData):
     try:
         with open(path + taskData, 'rb') as file:
             response = requests.put(url, headers=headers, params=params, data=file, stream=True)
-            if response.status_code != 200:
+            if not response.ok:
                 print('Unable to upload task data' + str(response))
                 exit()
-            content = response.content
-            data = json.loads(content)
-        return data
+            content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
         
-def cleanUp(taskID, path):
+def clean_up(taskID, path):
     '''
         Remove task data files created by getData funtion.
 
@@ -159,7 +157,7 @@ def cleanUp(taskID, path):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     srcTok = args.srcTok    
     if srcTok == None:
@@ -167,15 +165,12 @@ def main():
     dstTok = args.dstTok
     if dstTok == None:
         dstTok = getpass(prompt="Enter the Organization API Key for the destination console: ")
-    taskInfo = getTasks(args.srcURL, srcTok, args.search)
-    idList = parseIDs(taskInfo, args.taskNo)
+    taskInfo = get_tasks(args.srcURL, srcTok, args.search)
+    idList = parse_ids(taskInfo, args.taskNo)
     for id in idList:
-        getData(args.srcURL, srcTok, id, args.path)
+        get_data(args.srcURL, srcTok, id, args.path)
         try:
-            uploadData(args.dstURL, dstTok, args.site, args.path, f"scan_{id}.json.gz")
-            cleanUp(id, args.path)
+            upload_data(args.dstURL, dstTok, args.site, args.path, f"scan_{id}.json.gz")
+            clean_up(id, args.path)
         except OSError as error:
             print(error)
-        
-if __name__ == "__main__":
-    main()

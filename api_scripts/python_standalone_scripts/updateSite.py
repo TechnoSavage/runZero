@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    updateSite.py, version 1.0
+    updateSite.py, version 1.1
     This script can be used to programatically update or overwrite a site scope and/or registered
     subnets."""
 
@@ -25,10 +25,10 @@ def parseArgs():
                         required=False)
     parser.add_argument('-eL', '--input-exclusion', dest='exclusionFile', help='Text file with site exclusions.', required=False)
     parser.add_argument('-r', '--replace', help='Replace current site scope with provided scope.', action='store_true', required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.1')
     return parser.parse_args()
 
-def confirmSite(url, token, site):
+def confirm_site(url, token, site):
     """ Confirm or retrieve UUID of Organization site. 
     
         :param url: A string, URL of the runZero console.
@@ -44,9 +44,11 @@ def confirmSite(url, token, site):
     siteID = None
     try:
         response = requests.get(url, headers=headers, data=payload)
-        content = response.content
-        data = json.loads(content)
-        for item in data:
+        if not response.ok:
+            print('Unable to retrieve sites:' + str(response))
+            exit()
+        content = response.json()
+        for item in content:
             id = item.get('id', '')
             name = item.get('name', '')
             if site == id or site == name:
@@ -56,7 +58,7 @@ def confirmSite(url, token, site):
         content = "No Response"
         raise error
     
-def createSite(url, token, site):
+def create_site(url, token, site):
     """ Confirm or retrieve UUID of Organization site.
     
         :param url: A string, URL of the runZero console.
@@ -74,18 +76,20 @@ def createSite(url, token, site):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.put(url, headers=headers, data=payload)
-        content = response.content
-        data = json.loads(content)
-        siteID = data['id']
+        if not response.ok:
+            print('Unable to create site:' + str(response))
+            exit()
+        content = response.json()
+        siteID = content['id']
         return siteID
     except ConnectionError as error:
         content = "No Response"
         raise error
 
-def buildSiteFrame(targetFile, exclusionFile):
+def build_site_frame(targetFile, exclusionFile):
     pass
 
-def subnetCheck(scope):
+def subnet_check(scope): # replace this whole thing with IPaddress library
     """ Check for valid IPv4 address with CIDR mask or optional decimal subnet mask.
        
        :param test: A string, string to test for valid IP address and Subnet mask/CIDR format.
@@ -109,7 +113,7 @@ def subnetCheck(scope):
         except TypeError as reason:
             return 0
 
-def appendSubnets(url, token, siteUUID, scope, exclusions):
+def append_subnets(url, token, siteUUID, scope, exclusions):
     """ Append to site scope.
     
         :param url: A string, URL of the runZero console.
@@ -126,14 +130,16 @@ def appendSubnets(url, token, siteUUID, scope, exclusions):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.patch(url, headers=headers, data=payload)
-        content = response.content
-        data = json.loads(content)
-        return data
+        if not response.ok:
+            print('Unable to patch site:' + str(response))
+            exit()
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
 
-def replaceSubnets(url, token, siteUUID, scope, exclusions):
+def replace_subnets(url, token, siteUUID, scope, exclusions):
     """ Replace site scope.
     
         :param url: A string, URL of the runZero console.
@@ -154,27 +160,26 @@ def replaceSubnets(url, token, siteUUID, scope, exclusions):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.patch(url, headers=headers, data=payload)
-        content = response.content
-        data = json.loads(content)
-        return data
+        if not response.ok:
+            print('Unable to patch site:' + str(response))
+            exit()
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
-    scope = buildSiteFrame(args.targetFile)
-    exclusions = buildSiteFrame(args.exclusionFile)
-    siteID = confirmSite(args.consoleURL, token, args.site)
+    scope = build_site_frame(args.targetFile)
+    exclusions = build_site_frame(args.exclusionFile)
+    siteID = confirm_site(args.consoleURL, token, args.site)
     if siteID == None and args.create:
-        siteID = createSite(args.consoleURL, token, args.site)
+        siteID = create_site(args.consoleURL, token, args.site)
     if args.replace:
-        replaceSubnets(args.consoleURL, token, siteID, scope, exclusions)
+        replace_subnets(args.consoleURL, token, siteID, scope, exclusions)
     else:
-        appendSubnets(args.consoleURL, token, siteID, scope, exclusions)
-
-if __name__ == "__main__":
-    main()
+        append_subnets(args.consoleURL, token, siteID, scope, exclusions)

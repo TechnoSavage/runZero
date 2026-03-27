@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE!
-    ndaa889_traceroute.py, version 1.0
+    ndaa889_traceroute.py, version 1.1
     Query runZero API for assets mathing NDAA section 889 query found within an Organization (tied to Export API key provided)
     and generate selected report type including asset name, addresses, type, and traceroute info."""
 
@@ -21,7 +21,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.1')
     return parser.parse_args()
 
 def get_ndaa_assets(url, token):
@@ -41,12 +41,11 @@ def get_ndaa_assets(url, token):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve assets' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
@@ -138,7 +137,7 @@ def write_file(filename, contents):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
@@ -149,6 +148,3 @@ def main():
     results = get_ndaa_assets(args.consoleURL, token)
     parsed = parse_assets(results)
     output_format(args.output, filename, parsed)
-
-if __name__ == "__main__":
-    main()

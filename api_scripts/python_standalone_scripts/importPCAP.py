@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    importPCAP.py, version 1.4
+    importPCAP.py, version 1.5
     Bulk import all packet capture files in a specified folder via the runZero API."""
 
 import argparse
@@ -27,10 +27,10 @@ def parseArgs():
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-c', '--clean', help='Enable file clean up. Automatically delete capture files that are successfully uploaded', action='store_true', required=False)
     parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.4')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.5')
     return parser.parse_args()
 
-def importPCAP(url, token, siteID, capture, name, description=""):
+def import_pcap(url, token, siteID, capture, name, description=""):
     '''
         Upload a capture file . 
     
@@ -55,13 +55,12 @@ def importPCAP(url, token, siteID, capture, name, description=""):
         with open(capture, 'rb') as file:
             response = requests.put(url, headers=headers, params=params, data=file, stream=True)
         code = response.status_code
-        content = response.content
-        data = json.loads(content)
-        return(code, data)
+        content = response.json()
+        return(code, content)
     except ConnectionError as error:
         raise error
     
-def fileUpload(url, token, siteID, dir):
+def file_upload(url, token, siteID, dir):
     '''
         Identify packet capture in a directory and pass them
         to importPCAP function. 
@@ -83,7 +82,7 @@ def fileUpload(url, token, siteID, dir):
                 fileType = subprocess.check_output([f'file', dir + fileName.group(1)])
                 fileDescription = re.search("(: (.*))", str(fileType))
                 if 'pcap' in str(fileDescription) or 'pcapng' in str(fileDescription):
-                    response = importPCAP(url, token, siteID, f'{dir}{fileName.group(1)}', fileName.group(2))
+                    response = import_pcap(url, token, siteID, f'{dir}{fileName.group(1)}', fileName.group(2))
                     entry = {}
                     if response[0] == 200 and response[1]['error'] == '':
                         entry['File Name'] = fileName.group(1) 
@@ -98,7 +97,7 @@ def fileUpload(url, token, siteID, dir):
         uploadLog.append({error : 'A connection to the runZero console could not be established'})
     return uploadLog
     
-def cleanUp(dir, log):
+def clean_up(dir, log):
     '''
         Remove packet capture files that are uploaded successfully.
 
@@ -117,7 +116,7 @@ def cleanUp(dir, log):
         else:
             pass
 
-def outputFormat(format, fileName, data):
+def output_format(format, fileName, data):
     '''
         Determine output format and call function to write appropriate file.
         
@@ -129,21 +128,21 @@ def outputFormat(format, fileName, data):
     
     if format == 'json':
         fileName = f'{fileName}.json'
-        writeFile(fileName, json.dumps(data))
+        write_file(fileName, json.dumps(data))
     elif format == 'txt':
         fileName = f'{fileName}.txt'
         stringList = []
         for line in data:
             stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
-        writeFile(fileName, textFile)
+        write_file(fileName, textFile)
     elif format in ('csv', 'excel', 'html'):
-        writeDF(format, fileName, data)  
+        write_df(format, fileName, data)  
     else:
         for line in data:
             print(json.dumps(line, indent=4))
     
-def writeDF(format, fileName, data):
+def write_df(format, fileName, data):
     '''
         Write contents to output file. 
     
@@ -164,7 +163,7 @@ def writeDF(format, fileName, data):
     except IOError as error:
         raise error
     
-def writeFile(fileName, contents):
+def write_file(fileName, contents):
     '''
         Write contents to output file in plaintext. 
     
@@ -179,20 +178,17 @@ def writeFile(fileName, contents):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
-    uploadLog = fileUpload(args.consoleURL, token, args.site, args.dir)
+    uploadLog = file_upload(args.consoleURL, token, args.site, args.dir)
     if args.log is not None:
         timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
         fileName = f'{args.path}importPacket_log_{timestamp}'
-        outputFormat(args.log, fileName, uploadLog)
+        output_format(args.log, fileName, uploadLog)
     else:
         print(json.dumps(uploadLog, indent=4))
     if args.clean:
-        cleanUp(args.dir, uploadLog)
-
-if __name__ == "__main__":
-    main()
+        clean_up(args.dir, uploadLog)

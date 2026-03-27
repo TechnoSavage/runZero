@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    reportSNOWAttributes.py, version 1.2
+    reportSNOWAttributes.py, version 1.3
     Generate a list of ServiceNow attributes sent to ServiceGraph Connector."""
 
 import argparse
@@ -22,7 +22,7 @@ def parseArgs():
     parser.add_argument('--version', action='version', version='%(prog)s 1.2')
     return parser.parse_args()
     
-def getSnowAssets(url, token, filter='', fields=''):
+def get_snow_assets(url, token, filter='', fields=''):
     '''
         Retrieve assets using supplied query filter from Console SNOW ServiceGraph endpoint and restrict to fields supplied.
         
@@ -42,17 +42,16 @@ def getSnowAssets(url, token, filter='', fields=''):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('failed to retrieve assets, bad status code!' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
     
-def parseSNOWAttributes(data):
+def parse_snow_attributes(data):
     '''
         Search response attributes and extract all keys pertaining to the source.
      
@@ -78,7 +77,7 @@ def parseSNOWAttributes(data):
         exit()
     
 #Output formats require some finessing
-def outputFormat(format, fileName, data):
+def output_format(format, fileName, data):
     '''
         Determine output format and call function to write appropriate file.
         
@@ -91,12 +90,12 @@ def outputFormat(format, fileName, data):
     if format == 'txt':
         fileName = f'{fileName}.txt'
         textFile = '\n'.join(data)
-        writeFile(fileName, textFile)
+        write_file(fileName, textFile)
     else:
         for item in data:
             print(item)
     
-def writeFile(fileName, contents):
+def write_file(fileName, contents):
     '''
         Write contents to output file. 
     
@@ -111,7 +110,7 @@ def writeFile(fileName, contents):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
@@ -119,10 +118,7 @@ def main():
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
-    assets = getSnowAssets(args.consoleURL, token)
-    attrsSNOW = parseSNOWAttributes(assets) 
-    attrsSNOW = set(attrsSNOW)
-    outputFormat(args.output, fileName, sorted(attrsSNOW))
-    
-if __name__ == "__main__":
-    main()
+    assets = get_snow_assets(args.consoleURL, token)
+    attrs_snow = parse_snow_attributes(assets) 
+    attrs_snow = set(attrs_snow)
+    output_format(args.output, fileName, sorted(attrs_snow))

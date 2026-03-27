@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    reportSplunkAttributes.py, version 1.2
+    reportSplunkAttributes.py, version 1.3
     Generate a list of Splunk attributes sent to Splunk connector."""
 
 import argparse
@@ -19,10 +19,10 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.2')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.3')
     return parser.parse_args()
     
-def getSplunkAssets(url, token, filter='', fields=''):
+def get_splunk_assets(url, token, filter='', fields=''):
     '''
         Retrieve assets using supplied query filter from Console's Splunk endpoint and restrict to fields supplied.
         
@@ -42,17 +42,16 @@ def getSplunkAssets(url, token, filter='', fields=''):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('failed to retrieve assets, bad status code!' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
     
-def parseSplunkAttributes(data):
+def parse_splunk_attributes(data):
     '''
         Search response attributes and extract all keys pertaining to the source.
      
@@ -78,7 +77,7 @@ def parseSplunkAttributes(data):
         exit()
     
 #Output formats require some finessing
-def outputFormat(format, fileName, data):
+def output_format(format, fileName, data):
     '''
         Determine output format and call function to write appropriate file.
         
@@ -91,12 +90,12 @@ def outputFormat(format, fileName, data):
     if format == 'txt':
         fileName = f'{fileName}.txt'
         textFile = '\n'.join(data)
-        writeFile(fileName, textFile)
+        write_file(fileName, textFile)
     else:
         for item in data:
             print(item)
     
-def writeFile(fileName, contents):
+def write_file(fileName, contents):
     '''
         Write contents to output file. 
     
@@ -111,7 +110,7 @@ def writeFile(fileName, contents):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
@@ -119,10 +118,7 @@ def main():
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
-    assets = getSplunkAssets(args.consoleURL, token)
-    attrsSplunk = parseSplunkAttributes(assets) 
-    attrsSplunk = set(attrsSplunk)
-    outputFormat(args.output, fileName, sorted(attrsSplunk))
-    
-if __name__ == "__main__":
-    main()
+    assets = get_splunk_assets(args.consoleURL, token)
+    attrs_splunk = parse_splunk_attributes(assets) 
+    attrs_splunk = set(attrs_splunk)
+    output_format(args.output, fileName, sorted(attrs_splunk))

@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    newAssetReport.py, version 3.4
+    newAssetReport.py, version 3.5
     Query runZero API for all assets found within an Organization (tied to Export API key provided) first seen within the specified 
     time period and return select fields. Default behavior will be to print assets to stdout in JSON format. Optionally, an output 
     file and format can be specified."""
@@ -24,10 +24,10 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.4')
+    parser.add_argument('--version', action='version', version='%(prog)s 3.5')
     return parser.parse_args()
     
-def getAssets(url, token, filter=" ", fields=" "):
+def get_assets(url, token, filter="", fields=""):
     '''
         Retrieve assets using supplied query filter from Console and restrict to fields supplied.
         
@@ -47,18 +47,17 @@ def getAssets(url, token, filter=" ", fields=" "):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve assets' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
     
 #Output formats require some finessing
-def outputFormat(format, fileName, data):
+def output_format(format, fileName, data):
     '''
         Determine output format and call function to write appropriate file.
         
@@ -70,21 +69,21 @@ def outputFormat(format, fileName, data):
     
     if format == 'json':
         fileName = f'{fileName}.json'
-        writeFile(fileName, json.dumps(data))
+        write_file(fileName, json.dumps(data))
     elif format == 'txt':
         fileName = f'{fileName}.txt'
         stringList = []
         for line in data:
             stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
         textFile = '\n'.join(stringList)
-        writeFile(fileName, textFile)
+        write_file(fileName, textFile)
     elif format in ('csv', 'excel', 'html'):
-        writeDF(format, fileName, data)  
+        write_df(format, fileName, data)  
     else:
         for line in data:
             print(json.dumps(line, indent=4))
     
-def writeDF(format, fileName, data):
+def write_df(format, fileName, data):
     '''
         Write contents to output file. 
     
@@ -105,7 +104,7 @@ def writeDF(format, fileName, data):
     except IOError as error:
         raise error
     
-def writeFile(fileName, contents):
+def write_file(fileName, contents):
     '''
         Write contents to output file in plaintext. 
     
@@ -120,7 +119,7 @@ def writeFile(fileName, contents):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
@@ -133,8 +132,5 @@ def main():
     query = f"first_seen:<{args.timeRange}"
     #fields to return in API call; modify for more or less
     fields = "id, os, os_vendor, hw, addresses, macs, attributes"
-    results = getAssets(args.consoleURL, token, query, fields)
-    outputFormat(args.output, fileName, results)
-    
-if __name__ == "__main__":
-    main()
+    results = get_assets(args.consoleURL, token, query, fields)
+    output_format(args.output, fileName, results)

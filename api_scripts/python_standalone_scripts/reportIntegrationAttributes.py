@@ -1,5 +1,5 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    reportIntegrationAttributes.py, version 1.3
+    reportIntegrationAttributes.py, version 1.4
     Specify an integration source in order to generate a list of all discovered attributes reported by that source."""
 
 import argparse
@@ -24,7 +24,7 @@ def parseArgs():
     parser.add_argument('--version', action='version', version='%(prog)s 1.3')
     return parser.parse_args()
     
-def getAssets(url, token, filter='', fields=''):
+def get_assets(url, token, filter="", fields=""):
     '''
         Retrieve assets using supplied query filter from Console and restrict to fields supplied.
         
@@ -44,17 +44,16 @@ def getAssets(url, token, filter='', fields=''):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
-        if response.status_code != 200:
+        if not response.ok:
             print('failed to retrieve assets, bad status code!' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         content = "No Response"
         raise error
     
-def parseAzure(data):
+def parse_azure(data):
     '''
         Search Azure source assets "foreign attributes" and extract all keys pertaining to the source.
      
@@ -80,7 +79,7 @@ def parseAzure(data):
         print("Data is not JSON object; make sure provided API key is correct")
         exit()
 
-def parseGCP(data):
+def parse_gcp(data):
     '''
         Search Google Cloud source assets "foreign attributes" and extract all keys pertaining to the source.
      
@@ -109,7 +108,7 @@ def parseGCP(data):
         print("Data is not JSON object; make sure provided API key is correct")
         exit()
 
-def parseGoogleWorkspace(data):
+def parse_googleworkspace(data):
     '''
         Search Google Workspace source assets "foreign attributes" and extract all keys pertaining to the source.
      
@@ -135,7 +134,7 @@ def parseGoogleWorkspace(data):
         print("Data is not JSON object; make sure provided API key is correct")
         exit()
     
-def parseAttributes(data, source):
+def parse_attributes(data, source):
     '''
         Search assets "foreign attributes" and extract all keys pertaining to the source.
      
@@ -149,15 +148,15 @@ def parseAttributes(data, source):
     if source == 'aws':
         forAttrKey = '@aws.ec2'
     elif source == 'azure':
-        attributeList = parseAzure(data)
+        attributeList = parse_azure(data)
         return attributeList
     elif source == 'censys':
         forAttrKey = '@censys.host'
     elif source == 'gcp':
-        attributeList = parseGCP(data)
+        attributeList = parse_gcp(data)
         return attributeList
     elif source == 'googleworkspace':
-        attributeList = parseGoogleWorkspace(data)
+        attributeList = parse_googleworkspace(data)
         return attributeList
     elif source == 'ldap':
         forAttrKey = '@ldap.computer'
@@ -176,7 +175,7 @@ def parseAttributes(data, source):
         exit()
     
 #Output formats require some finessing
-def outputFormat(format, fileName, data):
+def output_format(format, fileName, data):
     '''
         Determine output format and call function to write appropriate file.
         
@@ -189,12 +188,12 @@ def outputFormat(format, fileName, data):
     if format == 'txt':
         fileName = f'{fileName}.txt'
         textFile = '\n'.join(data)
-        writeFile(fileName, textFile)
+        write_file(fileName, textFile)
     else:
         for item in data:
             print(item)
     
-def writeFile(fileName, contents):
+def write_file(fileName, contents):
     '''
         Write contents to output file. 
     
@@ -209,7 +208,7 @@ def writeFile(fileName, contents):
     except IOError as error:
         raise error
     
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
@@ -221,13 +220,10 @@ def main():
     search = f'source:{args.search}'
     #specify only return of foreign attributes
     fields = 'foreign_attributes'
-    assets = getAssets(args.consoleURL, token, search, fields)
-    results = parseAttributes(assets, args.search)
+    assets = get_assets(args.consoleURL, token, search, fields)
+    results = parse_attributes(assets, args.search)
     if type(results) is tuple:
         for result in results:
-            outputFormat(args.output, fileName, sorted(result))
+            output_format(args.output, fileName, sorted(result))
     else:
-        outputFormat(args.output, fileName, sorted(results))
-    
-if __name__ == "__main__":
-    main()
+        output_format(args.output, fileName, sorted(results))

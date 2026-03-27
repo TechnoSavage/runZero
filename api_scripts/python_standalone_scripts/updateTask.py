@@ -39,12 +39,11 @@ def get_tasks(url, token):
     params = {'search': 'type:scan status:active recur:true'}
     try:
         response = requests.get(url, headers=headers, params=params)
-        if response.status_code != 200:
+        if not response.ok:
             print('Unable to retrieve task' + str(response))
             exit()
-        content = response.content
-        data = json.loads(content)
-        return data
+        content = response.json()
+        return content
     except ConnectionError as error:
         raise error
     
@@ -65,15 +64,14 @@ def patch_scan(url, token, ids):
         payload = json.dumps({"params": {"ssh-fingerprint": "false"}})
         try:
             response = requests.patch(url, headers=headers, data=payload)
-            if response.status_code != 200:
+            if not response.ok:
                 print(f'Unable to patch task:{id}' + str(response))
-            content = response.content
-            data = json.loads(content)
-            return data
+            content = response.json()
+            return content
         except ConnectionError as error:
             raise error
 
-def main():
+if __name__ == "__main__":
     args = parseArgs()
     token = args.token
     if token == None:
@@ -82,6 +80,3 @@ def main():
     print(tasks)
     ids = parse_tasks(tasks)
     response = patch_scan(args.consoleURL, token, ids)
-    
-if __name__ == "__main__":
-    main()
