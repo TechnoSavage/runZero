@@ -1,11 +1,12 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    serialNumbers.py, version 3.6
+    serialNumbers.py, version 4.0
     Retrieve assets from console using Export API endpoint, extract defined fields and serial numbers,
     and, optionally, write to file. This allows users to pull assets and SN information with a predefined
     set of attributes included."""
 
 import argparse
 import json
+import logging
 import os
 import pandas as pd
 import requests
@@ -13,6 +14,8 @@ from datetime import datetime, timezone
 from flatten_json import flatten
 from getpass import getpass
 from requests.exceptions import ConnectionError
+
+logger = logging.getLogger(__name__)
     
 def parseArgs():
     parser = argparse.ArgumentParser(description="Retrive all available serial numbers from inventory assets.")
@@ -23,7 +26,7 @@ def parseArgs():
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.6')
+    parser.add_argument('--version', action='version', version='%(prog)s 4.0')
     return parser.parse_args()
     
 def get_assets(url, token, filter='', fields=''):
@@ -46,14 +49,16 @@ def get_assets(url, token, filter='', fields=''):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
+        logger.info(f"Making API request to {url}")
         if not response.ok:
-            print('Unable to retrieve assets' + str(response))
+            logger.critical('Unable to retrieve assets' + str(response), 'exiting...')
             exit()
+        logger.info("Received response.")
         content = response.json()
         return content
-    except ConnectionError as error:
-        content = "No Response"
-        raise error
+    except ConnectionError:
+        logger.exception('Could not establish connection to console URL, exiting...')
+        exit()
     
 def parse_sns(data):
     '''
@@ -63,9 +68,9 @@ def parse_sns(data):
        :returns: a dict: parsed runZero asset data.
        :raises: TypeError: if dataset is not iterable.
     '''
-    
+    logger.info("Parsing response data")
     try:
-        assetList = []
+        asset_list = []
         for item in data:
             asset = {}
             for key, value in item.items():
@@ -80,16 +85,18 @@ def parse_sns(data):
                 asset['hw.serialNumber'] = flattened_items.get('attributes_hw.serialNumber', '')
                 asset['snmp.serialNumbers'] = flattened_items.get('attributes_snmp.serialNumbers', '').split('\t')
                 asset['ilo.serialNumber'] = flattened_items.get('attributes_ilo.serialNumber', '').split('\t')
-            assetList.append(asset)
-        return(assetList)
-    except TypeError as error:
-        raise error
-    except AttributeError as error:
-        print("Data is not JSON object; make sure provided API key is correct")
+            asset_list.append(asset)
+        logger.info("Response data parsed")
+        return(asset_list)
+    except TypeError:
+        logger.exception('exiting...')
+        exit()
+    except AttributeError:
+        logger.exception("Data is not JSON object; make sure provided API key is correct, exiting...")
         exit()
     
 #Output formats require some finessing
-def output_format(format, fileName, data):
+def output_format(format, filename, data):
     '''
         Determine output format and call function to write appropriate file.
         
@@ -100,22 +107,22 @@ def output_format(format, fileName, data):
     '''
     
     if format == 'json':
-        fileName = f'{fileName}.json'
-        write_file(fileName, json.dumps(data))
+        filename = f'{filename}.json'
+        write_file(filename, json.dumps(data))
     elif format == 'txt':
-        fileName = f'{fileName}.txt'
-        stringList = []
+        filename = f'{filename}.txt'
+        string_list = []
         for line in data:
-            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
-        textFile = '\n'.join(stringList)
-        write_file(fileName, textFile)
+            string_list.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
+        text_file = '\n'.join(string_list)
+        write_file(filename, text_file)
     elif format in ('csv', 'excel', 'html'):
-        write_df(format, fileName, data)  
+        write_df(format, filename, data)
     else:
         for line in data:
             print(json.dumps(line, indent=4))
 
-def write_df(format, fileName, data):
+def write_df(format, filename, data):
     '''
         Write contents to output file. 
     
@@ -128,15 +135,16 @@ def write_df(format, fileName, data):
     df = pd.DataFrame(data)
     try:
         if format == "excel":
-            df.to_excel(f'{fileName}.xlsx', freeze_panes=(1,0), na_rep='NA')
+            df.to_excel(f'{filename}.xlsx', freeze_panes=(1,0), na_rep='NA')
         elif format == 'csv':
-            df.to_csv(f'{fileName}.csv', na_rep='NA')
+            df.to_csv(f'{filename}.csv', na_rep='NA')
         else:
-            df.to_html(f'{fileName}.html', render_links=True, na_rep='NA')
-    except IOError as error:
-        raise error
+            df.to_html(f'{filename}.html', render_links=True, na_rep='NA')
+        logger.info(f"output file written to {filename} in {format}")
+    except IOError:
+        logger.exception("Could not write output file, exiting...")
     
-def write_file(fileName, contents):
+def write_file(filename, contents):
     '''
         Write contents to output file. 
     
@@ -146,16 +154,19 @@ def write_file(fileName, contents):
     '''
 
     try:
-        with open( fileName, 'w') as o:
+        with open( filename, 'w') as o:
             o.write(contents)
-    except IOError as error:
-        raise error
+        logger.info(f"output file written to {filename}")
+    except IOError:
+        logger.exception("Could not write output file, exiting...")
     
-if __name__ == "__main__":
+def main():
+    logging.basicConfig(filename='serialNumbers.log', level=logging.INFO)
+    logger.info('Started')
     args = parseArgs()
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
-    fileName = f"{args.path}Asset_Serial_Numbers_{timestamp}"
+    filename = f"{args.path}Asset_Serial_Numbers_{timestamp}"
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
@@ -165,4 +176,8 @@ if __name__ == "__main__":
     fields = "id, hw, macs, attributes"
     assets = get_assets(args.consoleURL, token, query, fields)
     results = parse_sns(assets)
-    output_format(args.output, fileName, results)
+    output_format(args.output, filename, results)
+    logger.info('Finished')
+
+if __name__ == "__main__":
+    main()
