@@ -51,7 +51,7 @@ def get_assets(url, token, filter='', fields=''):
                'Authorization': f'Bearer {token}'}
     try:
         response = requests.get(url, headers=headers, params=params, data=payload)
-        logger.info(f"Making API request to {url}")
+        logger.info(f"Making GET request to {url}")
         if not response.ok:
             logger.critical('Unable to retrieve assets' + str(response), 'exiting...')
             exit()
@@ -145,6 +145,7 @@ def write_df(format, filename, data):
         logger.info(f"output file written to {filename} in {format}")
     except IOError:
         logger.exception("Could not write output file, exiting...")
+        exit()
     
 def write_file(filename, contents):
     '''
@@ -161,6 +162,7 @@ def write_file(filename, contents):
         logger.info(f"output file written to {filename}")
     except IOError:
         logger.exception("Could not write output file, exiting...")
+        exit()
     
 def main():
     args = parseArgs()
