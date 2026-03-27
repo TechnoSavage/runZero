@@ -25,6 +25,8 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_EXPORT_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
+    parser.add_argument('-l', '--log', help='Path to write log file. This argument will take priority over the .env file', 
+                        required=False, default=os.environ["LOG_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
     parser.add_argument('--version', action='version', version='%(prog)s 4.0')
     return parser.parse_args()
@@ -161,9 +163,9 @@ def write_file(filename, contents):
         logger.exception("Could not write output file, exiting...")
     
 def main():
-    logging.basicConfig(filename='serialNumbers.log', level=logging.INFO)
-    logger.info('Started')
     args = parseArgs()
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%a, %d %b %Y %H:%M:%S', filename=f'{args.log}/serialNumbers.log', level=logging.INFO)
+    logger.info('Started')
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
     filename = f"{args.path}Asset_Serial_Numbers_{timestamp}"
