@@ -50,8 +50,8 @@ def get_assets(url, token, filter='', fields=''):
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
-        response = requests.get(url, headers=headers, params=params, data=payload)
         logger.info(f"Making GET request to {url}")
+        response = requests.get(url, headers=headers, params=params, data=payload)
         if not response.ok:
             logger.critical('Unable to retrieve assets' + str(response), 'exiting...')
             exit()
@@ -91,7 +91,7 @@ def parse_sns(data):
         logger.info("Response data parsed")
         return(asset_list)
     except TypeError:
-        logger.exception('exiting...')
+        logger.exception('Exiting...')
         exit()
     except AttributeError:
         logger.exception("Data is not JSON object; make sure provided API key is correct, exiting...")
@@ -136,6 +136,7 @@ def write_df(format, filename, data):
     
     df = pd.DataFrame(data)
     try:
+        logger.info(f"Writing {filename} in {format} to disk.")
         if format == "excel":
             df.to_excel(f'{filename}.xlsx', freeze_panes=(1,0), na_rep='NA')
         elif format == 'csv':
@@ -157,9 +158,10 @@ def write_file(filename, contents):
     '''
 
     try:
+        logger.info(f"Writing {filename} to disk.")
         with open( filename, 'w') as o:
             o.write(contents)
-        logger.info(f"output file written to {filename}")
+        logger.info(f"{filename} successfully written to disk.")
     except IOError:
         logger.exception("Could not write output file, exiting...")
         exit()
