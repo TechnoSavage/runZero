@@ -13,7 +13,7 @@ import uuid
 import xmltodict
 from ipaddress import ip_address
 from gvm.connections import (SSHConnection, TLSConnection, UnixSocketConnection)
-from gvm.errors import GvmError
+from gvm.errors import (GvmError, GvmClientError, GvmResponseError, GvmServerError)
 from gvm.protocols.gmp import Gmp
 from runzero.client import AuthError
 from runzero.api import CustomAssets, Sites
@@ -58,6 +58,7 @@ def build_assets_from_json(hosts, vulns):
         identifiers = host.get('identifiers', {}).get('identifier', [])
         detail = host.get('host', {}).get('detail', [])
         host_id = str(host.get('@id', uuid.uuid4()))
+        logger.info(f"Processing attributes for {host_id}.")
         ip = host.get('name', '')
         mac = None
         os = ''
@@ -89,8 +90,9 @@ def build_assets_from_json(hosts, vulns):
             ssh_keys = ''
 
         # create the network interfaces
+        logger.info(f"Building network interfaces for {host_id}")
         network = build_network_interface(ips=[ip], mac=mac)
-
+        logger.info(f"Network interfaces for {host_id} built successfully.")
         # map custom attributes
 
         custom_attrs = {
@@ -102,6 +104,7 @@ def build_assets_from_json(hosts, vulns):
                         }
 
         vuln_list = []
+        logger.info(f"Processing vulnerabilities for {host_id}")
         for vuln in vulns:
             if vuln['host']['asset']['@asset_id'] and vuln['host']['asset']['@asset_id'] == host_id:
                 vuln_list.append(build_vuln(vuln))
@@ -109,6 +112,7 @@ def build_assets_from_json(hosts, vulns):
                 vuln_list.append(build_vuln(vuln))
             else:
                 pass
+        logger.info(f"All vulnerabilities for {host_id} processed successfully.")
 
         # Build assets for import
         assets.append(
@@ -121,6 +125,7 @@ def build_assets_from_json(hosts, vulns):
                 vulnerabilities=vuln_list
             )
         )
+        logger.info(f"All attributes for {host_id} processed successfully.") 
     return assets
 
 def build_network_interface(ips, mac=None):
@@ -284,27 +289,46 @@ def socketConnect():
     path = GVM_SOCKET_PATH
     connection = UnixSocketConnection(path=path)
 
-    with Gmp(connection=connection) as conn:
-        conn.authenticate(GVM_USERNAME, GVM_PASSWORD)
-        # get the response message returned as a utf-8 encoded string
-        hosts = xmltodict.parse(conn.get_hosts(details=True))
-        hosts = hosts.get('get_assets_response', {}).get('asset', [])
-        if not hosts:
-            # add logging message here for zero hosts
-            exit()
-        vulns = []
-        tasks = xmltodict.parse(conn.get_tasks(ignore_pagination=True))
-        tasks = tasks.get('get_tasks_response', {}).get('task', {})
-        if tasks and type(tasks) == dict:
-            latest_reports = tasks.get('last_report', {}).get('report', {}).get('@id', '')
-        if tasks and type(tasks) == list:    
-            latest_reports = [task.get('last_report', {}).get('report', {}).get('@id', '') for task in tasks]
-        if latest_reports:
-            for id in latest_reports:
-                report = xmltodict.parse(conn.get_report(report_id=id, ignore_pagination=True, details=True))
-                vulnerabilities = report.get('get_reports_response', {}).get('report', {}).get('report', {}).get('results', {}).get('result', [])
-                vulns.extend(vulnerabilities)
-        return(hosts, vulns)
+    try:
+        with Gmp(connection=connection) as conn:
+            conn.authenticate(GVM_USERNAME, GVM_PASSWORD)
+            # get the response message returned as a utf-8 encoded string
+            hosts = xmltodict.parse(conn.get_hosts(details=True))
+            hosts = hosts.get('get_assets_response', {}).get('asset', [])
+            if not hosts:
+                # add logging message here for zero hosts
+                logger.warning('No hosts returned from Greenbone API. Exiting...')
+                exit()
+            logger.info(f"Fetched {len(hosts)} hosts from Greenbone API.")
+            vulns = []
+            tasks = xmltodict.parse(conn.get_tasks(ignore_pagination=True))
+            tasks = tasks.get('get_tasks_response', {}).get('task', {})
+            logger.info(f"fetched {len(tasks)} tasks from Greenbone API.")
+            if tasks and type(tasks) == dict:
+                latest_reports = tasks.get('last_report', {}).get('report', {}).get('@id', '')
+            if tasks and type(tasks) == list:    
+                latest_reports = [task.get('last_report', {}).get('report', {}).get('@id', '') for task in tasks]
+            logger.info(f"Preparing to fetch vulnerabilities from {len(latest_reports)} reports.")
+            if latest_reports:
+                for id in latest_reports:
+                    report = xmltodict.parse(conn.get_report(report_id=id, ignore_pagination=True, details=True))
+                    vulnerabilities = report.get('get_reports_response', {}).get('report', {}).get('report', {}).get('results', {}).get('result', [])
+                    vulns.extend(vulnerabilities)
+            logger.info(f"Retrieved {len(vulns)} vulnerabilities from reports.")
+            return(hosts, vulns)
+    except GvmError:
+        logger.critical("Encountered a GVM error: ", GvmError, "Exiting...")
+        exit()
+    except GvmClientError:
+        logger.critical("The GVM client encountred an error: ", GvmClientError, "Exiting...")
+        exit()
+    except GvmResponseError:
+        logger.critical("There was an error in the response: ", GvmResponseError, "Exiting...")
+        exit()
+    except GvmServerError:
+        logger.critical("The GVM server encountered an error: ", GvmServerError, "Exiting...")
+        exit()
+
     
 def sshConnect():
     pass
@@ -313,7 +337,7 @@ def tlsConnect():
     pass
 
 def main():
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%a, %d %b %Y %H:%M:%S', filename=f'syncGVM.log', level=logging.INFO)
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%a, %d %b %Y %H:%M:%S', filename=f'sync_gvm.log', level=logging.INFO)
     if GVM_CONN_METHOD.lower() == 'socket':
         response = socketConnect()
     elif GVM_CONN_METHOD.lower() == 'ssh':
