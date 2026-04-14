@@ -12,7 +12,7 @@ Requirements (Global)
 
 - python-gvm - https://python-gvm.readthedocs.io/en/latest/index.html
 
-- runzero-sdk 0.7.1+ 
+- runzero-sdk 0.8.8+ 
 
 ## runZero Custom Integration Docs
 
@@ -52,7 +52,7 @@ Requirements (Global)
 
 `GVM_PORT` - The port the GVM web interface is running on (see Connection Method 3 below)
 
-`GVM_USERNAME` - Username for an account with sufficient privileges to call Gmp.get_hosts()
+`GVM_USERNAME` - Username for an account with sufficient privileges to call Gmp.get_hosts(), Gmp.get_tasks(), and Gmp.get_report()
 
 `GVM_PASSWORD` - Password for the account
 
@@ -76,7 +76,7 @@ If using the GVM community edition container, additional configuration to expose
 
 ### Connection Method 2: SSH 
 
-To be implemented
+Not currently supported. To be implemented
 
 ### Connection Method 3: TLS
 
@@ -130,6 +130,8 @@ You can generate the necessary cert and key with the following openssl command:
 ```
 openssl req -x509 -newkey rsa:4096 -keyout serverkey.pem -out servercert.pem -nodes -subj '/CN=localhost' -addext 'subjectAltName = DNS:localhost' -days 365
 ```
+
+***Update*** Greenbone community container supports HTTPS connections by default now.
 
 ## Getting Started
 
