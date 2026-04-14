@@ -70,6 +70,8 @@ def build_assets(assets, company_id, token):
                 custom_attributes['product' + str(index(product)) + k] = v
 
         # Retrive and map vulnerabilities
+        # vulns = []
+        # findings = get_vulns(asset_id, company_id, token)
 
 
         # Build assets for import
@@ -78,7 +80,8 @@ def build_assets(assets, company_id, token):
                 id=asset_id,
                 tags=tags,
                 networkInterfaces=interfaces,
-                customAttributes=custom_attributes
+                customAttributes=custom_attributes,
+                vulnerabilities=vulns
             )
         )
     return assets_import
@@ -98,6 +101,9 @@ def build_network_interface(ips, mac):
         return NetworkInterface(ipv4Addresses=ip4s, ipv6Addresses=ip6s)
     else:
         return NetworkInterface(macAddress=mac, ipv4Addresses=ip4s, ipv6Addresses=ip6s)
+
+def build_vulns(vuln):
+    pass
 
 def get_assets(company_id, token):
     assets_all = []
@@ -121,7 +127,7 @@ def get_assets(company_id, token):
 
     return assets_all
 
-def get_vulns(company_id, asset_id, token):
+def get_findings(company_id, asset_id, token):
     vulns_all = []
     vulns_count = 10000
     url = BITSIGHT_BASE_URL + '/ratings/v1/companies/' + company_id + '/findings?'
