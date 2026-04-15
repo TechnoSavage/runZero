@@ -1,7 +1,8 @@
-load('runzero.types', 'ImportAsset', 'NetworkInterface')
+load('http', http_get='get', http_post='post', 'url_encode')
 load('json', json_encode='encode', json_decode='decode')
 load('net', 'ip_address')
-load('http', http_get='get', http_post='post', 'url_encode')
+load('runzero.types', 'ImportAsset', 'NetworkInterface', 'Vulnerability')
+load('time', 'parse_time')
 load('uuid', 'new_uuid')
 
 #Change the URL to match your Guardicore BITSIGHT server
@@ -67,12 +68,15 @@ def build_assets(assets, company_id, token):
         products = asset.get('products', [])
         for product in products:
             for k, v in product.items():
-                custom_attributes['product' + str(index(product)) + k] = v
+                custom_attrs['product' + str(list.index(product)) + k] = v
 
         # Retrive and map vulnerabilities
-        # vulns = []
-        # findings = get_vulns(asset_id, company_id, token)
-
+        vulns = []
+        findings = get_findings(asset_id, company_id, token)
+        for finding in findings:
+            vuln = build_vuln(finding)
+            vulns.append(vuln)
+            
 
         # Build assets for import
         assets_import.append(
@@ -102,8 +106,113 @@ def build_network_interface(ips, mac):
     else:
         return NetworkInterface(macAddress=mac, ipv4Addresses=ip4s, ipv6Addresses=ip6s)
 
-def build_vulns(vuln):
-    pass
+def build_vuln(vuln):
+    ref = vuln.get()
+    identifier = vuln.get('identifier', '')
+    # cve_id = vuln.get('identifier', '')
+    # name = vuln.get()
+    # if identifier == '' or identifier == None:
+        # identifier = name
+    # description = vuln.get()
+    # if description:
+        # description = description[:1023]
+    service_address = vuln.get()
+    if service_address:
+        service_address = ip_address(service_address)
+    service_port = int(vuln.get('details', {}).get('src_port', 0))
+    # service_transport = vuln.get()
+    first_detected_timestamp = vuln.get('first_seen', '')
+    if first_detected_timestamp:
+        first_detected_timestamp = parse_time(first_detected_timestamp).unix
+    #exploitability = detail.get('')
+    #if not exploitability:
+        #exploitability = detail.get('')
+    #exploitable = True if float(exploitability) >= 5.0 else False
+    cvss2_base_score = vuln.get('check_cvss', '')
+    if cvss2_base_score:
+        cvss2_base_score = float(cvss2_base_score)
+    #cvss3_base_score = detail.get('')
+    #if cvss3_base_score:
+        #cvss3_base_score = float(cvss3_base_score)
+    # risk_score = detail.get()
+    # risk_rank = detail.get()
+    severity_score = vuln.get('severity', '')
+    if severity_score:
+        severity_score = float(severity_score)
+        if severity_score >= 0.1 and severity_score <=3.9:
+            risk_rank = 1
+        elif severity_score >= 4.0 and severity_score <=6.9:
+            risk_rank = 2
+        elif severity_score >= 7.0 and severity_score <= 8.9:
+            risk_rank = 3
+        elif severity_score >= 9.0 and severity_score <= 10.0:
+            risk_rank = 4
+        else:
+            risk_rank = 0
+    remediation = vuln.get('remediation', [])
+    solutions = []
+    for solution in remediation:
+        title = solution.get('message', '')
+        text = solution.get('help_text', '')
+        solutions.append(title + ': ' + text)
+    solution = solutions.join()
+    solution = solution[:1023]
+
+    # Map custom attributes
+    affects_rating = str(vuln.get('affects_rating', ''))
+    evidence_key = vuln.get('evidence_key', '')
+    pcap_id = vuln.get('pcap_id', '')
+    remaining_decay = vuln.get('remaining_decay', '')
+    remediated = vuln.get('remediated', '')
+
+    custom_attrs = {
+                    'affectsRating': affects_rating,
+                    'evidenceKey': evidence_key,
+                    'pcapId': pcap_id,
+                    'remainingDecay': remaining_decay,
+                    'remediated': remediated 
+                    }
+
+    attributed_companies = vuln.get('attributed_companies', [])
+    for company in attributed_companies:
+        for k, v in company.items():
+            custom_attributes['attributedCompanies' + str(list.index(company)) + k] = v
+    
+    # if cve_id:
+    #     return Vulnerability(id=identifier,
+    #                         cve=cve_id,
+    #                         name=name,
+    #                         description=description,
+    #                         firstDetectedTS=first_detected_timestamp,
+    #                         serviceAddress=service_address,
+    #                         servicePort=service_port,
+    #                         serviceTransport=service_transport,
+    #                         #exploitable=exploitable,
+    #                         cvss2BaseScore=cvss2_base_score,
+    #                         #cvss3BaseScore=cvss3_base_score,
+    #                         riskRank=risk_rank,
+    #                         severityScore=severity_score,
+    #                         # severityRank=severity_rank,
+    #                         solution=solution,
+    #                         customAttributes=custom_attrs
+    #                         )
+    # else:
+    return Vulnerability(id=identifier,
+                        #name=name,
+                        #description=description,
+                        firstDetectedTS=first_detected_timestamp,
+                        serviceAddress=service_address,
+                        servicePort=service_port,
+                        #serviceTransport=service_transport,
+                        #exploitable=exploitable,
+                        cvss2BaseScore=cvss2_base_score,
+                        #cvss3BaseScore=cvss3_base_score,
+                        riskRank=risk_rank,
+                        # severityScore=severity_score,
+                        # severityRank=severity_rank,
+                        solution=solution,
+                        customAttributes=custom_attrs
+                        )
 
 def get_assets(company_id, token):
     assets_all = []
@@ -116,7 +225,7 @@ def get_assets(company_id, token):
     while len(assets_all) > total_count - 1:
         response = http_get(url, headers=headers, params=params)
         if response.status_code != 200:
-            print('failed to retrieve assets from page ' + str(page), 'status code: ' + str(response.status_code))
+            print('failed to retrieve assets', 'status code: ' + str(response.status_code))
             break
         else:
             data = json_decode(response.body)
@@ -127,7 +236,7 @@ def get_assets(company_id, token):
 
     return assets_all
 
-def get_findings(company_id, asset_id, token):
+def get_findings(asset_id, company_id, token):
     vulns_all = []
     vulns_count = 10000
     url = BITSIGHT_BASE_URL + '/ratings/v1/companies/' + company_id + '/findings?'
@@ -135,17 +244,17 @@ def get_findings(company_id, asset_id, token):
                     'Authorization': 'Bearer ' + token}
     params = {'asset': asset_id}
 
-    while len(assets_all) > total_count - 1:
+    while len(vulns_all) > total_count - 1:
         response = http_get(url, headers=headers, params=params)
         if response.status_code != 200:
-            print('failed to retrieve assets from page ' + str(page), 'status code: ' + str(response.status_code))
+            print('failed to retrieve findings', 'status code: ' + str(response.status_code))
             break
         else:
             data = json_decode(response.body)
             url = data.get('links', {}).get('next', '')
             total_count = data.get('count', 1)
-            assets = data.get('results', [])
-            assets_all.extend(assets)    
+            findings = data.get('results', [])
+            vulns_all.extend(findings)    
 
     return vulns_all
 
