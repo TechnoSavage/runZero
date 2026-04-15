@@ -68,7 +68,7 @@ def build_assets(assets, company_id, token):
         products = asset.get('products', [])
         for product in products:
             for k, v in product.items():
-                custom_attrs['product' + str(list.index(product)) + k] = v
+                custom_attributes['product' + str(list.index(product)) + k] = v
 
         # Retrive and map vulnerabilities
         vulns = []
@@ -194,7 +194,7 @@ def build_vuln(vuln):
     #                         severityScore=severity_score,
     #                         # severityRank=severity_rank,
     #                         solution=solution,
-    #                         customAttributes=custom_attrs
+    #                         customAttributes=custom_attributes
     #                         )
     # else:
     return Vulnerability(id=identifier,
@@ -211,7 +211,7 @@ def build_vuln(vuln):
                         # severityScore=severity_score,
                         # severityRank=severity_rank,
                         solution=solution,
-                        customAttributes=custom_attrs
+                        customAttributes=custom_attributes
                         )
 
 def get_assets(company_id, token):
