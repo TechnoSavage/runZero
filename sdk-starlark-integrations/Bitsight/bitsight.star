@@ -222,7 +222,7 @@ def get_assets(company_id, token):
                     'Authorization': 'Bearer ' + token}
     params = {}
     
-    while len(assets_all) > total_count - 1:
+    while len(assets_all) < total_count - 1:
         response = http_get(url, headers=headers, params=params)
         if response.status_code != 200:
             print('failed to retrieve assets', 'status code: ' + str(response.status_code))
@@ -244,7 +244,7 @@ def get_findings(asset_id, company_id, token):
                     'Authorization': 'Bearer ' + token}
     params = {'asset': asset_id}
 
-    while len(vulns_all) > total_count - 1:
+    while len(vulns_all) < total_count - 1:
         response = http_get(url, headers=headers, params=params)
         if response.status_code != 200:
             print('failed to retrieve findings', 'status code: ' + str(response.status_code))
