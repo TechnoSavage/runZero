@@ -1,3 +1,4 @@
+load('base64', base64_encode='encode', base64_decode='decode')
 load('http', http_get='get', http_post='post', 'url_encode')
 load('json', json_encode='encode', json_decode='decode')
 load('net', 'ip_address')
@@ -214,12 +215,12 @@ def build_vuln(vuln):
                         customAttributes=custom_attributes
                         )
 
-def get_assets(company_id, token):
+def get_assets(company_id, creds):
     assets_all = []
     total_count = 10000
     url = BITSIGHT_BASE_URL + '/ratings/v1/companies/' + company_id + '/assets?'
     headers = {'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + token}
+                    'Authorization': 'Basic ' + creds}
     params = {}
     
     while len(assets_all) < total_count - 1:
@@ -236,12 +237,12 @@ def get_assets(company_id, token):
 
     return assets_all
 
-def get_findings(asset_id, company_id, token):
+def get_findings(asset_id, company_id, creds):
     vulns_all = []
     vulns_count = 10000
     url = BITSIGHT_BASE_URL + '/ratings/v1/companies/' + company_id + '/findings?'
     headers = {'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + token}
+                    'Authorization': 'Basic ' + creds}
     params = {'asset': asset_id}
 
     while len(vulns_all) < total_count - 1:
@@ -262,7 +263,8 @@ def get_findings(asset_id, company_id, token):
 def main(*args, **kwargs):
     company_id = kwargs['access_key']
     token = kwargs['access_secret']
-    assets = get_assets(company_id, token)
+    b64_creds = base64_encode(token + ':')
+    assets = get_assets(company_id, b64_creds)
 
     # Format asset list for import into runZero
     import_assets = build_assets(assets, company_id, token)
