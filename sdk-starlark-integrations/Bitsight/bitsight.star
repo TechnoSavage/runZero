@@ -10,15 +10,14 @@ load('uuid', 'new_uuid')
 BITSIGHT_BASE_URL = 'https://api.bitsighttech.com'
 RUNZERO_REDIRECT = 'https://console.runzero.com/'
 
-def build_assets(assets, company_id, token):
+def build_assets(assets, company_id, creds):
     assets_import = []
     for asset in assets:
         asset_id = str(asset.get('temporary_id', new_uuid))
-        ip_addresses = asset.get('ip_adddresses', [])
+        ip_addresses = asset.get('ip_addresses', [])
 
         # create the network interfaces
-        interfaces = build_network_interface(ips=ip_addresses, mac=None)
-
+        interface = build_network_interface(ips=ip_addresses, mac=None)
 
         bitsight_tags = asset.get('tags', [])
         tags = []
@@ -28,22 +27,38 @@ def build_assets(assets, company_id, token):
         asset_name = asset.get('asset', '')
         asset_type = asset.get('asset_type', '')
         app_grade = str(asset.get('app_grade', ''))
-        country_code = asset.get('country_code', '')
-        country = asset.get('coutry', '')
-        hosted_by_guid = asset.get('hosted_by', {}).get('guid', '')
-        hosted_by_name = asset.get('hosted_by', {}).get('name', '')
+        country_code = str(asset.get('country_code', ''))
+        country = str(asset.get('coutry', ''))
+        hosted_by = asset.get('hosted_by') or {}
+        hosted_by_guid = hosted_by.get('guid', '')
+        hosted_by_name = hosted_by.get('name', '')
         importance = str(asset.get('importance', ''))
         importance_category = asset.get('importance_category', '')
         long = str(asset.get('longitude', ''))
         lat = str(asset.get('latitude', ''))
-        origins_sub_guid = asset.get('origin_subsidiary', {}).get('guid', '')
-        origins_sub_name = asset.get('origin_subsidiary', {}).get('name', '')
+        origin_sub = asset.get('origin_subsidiary') or {}
+        origin_sub_guid = origin_sub.get('guid', '')
+        origin_sub_name = origin_sub.get('name', '')
         is_monitored = str(asset.get('is_monitored', ''))
-        cloud_context = asset.get('cloud_context', {})
-        slug = cloud_context.get('provider', {}).get('slug', '')
-        cloud_name = cloud_context.get('provider', {}).get('name', '')
-        region = cloud_context.get('provider', {}).get('region', '')
-        service = cloud_context.get('provider', {}).get('service', '')
+        grace_period_end_date = str(asset.get('grace_period_end_date', ''))
+        is_in_grace_period = str(asset.get('is_in_grace_period', ''))
+        guest_network_end_date = str(asset.get('guest_network_end_date', ''))
+        is_in_guest_network = str(asset.get('is_in_guest_network', ''))
+        cloud_context = asset.get('cloud_context') or {}
+        provider = cloud_context.get('provider') or {}
+        slug = provider.get('slug', '')
+        cloud_name = provider.get('name', '')
+        region = provider.get('region', '')
+        service = provider.get('service', '')
+        findings = asset.get('findings') or {}
+        findings_count_total = str(findings.get('total_count', 0))
+        findings_count_severe = str(findings.get('counts_by_severity', {}).get('severe', 0))
+        findings_count_material = str(findings.get('counts_by_severity', {}).get('material', 0))
+        findings_count_moderate = str(findings.get('counts_by_severity', {}).get('moderate', 0))
+        findings_count_minor = str(findings.get('counts_by_severity', {}).get('minor', 0))
+        threats = asset.get('threats') or {}
+        threat_ids = threats.get('rolledup_observation_ids', [])
+        evidence_keys = threats.get('evidence_keys', [])
 
         custom_attributes = {
                              'asset': asset_name,
@@ -57,26 +72,37 @@ def build_assets(assets, company_id, token):
                              'importanceCategory': importance_category,
                              'longitude': long,
                              'latitude': lat,
-                             'originSubsidiary.guid': origins_sub_guid,
-                             'originSubsidiary.name': origins_sub_name,
+                             'originSubsidiary.guid': origin_sub_guid,
+                             'originSubsidiary.name': origin_sub_name,
                              'isMonitored': is_monitored,
+                             'gracePeriodEndDate': grace_period_end_date,
+                             'isInGracePeriod': is_in_grace_period,
+                             'guestNetworkEndDate': guest_network_end_date,
+                             'isInGuestNetwork': is_in_guest_network,
                              'cloudContext.slug': slug,
                              'cloudContext.name': cloud_name,
                              'cloudContext.region': region,
-                             'cloudContext.service': service
+                             'cloudContext.service': service,
+                             'findingsCount.total': findings_count_total,
+                             'findingsCount.severe': findings_count_severe,
+                             'findingsCount.material': findings_count_material,
+                             'findingsCount.moderate': findings_count_moderate,
+                             'findingsCount.minor': findings_count_minor,
+                             'threats.rolledUpObservationIds': threat_ids[:1023],
+                             'threats.evidenceKeys': evidence_keys[:1023]
                              }
         
         products = asset.get('products', [])
         for product in products:
             for k, v in product.items():
-                custom_attributes['product' + str(list.index(product)) + k] = v
+                custom_attributes['product' + str(products.index(product)) + k] = v
 
-        # Retrive and map vulnerabilities
         vulns = []
-        findings = get_findings(asset_id, company_id, token)
-        for finding in findings:
-            vuln = build_vuln(finding)
-            vulns.append(vuln)
+        for address in addresses:
+            findings = get_findings(address, company_id, creds)
+            for finding in findings:
+                vuln = build_vuln(finding, address)
+                vulns.append(vuln)
             
 
         # Build assets for import
@@ -84,7 +110,7 @@ def build_assets(assets, company_id, token):
             ImportAsset(
                 id=asset_id,
                 tags=tags,
-                networkInterfaces=interfaces,
+                networkInterfaces=[interface],
                 customAttributes=custom_attributes,
                 vulnerabilities=vulns
             )
@@ -107,37 +133,34 @@ def build_network_interface(ips, mac):
     else:
         return NetworkInterface(macAddress=mac, ipv4Addresses=ip4s, ipv6Addresses=ip6s)
 
-def build_vuln(vuln):
-    ref = vuln.get()
-    identifier = vuln.get('identifier', '')
-    # cve_id = vuln.get('identifier', '')
-    # name = vuln.get()
-    # if identifier == '' or identifier == None:
-        # identifier = name
-    # description = vuln.get()
-    # if description:
-        # description = description[:1023]
-    service_address = vuln.get()
-    if service_address:
-        service_address = ip_address(service_address)
-    service_port = int(vuln.get('details', {}).get('src_port', 0))
-    # service_transport = vuln.get()
+def build_vuln(vuln, address):
+    details = vuln.get('details') or {}
+    diligence_annotations = details.get('diligence_annotations') or {}
+    identifier = diligence_annotations.get('message', '')
+    name = identifier
+    description = diligence_annotations.get('Title', '')
+    if description:
+        description = description[:1023]
+    service_address = address
+    service_port = int(details.get('dest_port', 0))
+    service_transport = diligence_annotations.get('transport', '')
     first_detected_timestamp = vuln.get('first_seen', '')
-    if first_detected_timestamp:
-        first_detected_timestamp = parse_time(first_detected_timestamp).unix
+    # reformat timestamp if it is not in proper format
+    if first_detected_timestamp and 'T' not in first_detected_timestamp:
+        first_detected_timestamp = first_detected_timestamp + 'T00:00:00Z'
+    first_detected_timestamp = parse_time(first_detected_timestamp).unix
     #exploitability = detail.get('')
     #if not exploitability:
         #exploitability = detail.get('')
     #exploitable = True if float(exploitability) >= 5.0 else False
-    cvss2_base_score = vuln.get('check_cvss', '')
+    cvss2_base_score = details.get('cvss', {}).get('base', [])
     if cvss2_base_score:
-        cvss2_base_score = float(cvss2_base_score)
-    #cvss3_base_score = detail.get('')
-    #if cvss3_base_score:
-        #cvss3_base_score = float(cvss3_base_score)
+        cvss2_base_score = float(cvss2_base_score[0])
+    else:
+        cvss2_base_score = 0
     # risk_score = detail.get()
     # risk_rank = detail.get()
-    severity_score = vuln.get('severity', '')
+    severity_score = vuln.get('severity') or 0
     if severity_score:
         severity_score = float(severity_score)
         if severity_score >= 0.1 and severity_score <=3.9:
@@ -150,13 +173,13 @@ def build_vuln(vuln):
             risk_rank = 4
         else:
             risk_rank = 0
-    remediation = vuln.get('remediation', [])
+    remediation = details.get('remediation', [])
     solutions = []
-    for solution in remediation:
-        title = solution.get('message', '')
-        text = solution.get('help_text', '')
+    for recommendation in remediation:
+        title = recommendation.get('message', '')
+        text = recommendation.get('help_text', '')
         solutions.append(title + ': ' + text)
-    solution = solutions.join()
+    solution = '\n'.join(solutions)
     solution = solution[:1023]
 
     # Map custom attributes
@@ -165,51 +188,42 @@ def build_vuln(vuln):
     pcap_id = vuln.get('pcap_id', '')
     remaining_decay = vuln.get('remaining_decay', '')
     remediated = vuln.get('remediated', '')
+    risk_category = vuln.get('risk_category', '')
+    risk_vector = vuln.get('risk_vector', '')
+    risk_vector_label = vuln.get('risk_vector_label', '')
+    severity_category = vuln.get('severity_category', '')
+    threat_groups = vuln.get('threat_groups', [])
+    if threat_groups:
+        threat_groups = '\n'.join(threat_groups_list)
+    else:
+        threat_groups = ''
+    threat_activity_score_label = vuln.get('threat_activity_score_label', '')
 
-    custom_attrs = {
+    custom_attributes = {
                     'affectsRating': affects_rating,
                     'evidenceKey': evidence_key,
                     'pcapId': pcap_id,
                     'remainingDecay': remaining_decay,
-                    'remediated': remediated 
+                    'remediated': remediated,
+                    'riskCategory': risk_category,
+                    'riskVector': risk_vector,
+                    'rickVectorLabel': risk_vector_label,
+                    'severityCategory': severity_category,
+                    'threatGroups': threat_groups,
+                    'threatActivityScoreLabel': threat_activity_score_label
                     }
-
-    attributed_companies = vuln.get('attributed_companies', [])
-    for company in attributed_companies:
-        for k, v in company.items():
-            custom_attributes['attributedCompanies' + str(list.index(company)) + k] = v
     
-    # if cve_id:
-    #     return Vulnerability(id=identifier,
-    #                         cve=cve_id,
-    #                         name=name,
-    #                         description=description,
-    #                         firstDetectedTS=first_detected_timestamp,
-    #                         serviceAddress=service_address,
-    #                         servicePort=service_port,
-    #                         serviceTransport=service_transport,
-    #                         #exploitable=exploitable,
-    #                         cvss2BaseScore=cvss2_base_score,
-    #                         #cvss3BaseScore=cvss3_base_score,
-    #                         riskRank=risk_rank,
-    #                         severityScore=severity_score,
-    #                         # severityRank=severity_rank,
-    #                         solution=solution,
-    #                         customAttributes=custom_attributes
-    #                         )
-    # else:
     return Vulnerability(id=identifier,
-                        #name=name,
-                        #description=description,
+                        name=name,
+                        description=description,
                         firstDetectedTS=first_detected_timestamp,
                         serviceAddress=service_address,
                         servicePort=service_port,
-                        #serviceTransport=service_transport,
+                        serviceTransport=service_transport,
                         #exploitable=exploitable,
                         cvss2BaseScore=cvss2_base_score,
-                        #cvss3BaseScore=cvss3_base_score,
                         riskRank=risk_rank,
-                        # severityScore=severity_score,
+                        severityScore=severity_score,
                         # severityRank=severity_rank,
                         solution=solution,
                         customAttributes=custom_attributes
@@ -237,15 +251,15 @@ def get_assets(company_id, creds):
 
     return assets_all
 
-def get_findings(asset_id, company_id, creds):
+def get_findings(address, company_id, creds):
     vulns_all = []
     vulns_count = 10000
     url = BITSIGHT_BASE_URL + '/ratings/v1/companies/' + company_id + '/findings?'
     headers = {'Accept': 'application/json',
                     'Authorization': 'Basic ' + creds}
-    params = {'asset': asset_id}
+    params = {'assets.asset': address}
 
-    while len(vulns_all) < total_count - 1:
+    while len(vulns_all) < vulns_count - 1:
         response = http_get(url, headers=headers, params=params)
         if response.status_code != 200:
             print('failed to retrieve findings', 'status code: ' + str(response.status_code))
@@ -253,7 +267,7 @@ def get_findings(asset_id, company_id, creds):
         else:
             data = json_decode(response.body)
             url = data.get('links', {}).get('next', '')
-            total_count = data.get('count', 1)
+            vulns_count = data.get('count', 1)
             findings = data.get('results', [])
             vulns_all.extend(findings)    
 
@@ -267,7 +281,7 @@ def main(*args, **kwargs):
     assets = get_assets(company_id, b64_creds)
 
     # Format asset list for import into runZero
-    import_assets = build_assets(assets, company_id, token)
+    import_assets = build_assets(assets, company_id, b64_creds)
     if not import_assets:
         print('no assets')
         return None
