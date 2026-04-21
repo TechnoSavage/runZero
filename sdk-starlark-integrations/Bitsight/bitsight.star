@@ -98,7 +98,7 @@ def build_assets(assets, company_id, creds):
                 custom_attributes['product' + str(products.index(product)) + k] = v
 
         vulns = []
-        for address in addresses:
+        for address in ip_addresses:
             findings = get_findings(address, company_id, creds)
             for finding in findings:
                 vuln = build_vuln(finding, address)
@@ -192,8 +192,8 @@ def build_vuln(vuln, address):
     risk_vector = vuln.get('risk_vector', '')
     risk_vector_label = vuln.get('risk_vector_label', '')
     severity_category = vuln.get('severity_category', '')
-    threat_groups = vuln.get('threat_groups', [])
-    if threat_groups:
+    threat_groups_list = vuln.get('threat_groups', [])
+    if threat_groups_list:
         threat_groups = '\n'.join(threat_groups_list)
     else:
         threat_groups = ''
