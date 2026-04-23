@@ -150,17 +150,11 @@ def build_vuln(vuln, address):
     if first_detected_timestamp and 'T' not in first_detected_timestamp:
         first_detected_timestamp = first_detected_timestamp + 'T00:00:00Z'
     first_detected_timestamp = parse_time(first_detected_timestamp)
-    #exploitability = detail.get('')
-    #if not exploitability:
-        #exploitability = detail.get('')
-    #exploitable = True if float(exploitability) >= 5.0 else False
     cvss2_base_score = details.get('cvss', {}).get('base', [])
     if cvss2_base_score:
         cvss2_base_score = float(cvss2_base_score[0])
     else:
         cvss2_base_score = 0
-    # risk_score = detail.get()
-    # risk_rank = detail.get()
     severity_score = vuln.get('severity') or 0
     if severity_score:
         severity_score = float(severity_score)
@@ -221,11 +215,9 @@ def build_vuln(vuln, address):
                         serviceAddress=service_address,
                         servicePort=service_port,
                         serviceTransport=service_transport,
-                        #exploitable=exploitable,
                         cvss2BaseScore=cvss2_base_score,
                         riskRank=risk_rank,
                         severityScore=severity_score,
-                        # severityRank=severity_rank,
                         solution=solution,
                         customAttributes=custom_attributes
                         )
