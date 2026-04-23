@@ -109,6 +109,7 @@ def build_assets(assets, company_id, creds):
         assets_import.append(
             ImportAsset(
                 id=asset_id,
+                hostnames=[asset_name],
                 tags=tags,
                 networkInterfaces=[interface],
                 customAttributes=custom_attributes,
@@ -144,11 +145,11 @@ def build_vuln(vuln, address):
     service_address = address
     service_port = int(details.get('dest_port', 0))
     service_transport = diligence_annotations.get('transport', '')
-    first_detected_timestamp = vuln.get('first_seen', '')
+    first_detected_timestamp = vuln.get('first_seen')
     # reformat timestamp if it is not in proper format
     if first_detected_timestamp and 'T' not in first_detected_timestamp:
         first_detected_timestamp = first_detected_timestamp + 'T00:00:00Z'
-    first_detected_timestamp = parse_time(first_detected_timestamp).unix
+    first_detected_timestamp = parse_time(first_detected_timestamp)
     #exploitability = detail.get('')
     #if not exploitability:
         #exploitability = detail.get('')
