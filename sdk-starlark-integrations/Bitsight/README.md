@@ -31,7 +31,7 @@ git clone https://github.com/TechnoSavage/runZero.git
 ### Bitsight configuration
 
 1. Determine the proper Bitsight URL:
-    - Assign the URL to `BITSIGHT_BASE_URL` within the starlark script 
+    - Assign the URL to `BITSIGHT_BASE_URL` within the starlark script. This field is already populated with the commonly used URL.
 2. Create an API token for API access (Company or User token): 
     - Copy the API token to the the value for `access_secret` when creating the Custom Integration credentials in the runZero console (see below)
 
@@ -48,13 +48,15 @@ git clone https://github.com/TechnoSavage/runZero.git
 3. [Create the Custom Integration](https://console.runzero.com/custom-integrations/new)
     - Add a Name and Icon 
     - Toggle `Enable custom integration script` to input your finalized script
+    - Make any modifications to the script for the desired output.
+    -- By default, the script will return all Bitsight assets including IP address-based assets and domain-based assets. If preferred, the script can return only IP-based assets by uncommenting the optional query parameters in the get_assets function (Noted by a comment in the script.)
     - Click `Validate` to ensure it has valide syntax
     - Click `Save` to create the Custom Integration 
 4. [Create the Custom Integration task](https://console.runzero.com/ingest/custom/)
     - Select the Credential and Custom Integration created in steps 2 and 3
     - Update the task schedule to recur at the desired timeframes
     - Select the Explorer you'd like the Custom Integration to run from
-    - Click `Save` to kick off the first task 
+    - Click `Save` to kick off the first task
 
 
 ### What's next?
