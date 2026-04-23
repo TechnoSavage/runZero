@@ -229,7 +229,9 @@ def get_assets(company_id, creds):
     headers = {'Accept': 'application/json',
                     'Authorization': 'Basic ' + creds}
     params = {}
-    
+    # To return only IP-based assets (i.e. filter out domains and CIDRs) comment the above params variable and uncomment the following params variable
+    # params = {is_ip: true}
+
     while len(assets_all) < total_count - 1:
         response = http_get(url, headers=headers, params=params)
         if response.status_code != 200:
