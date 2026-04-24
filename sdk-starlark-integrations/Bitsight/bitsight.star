@@ -16,9 +16,6 @@ def build_assets(assets, company_id, creds):
         asset_id = str(asset.get('temporary_id', new_uuid))
         ip_addresses = asset.get('ip_addresses', [])
 
-        # create the network interfaces
-        interface = build_network_interface(ips=ip_addresses, mac=None)
-
         bitsight_tags = asset.get('tags', [])
         tags = []
         for tag in bitsight_tags:
@@ -98,12 +95,20 @@ def build_assets(assets, company_id, creds):
                 custom_attributes['product' + str(products.index(product)) + k] = v
 
         vulns = []
-        for address in ip_addresses:
-            findings = get_findings(address, company_id, creds)
+        if ip_addresses:
+            for address in ip_addresses:
+                findings = get_findings(address, company_id, creds)
+                for finding in findings:
+                    vuln = build_vuln(finding)
+                    vulns.append(vuln)
+        elif not ip_addresses and asset_name:
+            findings = get_findings(asset_name, company_id, creds)
             for finding in findings:
-                vuln = build_vuln(finding, address)
+                vuln = build_vuln(finding)
                 vulns.append(vuln)
-            
+        
+        # create the network interfaces
+        interface = build_network_interface(ips=ip_addresses, mac=None)
 
         # Build assets for import
         assets_import.append(
@@ -134,15 +139,24 @@ def build_network_interface(ips, mac):
     else:
         return NetworkInterface(macAddress=mac, ipv4Addresses=ip4s, ipv6Addresses=ip6s)
 
-def build_vuln(vuln, address):
+def build_vuln(vuln):
     details = vuln.get('details') or {}
+    observed_ips = details.get('observed_ips') or []
     diligence_annotations = details.get('diligence_annotations') or {}
     identifier = diligence_annotations.get('message', '')
     name = identifier
     description = diligence_annotations.get('Title', '')
     if description:
         description = description[:1023]
-    service_address = address
+    if len(observed_ips) > 0:
+        host = observed_ips[0]
+        if '[' in host:
+            resolved_ip = host.split('[')[1]
+            service_address = resolved_ip.split(']')[0]
+        else:
+            service_address = host.split(':')[0]
+    else:
+        service_address = ''
     service_port = int(details.get('dest_port', 0))
     service_transport = diligence_annotations.get('transport', '')
     first_detected_timestamp = vuln.get('first_seen')
@@ -246,13 +260,13 @@ def get_assets(company_id, creds):
 
     return assets_all
 
-def get_findings(address, company_id, creds):
+def get_findings(asset, company_id, creds):
     vulns_all = []
     vulns_count = 10000
     url = BITSIGHT_BASE_URL + '/ratings/v1/companies/' + company_id + '/findings?'
     headers = {'Accept': 'application/json',
                     'Authorization': 'Basic ' + creds}
-    params = {'assets.asset': address}
+    params = {'assets.asset': asset}
 
     while len(vulns_all) < vulns_count - 1:
         response = http_get(url, headers=headers, params=params)
