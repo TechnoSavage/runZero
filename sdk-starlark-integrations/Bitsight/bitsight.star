@@ -15,12 +15,8 @@ def build_assets(assets, company_id, creds):
     for asset in assets:
         asset_id = str(asset.get('temporary_id', new_uuid))
         ip_addresses = asset.get('ip_addresses', [])
-
-        bitsight_tags = asset.get('tags', [])
-        tags = []
-        for tag in bitsight_tags:
-            tag = tag.strip().replace(' ', '_')
-            tags.append(tag)
+        bitsight_tags = asset.get('tags') or []
+        tags = [tag.strip().replace(' ', '_') for tag in bitsight_tags]
         asset_name = asset.get('asset', '')
         asset_type = asset.get('asset_type', '')
         app_grade = str(asset.get('app_grade', ''))
@@ -146,50 +142,35 @@ def build_vuln(vuln):
     identifier = diligence_annotations.get('message', '')
     name = identifier
     description = diligence_annotations.get('Title', '')
-    if description:
-        description = description[:1023]
-    if len(observed_ips) > 0:
-        host = observed_ips[0]
-        if '[' in host:
-            resolved_ip = host.split('[')[1]
-            service_address = resolved_ip.split(']')[0]
-        else:
-            service_address = host.split(':')[0]
+    description = description[:1023] if description else ''
+    service_address = observed_ips[0] if len(observed_ips) > 0 else ''
+    if '[' in service_address:
+        resolved_ip = service_address.split('[')[1]
+        service_address = resolved_ip.split(']')[0]
     else:
-        service_address = ''
+        service_address = service_address.split(':')[0]
     service_port = int(details.get('dest_port', 0))
     service_transport = diligence_annotations.get('transport', '')
-    first_detected_timestamp = vuln.get('first_seen')
+    first_seen = vuln.get('first_seen')
     # reformat timestamp if it is not in proper format
-    if first_detected_timestamp and 'T' not in first_detected_timestamp:
-        first_detected_timestamp = first_detected_timestamp + 'T00:00:00Z'
-    first_detected_timestamp = parse_time(first_detected_timestamp)
+    if first_seen and 'T' not in first_seen: first_seen = first_seen + 'T00:00:00Z'
+    first_detected_ts = parse_time(first_seen)
     cvss2_base_score = details.get('cvss', {}).get('base', [])
-    if cvss2_base_score:
-        cvss2_base_score = float(cvss2_base_score[0])
+    cvss2_base_score = float(cvss2_base_score[0]) if cvss2_base_score else 0
+    severity_score = float(vuln.get('severity') or 0)
+    if severity_score >= 0.1 and severity_score <=3.9:
+        risk_rank = 1
+    elif severity_score >= 4.0 and severity_score <=6.9:
+        risk_rank = 2
+    elif severity_score >= 7.0 and severity_score <= 8.9:
+        risk_rank = 3
+    elif severity_score >= 9.0 and severity_score <= 10.0:
+        risk_rank = 4
     else:
-        cvss2_base_score = 0
-    severity_score = vuln.get('severity') or 0
-    if severity_score:
-        severity_score = float(severity_score)
-        if severity_score >= 0.1 and severity_score <=3.9:
-            risk_rank = 1
-        elif severity_score >= 4.0 and severity_score <=6.9:
-            risk_rank = 2
-        elif severity_score >= 7.0 and severity_score <= 8.9:
-            risk_rank = 3
-        elif severity_score >= 9.0 and severity_score <= 10.0:
-            risk_rank = 4
-        else:
-            risk_rank = 0
+        risk_rank = 0
     remediation = details.get('remediation', [])
-    solutions = []
-    for recommendation in remediation:
-        title = recommendation.get('message', '')
-        text = recommendation.get('help_text', '')
-        solutions.append(title + ': ' + text)
-    solution = '\n'.join(solutions)
-    solution = solution[:1023]
+    solutions = [r.get('message', '') + ': ' + r.get('help_text', '') for r in remediation]
+    solution = '\n'.join(solutions)[:1023]
 
     # Map custom attributes
     affects_rating = str(vuln.get('affects_rating', ''))
@@ -202,10 +183,7 @@ def build_vuln(vuln):
     risk_vector_label = vuln.get('risk_vector_label', '')
     severity_category = vuln.get('severity_category', '')
     threat_groups_list = vuln.get('threat_groups', [])
-    if threat_groups_list:
-        threat_groups = '\n'.join(threat_groups_list)
-    else:
-        threat_groups = ''
+    threat_groups = '\n'.join(threat_groups_list) if threat_groups_list else ''
     threat_activity_score_label = vuln.get('threat_activity_score_label', '')
 
     custom_attributes = {
@@ -225,7 +203,7 @@ def build_vuln(vuln):
     return Vulnerability(id=identifier,
                         name=name,
                         description=description,
-                        firstDetectedTS=first_detected_timestamp,
+                        firstDetectedTS=first_detected_ts,
                         serviceAddress=service_address,
                         servicePort=service_port,
                         serviceTransport=service_transport,
