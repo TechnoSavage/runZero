@@ -39,6 +39,7 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 1. (OPTIONAL) - make any neccessary changes to the script to align with your environment. 
     - Modify API calls as needed to filter assets
+      - Bitsight classifies a few asset types (IP, CIDR, Domain). The default behavior of the script is to import only IP-based assets as these are easily merged with existing assets. In testing it also appeared that many domain-based assets are subdomains belonging to IP-based assets, ultimately, creating duplicates of little value. If a user wishes to import all assets types as opposed to just IP-based see the comment on line 224 of the script.
     - Modify datapoints uploaded to runZero as needed 
 2. [Create the Credential for the Custom Integration](https://console.runzero.com/credentials)
     - Select the type `Custom Integration Script Secrets`
