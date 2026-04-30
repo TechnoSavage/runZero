@@ -12,27 +12,26 @@ RUNZERO_REDIRECT = 'https://console.runzero.com/'
 def build_assets(assets):
     assets_import = []
     for asset in assets:
-        asset_id = str(asset.get('DiscoveryId', new_uuid))
+        asset_id = str(asset.get('DiscoveryId', str(new_uuid)))
         hostname = asset.get('DeviceName', '')
         os = asset.get('OS', {}).get('Name', '')
+        os_version = asset.get('OS', {}).get('Version', '')
+        os = os + ' ' + os_version if os_version else os
         model = asset.get('System', {}).get('Model', '')
 
         # create the network interfaces
-        address_list = []
         tcpip = asset.get('Network', {}).get('TCPIP', {})
-        for ip_address in tcpip:
-            address = ip_address.get('Address', None)
-            if address:
-                address_list.append(address)
+        address_list = list(tcpip.values())
         interfaces = build_network_interface(ips=address_list, mac=None)
 
         #map additional custom attributes
         displayname = asset.get('DisplayName', '')
-        os_version = asset.get('OS', {}).get('Version', '')
+        device_id = asset.get('DeviceID', '')
 
         custom_attributes = {
                              'discoveryId': asset_id,
                              'deviceName': hostname,
+                             'deviceId': device_id,
                              'displayName': displayname,
                              'os.name': os,
                              'os.version': os_version,
@@ -46,7 +45,7 @@ def build_assets(assets):
                 hostnames=[hostname],
                 os=os,
                 model=model,
-                networkInterfaces=interfaces,
+                networkInterfaces=[interfaces],
                 customAttributes=custom_attributes
             )
         )
@@ -73,17 +72,18 @@ def get_assets(token):
     url = NEURONS_AUTH_URL + '/api/apigatewaydataservices/v1/devices'
     headers = {'Accept': 'application/json',
                 'Authorization': 'Bearer ' + token}
-    next_url = '/api/apigatewaydataservices/v1/devices'
-    while next_url:
+    total_assets = 1000
+    while len(assets_all) < (total_assets - 1):
         response = http_get(url, headers=headers)
         if response.status_code != 200:
-            print('failed to retrieve devices from ' + next_url, 'status code: ' + str(response.status_code))
+            print('failed to retrieve devices from ' + url, 'status code: ' + str(response.status_code))
             break
         else:
             data = json_decode(response.body)
             assets = data['value']
             assets_all.extend(assets)
-            next_url = data.get('@odata.nextLink', None)   
+            total_assets = data.get('@odata.count')
+            url = data.get('@odata.nextLink')   
 
     return assets_all
 
@@ -93,18 +93,16 @@ def get_token(client_id, client_secret):
                'X-ClientSecret': client_secret,
                'X-TenantId': NEURONS_TENANT_ID,
                'X-ClientId': client_id}
-    
     response = http_get(url, headers=headers)
     if response.status_code != 200:
         print('authentication failed: ' + str(response.status_code))
         return None
-
-    auth_data = json_decode(response.body)
+    auth_data = response.body
     if not auth_data:
         print('invalid authentication data')
         return None
 
-    return auth_data['access_token']  
+    return auth_data
 
 def main(*args, **kwargs):
     client_id = kwargs['access_key']
