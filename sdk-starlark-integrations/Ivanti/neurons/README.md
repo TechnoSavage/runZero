@@ -24,6 +24,8 @@ git clone https://github.com/TechnoSavage/runZero.git
 
 `Tenant ID` - The tenant ID of the Neurons instance provided with the Auth URL upon a new app registration. Used in request headers when authenticating to the "People and Devices" API endpoint. (defined within the starlark script as `NEURONS_TENANT_ID`)
 
+The URL scheme is `https://<NEURONS_AUTH_URL>/<NEURONS_TENANT_ID>/`
+
 ## Ivanti Neurons API Docs
 
 - [Ivanti Neurons API](https://help.ivanti.com/ht/help/en_US/CLOUD/api/Shared-Content/welcome.htm)
