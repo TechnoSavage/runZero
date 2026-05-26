@@ -441,6 +441,44 @@ type:"IP Camera" OR type:"DVR" OR type:"Video Encoder"
 type:"ip camera" AND has_public:t AND (protocol:rtsp OR protocol:http)
 ```
 
+## Protocol Gateways
+
+### Identify Protocol Gateways
+
+```
+is:gateway
+```
+
+### Identify backplane devices behind protocol gateways
+
+```
+is:child
+```
+
+### Filter Gateways by protocol
+
+```
+gateway_kind:<protocol>
+```
+
+e.g.
+
+```
+gateway_kind:bacnet
+```
+
+### Filter child devices by protocol:
+
+```
+child_kind:<protocol>
+```
+
+e.g.
+
+```
+child_kind:bacnet
+```
+
 # Service Queries
 
 ### Online assets with SSH accepting password authentication:
