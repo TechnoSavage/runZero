@@ -1,10 +1,11 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    hwProfile.py, version 3.6
+    hwProfile.py, version 4.0
     Query runZero API for physical assets found within an Organization (tied to Export API key provided) and generate JSON
     output of all attributes describing the physical hardware of the asset."""
 
 import argparse
 import json
+import logging
 import os
 import pandas as pd
 import requests
@@ -12,6 +13,8 @@ from datetime import datetime, timezone
 from flatten_json import flatten
 from getpass import getpass
 from requests.exceptions import ConnectionError
+
+logger = logging.getLogger(__name__)
     
 def parseArgs():
     parser = argparse.ArgumentParser(description="Retrieve all hardware specific attributes.")
@@ -21,11 +24,13 @@ def parseArgs():
                         nargs='?', const=None, required=False, default=os.environ["RUNZERO_EXPORT_TOKEN"])
     parser.add_argument('-p', '--path', help='Path to write file. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
+    parser.add_argument('-l', '--log', help='Path to write log file. This argument will take priority over the .env file', 
+                        required=False, default=os.environ["LOG_PATH"])
     parser.add_argument('-o', '--output', dest='output', help='output file format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 3.6')
+    parser.add_argument('--version', action='version', version='%(prog)s 4.0')
     return parser.parse_args()
 
-def get_assets(url, token, filter=" ", fields=" "):
+def get_assets(url, token, filter='', fields=''):
     '''
         Retrieve assets using supplied query filter from Console and restrict to fields supplied.
         
@@ -44,15 +49,17 @@ def get_assets(url, token, filter=" ", fields=" "):
     headers = {'Accept': 'application/json',
                'Authorization': f'Bearer {token}'}
     try:
+        logger.info(f"Making GET request to {url}")
         response = requests.get(url, headers=headers, params=params, data=payload)
         if not response.ok:
-            print('Unable to retrieve assets' + str(response))
+            logger.critical('Unable to retrieve assets' + str(response), 'exiting...')
             exit()
+        logger.info("Received response.")
         content = response.json()
         return content
     except ConnectionError as error:
-        content = "No Response"
-        raise error
+        logger.exception('Could not establish connection to console URL, exiting...')
+        exit()
     
 def parse_hw(data):
     '''
@@ -65,7 +72,8 @@ def parse_hw(data):
     '''
     
     try:
-        assetList = []
+        logger.info('Parsing hardware from asset data.')
+        asset_list = []
         for item in data:
             asset = {}
             for key, value in item.items():
@@ -89,85 +97,99 @@ def parse_hw(data):
                 asset['device.model'] = flattened_items.get('foreign_attributes_@miradore.dev_0_device.model', '')
                 asset['device.serialnumber'] = flattened_items.get('foreign_attributes_@miradore.dev_0_device.serialNumber', '')
                 asset['systemProductName'] = flattened_items.get('foreign_attributes_@crowdstrike.dev_0_systemProductName', '')
-            assetList.append(asset)
-        return(assetList)
-    except TypeError as error:
-        raise error
+            asset_list.append(asset)
+        logger.info('Hardware parsing complete.')
+        return(asset_list)
+    except TypeError:
+        logger.exception('Data provided was not a dictionary. Exiting...')
+        exit()
     
-def output_format(format, fileName, data):
+def output_format(format, filename, data):
     '''
         Determine output format and call function to write appropriate file.
         
         :param format: A String, the desired output format.
-        :param fileName: A String, the filename, minus extension.
+        :param filename: A String, the filename, minus extension.
         :para data: json data, file contents
         :returns None: Calls another function to write the file or prints the output.
     '''
     
     if format == 'json':
-        fileName = f'{fileName}.json'
-        write_file(fileName, json.dumps(data))
+        filename = f'{filename}.json'
+        write_file(filename, json.dumps(data))
     elif format == 'txt':
-        fileName = f'{fileName}.txt'
-        stringList = []
+        filename = f'{filename}.txt'
+        string_list = []
         for line in data:
-            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
-        textFile = '\n'.join(stringList)
-        write_file(fileName, textFile)
+            string_list.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
+        text_file = '\n'.join(string_list)
+        write_file(filename, text_file)
     elif format in ('csv', 'excel', 'html'):
-        write_df(format, fileName, data)  
+        write_df(format, filename, data)  
     else:
         for line in data:
             print(json.dumps(line, indent=4))
     
-def write_df(format, fileName, data):
+def write_df(format, filename, data):
     '''
         Write contents to output file. 
     
         :param format: a string, excel, csv, or html
-        :param fileName: a string, the filename, excluding extension.
+        :param filename: a string, the filename, excluding extension.
         :param contents: json data, file contents.
         :raises: IOError: if unable to write to file.
     '''
     
     df = pd.DataFrame(data)
     try:
+        logger.info(f"Writing {filename} in {format} to disk.")
         if format == "excel":
-            df.to_excel(f'{fileName}.xlsx', freeze_panes=(1,0), na_rep='NA')
+            df.to_excel(f'{filename}.xlsx', freeze_panes=(1,0), na_rep='NA')
         elif format == 'csv':
-            df.to_csv(f'{fileName}.csv', na_rep='NA')
+            df.to_csv(f'{filename}.csv', na_rep='NA')
         else:
-            df.to_html(f'{fileName}.html', render_links=True, na_rep='NA')
-    except IOError as error:
-        raise error
+            df.to_html(f'{filename}.html', render_links=True, na_rep='NA')
+        logger.info(f"output file written to {filename} in {format}")
+    except IOError:
+       logger.exception(f"Could not write output file: {filename}, exiting...")
+       exit()
     
-def write_file(fileName, contents):
+def write_file(filename, contents):
     '''
         Write contents to output file. 
     
-        :param fileName: a string, name for file including (optionally) file extension.
+        :param filename: a string, name for file including (optionally) file extension.
         :param contents: anything, file contents.
         :raises: IOError: if unable to write to file.
     '''
 
     try:
-        with open( fileName, 'w') as o:
+        logger.info(f"Writing {filename} to disk.")
+        with open( filename, 'w') as o:
                     o.write(contents)
-    except IOError as error:
-        raise error
+        logger.info(f"{filename} successfully written to disk.")
+    except IOError:
+       logger.exception(f"Could not write output file: {filename}, exiting...")
+       exit()
     
-if __name__ == "__main__":
+def main():
     args = parseArgs()
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%a, %d %b %Y %H:%M:%S', filename=f'{args.log}/hwProfile.log', level=logging.INFO)
+    logger.info('Started')
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
-    fileName = f'{args.path}Physical_Hardware_Types_{timestamp}'
+    filename = f'{args.path}Physical_Hardware_Types_{timestamp}'
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
     #Query to grab all physical assets
-    query = "not attribute:virtual and not (source:vmware or source:aws or source:gcp or source:azure)"
+    query = "not attribute:=virtual and not (source:=vmware or source:=aws or source:=gcp or source:=azure)"
     #fields to return in API call; modify for more or less
     fields = "os, os_vendor, hw, addresses, attributes, foreign_attributes"
     results = get_assets(args.consoleURL, token, query, fields)
     parsed = parse_hw(results)
-    output_format(args.output, fileName, parsed)
+    output_format(args.output, filename, parsed)
+    logger.info('Finished.')
+
+if __name__ == "__main__":
+    main()
