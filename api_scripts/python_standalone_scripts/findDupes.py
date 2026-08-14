@@ -196,6 +196,7 @@ def write_file(filename, contents):
         logger.info(f"Writing {filename} to disk.")
         with open( filename, 'w') as o:
                     o.write(contents)
+        logger.info(f"{filename} successfully written to disk.")            
     except IOError:
         logger.exception(f"Could not write output file: {filename}, exiting...")
         exit()
@@ -206,7 +207,7 @@ def main():
     logger.info('Started')
     #Output report name; default uses UTC time
     timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
-    fileName = f'{args.path}Duplicate_Asset_Report_{timestamp}'
+    filename = f'{args.path}Duplicate_Asset_Report_{timestamp}'
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Export API Key: ")
@@ -214,7 +215,7 @@ def main():
     fields = "id, os, hw, addresses, macs, names, alive, site_id"
     assets = get_assets(args.consoleURL, token, f"first_seen:<{args.timeRange}", fields)
     dupes = find_dupes(assets)
-    output_format(args.output, fileName, dupes)
+    output_format(args.output, filename, dupes)
     logger.info('Finished.')
 
 if __name__ == "__main__":
