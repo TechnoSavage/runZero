@@ -1,17 +1,17 @@
 """ EXAMPLE PYTHON SCRIPT! NOT INTENDED FOR PRODUCTION USE! 
-    importScans.py, version 1.1
+    importScans.py, version 2.0
     Bulk import all runZero .json.gz scan files in a specified folder via the runZero API."""
 
 import argparse
-import json
+import logging
 import os
-import pandas as pd
 import re
 import requests
 import subprocess
-from datetime import datetime, timezone
 from getpass import getpass
 from requests.exceptions import ConnectionError
+
+logger = logging.getLogger(__name__)
     
 def parseArgs():
     parser = argparse.ArgumentParser(description="Import all runZero .json.gz scan files in a specified folder.")
@@ -26,8 +26,9 @@ def parseArgs():
     parser.add_argument('-o', '--output', help='Path to write log files. This argument will take priority over the .env file', 
                         required=False, default=os.environ["SAVE_PATH"])
     parser.add_argument('-c', '--clean', help='Enable file clean up. Automatically delete capture files that are successfully uploaded', action='store_true', required=False)
-    parser.add_argument('-l', '--log', dest='log', help='Write results to log file in selected format', choices=['txt', 'json', 'csv', 'excel', 'html'], required=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.1')
+    parser.add_argument('-l', '--log', help='Path to write log file. This argument will take priority over the .env file', 
+                        required=False, default=os.environ["LOG_PATH"])
+    parser.add_argument('--version', action='version', version='%(prog)s 2.0')
     return parser.parse_args()
         
 def import_scan(url, token, site_id, scan, name, description=""):
@@ -50,144 +51,86 @@ def import_scan(url, token, site_id, scan, name, description=""):
                'Content-Encoding': 'gzip',
                'Authorization': f'Bearer {token}'}
     try:
+        logger.info(f"Making PUT request to {url} to upload {scan}")
         with open(scan, 'rb') as file:
             response = requests.put(url, params=params, headers=headers, data=file, stream=True)
         code = response.status_code
         content = response.json()
         return(code, content)
-    except ConnectionError as error:
-        content = "No Response"
-        raise error
+    except ConnectionError:
+        logger.exception('Could not establish connection to console URL, exiting...')
+        exit()
     
-def file_upload(url, token, siteID, path):
+def file_upload(url, token, site_id, path):
     '''
         Identify runzero scan files in a directory and pass them
         to importScan function. 
     
         :param url: A string, URL of the runZero console.
         :param token: A string, Organization API key
-        :param siteID: A string, the site ID of the Site to upload to.
+        :param site_id: A string, the site ID of the Site to upload to.
         :param path: A string, the directory path containing the runzero scans.
         :returns: Dict Object, JSON formatted.
         :raises: OSError: if unable to run subprocess commands.
     '''
 
-    uploadLog = []
+    upload_results = []
     try:     
         contents = subprocess.check_output(['ls', path]).splitlines()
         for item in contents:
-            fileName = re.match("b'((.*)\.(json\.gz))", str(item))
-            if fileName is not None:
-                fileType = subprocess.check_output(['file', path + fileName.group(1)])
-                if fileName.group(3) == "json.gz" and 'gzip' in str(fileType):
-                    print(f"Uploading: {fileName.group(1)}")
-                    response = import_scan(url, token, siteID, f'{path}{fileName.group(1)}', fileName.group(2))
+            filename = re.match("b'((.*)\\.(json\\.gz))", str(item))
+            if filename is not None:
+                file_type = subprocess.check_output(['file', path + filename.group(1)])
+                if filename.group(3) == "json.gz" and 'gzip' in str(file_type):
+                    logger.info(f"Found scan file {filename.group(1)}")
+                    response = import_scan(url, token, site_id, f'{path}{filename.group(1)}', filename.group(2))
                     entry = {}
                     if response[0] == 200 and response[1]['error'] == '':
-                        entry['File Name'] = fileName.group(1) 
+                        entry['File Name'] = filename.group(1) 
                         entry['Status'] = 'success'
                     else:
-                        entry['File Name'] = fileName.group(1)
+                        entry['File Name'] = filename.group(1)
                         entry['Status'] = 'fail'
-                    uploadLog.append(entry)
+                    upload_results.append(entry)
                 else:
                     pass
-    except OSError as error:
-        uploadLog.append({error : 'A connection to the runZero console could not be established'})
-    return uploadLog
+    except OSError:
+        logger.exception(f"Could not locate valid runZero scan file(s) in provided path {path}.")
+        exit()
+    return upload_results
 
-def clean_up(dir, log):
+def clean_up(dir, results):
     '''
         Remove packet capture files that are uploaded successfully.
 
         :param dir: A String, the directory path to packet capture location(s).
-        :param log: A Dict, dictionary of packet capture filenames and upload status.
+        :param results: A Dict, dictionary of packet capture filenames and upload status.
         :returns None: this function returns nothing but removes files from disk.
         :raises: IOerror, if unable to delete file.
     '''
     
-    for entry in log:
+    for entry in results:
         if entry['Status'] == 'success':
             try:
+                logger.info(f"Attempting to delete file {entry['File Name']}.")
                 os.remove(dir + entry['File Name'])
-            except IOError as error:
-                print(error)
+                logger.info(f"file {entry['File Name']} deleted successfully.")
+            except IOError:
+                logger.exception(f"The file {entry['File Name']} could not be deleted.")
         else:
             pass
     
-def output_format(format, fileName, data):
-    '''
-        Determine output format and call function to write appropriate file.
-        
-        :param format: A String, the desired output format.
-        :param fileName: A String, the filename, minus extension.
-        :para data: json data, file contents
-        :returns None: Calls another function to write the file or prints the output.
-    '''
-    
-    if format == 'json':
-        fileName = f'{fileName}.json'
-        write_file(fileName, json.dumps(data))
-    elif format == 'txt':
-        fileName = f'{fileName}.txt'
-        stringList = []
-        for line in data:
-            stringList.append(str(line).replace('{', '').replace('}', '').replace(': ', '='))
-        textFile = '\n'.join(stringList)
-        write_file(fileName, textFile)
-    elif format in ('csv', 'excel', 'html'):
-        write_df(format, fileName, data)  
-    else:
-        for line in data:
-            print(json.dumps(line, indent=4))
-    
-def write_df(format, fileName, data):
-    '''
-        Write contents to output file. 
-    
-        :param format: a string, excel, csv, or html
-        :param fileName: a string, the filename, excluding extension.
-        :param contents: json data, file contents.
-        :raises: IOError: if unable to write to file.
-    '''
-    
-    df = pd.DataFrame(data)
-    try:
-        if format == "excel":
-            df.to_excel(f'{fileName}.xlsx', freeze_panes=(1,0), na_rep='NA')
-        elif format == 'csv':
-            df.to_csv(f'{fileName}.csv', na_rep='NA')
-        else:
-            df.to_html(f'{fileName}.html', render_links=True, na_rep='NA')
-    except IOError as error:
-        raise error
-    
-def write_file(fileName, contents):
-    '''
-        Write contents to output file in plaintext. 
-    
-        :param fileName: a string, name for file including (optionally) file extension.
-        :param contents: anything, file contents.
-        :raises: IOError: if unable to write to file.
-    '''
-
-    try:
-        with open( fileName, 'w') as o:
-            o.write(contents)
-    except IOError as error:
-        raise error
-    
-if __name__ == "__main__":
+def main():
     args = parseArgs()
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%a, %d %b %Y %H:%M:%S', filename=f'{args.log}/importScans.log', level=logging.INFO)
+    logger.info('Started.')
     token = args.token
     if token == None:
         token = getpass(prompt="Enter your Organization API Key: ")
-    uploadLog = file_upload(args.consoleURL, token, args.site, args.path)
-    if args.log is not None:
-        timestamp = str(datetime.now(timezone.utc).strftime('%y-%m-%d%Z_%H-%M-%S'))
-        fileName = f'{args.output}import_runzero_scan_log_{timestamp}'
-        output_format(args.log, fileName, uploadLog)
-    else:
-        print(json.dumps(uploadLog, indent=4))
+    upload_results = file_upload(args.consoleURL, token, args.site, args.path)
     if args.clean:
-        clean_up(args.path, uploadLog)
+        clean_up(args.path, upload_results)
+    logger.info('Finished.')
+    
+if __name__ == "__main__":
+    main()
