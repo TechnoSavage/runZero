@@ -77,7 +77,7 @@ def file_upload(url, token, site_id, path):
             if filename is not None:
                 file_type = subprocess.check_output(['file', path + filename.group(1)])
                 if filename.group(3) == "nessus" and 'XML' in str(file_type):
-                    logger.info(f"")
+                    logger.info(f"Found Nessus file {filename.group(1)}")
                     response = import_scan(url, token, site_id, f'{path}{filename.group(1)}')
                     entry = {}
                     if response[0] == 200 and response[1]['error'] == '':
