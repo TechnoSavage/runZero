@@ -17,16 +17,13 @@ CONFIG = {
 }
 
 load('runzero.types', 'ImportAsset', 'NetworkInterface')
+load('kwargs', 'get_url_base', 'get_http_options')
 load('base64', base64_encode='encode', base64_decode='decode')
 load('http', http_get='get', http_post='post', 'url_encode')
 load('json', json_encode='encode', json_decode='decode')
 load('net', 'ip_address')
 load('time', 'parse_time')
 load('uuid', 'new_uuid')
-
-#Change the URL to match your Snow Software License Manager server
-CATCENTER_BASE_URL = 'https://<Catalyst Center URL>'
-RUNZERO_REDIRECT = 'https://console.runzero.com/'
 
 def build_assets(assets):
     assets_import = []
@@ -131,8 +128,8 @@ def build_network_interface(ips, mac):
     else:
         return NetworkInterface(macAddress=mac, ipv4Addresses=ip4s, ipv6Addresses=ip6s)
 
-def get_devices(creds):
-    url = CATCENTER_BASE_URL + '/dna/intent/api/v1/device-health'
+def get_devices(base_url, creds):
+    url = base_url + '/dna/intent/api/v1/device-health'
     headers = {'Accept': 'application/json',
                'Authorization': 'Basic ' + creds}
     params = {}
@@ -145,10 +142,11 @@ def get_devices(creds):
         return devices
 
 def main(*args, **kwargs):
+base_url = get_url_base(kwargs)
     username = kwargs['access_key']
     password = kwargs['access_secret']
     b64_creds = base64_encode(username + ":" + password)
-    assets = get_devices(b64_creds)
+    assets = get_devices(base_url, b64_creds)
     
     # Format asset list for import into runZero
     import_assets = build_assets(assets)
