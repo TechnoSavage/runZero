@@ -138,8 +138,8 @@ def get_devices(base_url, creds):
 
 def main(*args, **kwargs):
     base_url = get_url_base(kwargs)
-    username = kwargs['access_key']
-    password = kwargs['access_secret']
+    username = kwargs['username']
+    password = kwargs['password']
     b64_creds = base64_encode(username + ":" + password)
     assets = get_devices(base_url, b64_creds)
     
