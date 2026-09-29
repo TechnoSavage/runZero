@@ -1,8 +1,8 @@
 CONFIG = {
-    "id": "catalyst_center",
-    "name": "Cisco Catalyst Center",
+    "id": "catalyst_center_health",
+    "name": "Cisco Catalyst Center Device Health",
     "type": "inbound",
-    "description": "Imports devices from Cisco Catalyst Center",
+    "description": "Imports devices and device health metrics from Cisco Catalyst Center",
     "version": "1",
     "minVersion": "0",
     "params": [
