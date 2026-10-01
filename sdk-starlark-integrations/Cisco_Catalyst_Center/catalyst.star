@@ -135,7 +135,7 @@ def get_devices(base_url, token):
     devices = data['response']            
     return devices
 
-def get_token(base_url, creds)
+def get_token(base_url, creds):
     url = base_url + '/dna/system/api/v1/auth/token'
     headers = {'Accept': 'application/json',
                'Authorization': 'Basic ' + creds}
