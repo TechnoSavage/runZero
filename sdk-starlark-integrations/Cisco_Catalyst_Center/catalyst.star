@@ -155,7 +155,7 @@ def get_token(base_url, creds):
 def main(*args, **kwargs):
     base_url = get_url_base(kwargs)
     b64_creds = base64_encode(kwargs['username'] + ":" + kwargs['password'])
-    token = get_token(b64_creds)
+    token = get_token(base_url, b64_creds)
     assets = get_devices(base_url, token)
     
     # Format asset list for import into runZero
