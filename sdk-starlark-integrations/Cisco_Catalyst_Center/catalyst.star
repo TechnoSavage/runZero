@@ -123,23 +123,40 @@ def build_network_interface(ips, mac):
     else:
         return NetworkInterface(macAddress=mac, ipv4Addresses=ip4s, ipv6Addresses=ip6s)
 
-def get_devices(base_url, creds):
+def get_devices(base_url, token):
     url = base_url + '/dna/intent/api/v1/network-device'
     headers = {'Accept': 'application/json',
-               'Authorization': 'Basic ' + creds}
+               'Authorization': 'Bearer ' + token}
     params = {}
     response = http_get(url, headers=headers, params=params)
     if response.status_code != 200:
         print('failed to retrieve devices',  'status code: ' + str(response.status_code))
-    else:
-        data = json_decode(response.body)
-        devices = data['response']            
-        return devices
+    data = json_decode(response.body)
+    devices = data['response']            
+    return devices
+
+def get_token(base_url, creds)
+    url = base_url + '/dna/system/api/v1/auth/token'
+    headers = {'Accept': 'application/json',
+               'Authorization': 'Basic ' + creds}
+    params = {}
+    response = http_post(url, headers=headers, params=params)
+    if response.status_code != 200:
+        print('failed to retrieve authroization token',  'status code: ' + str(response.status_code))
+        return None
+
+    data = json_decode(response.body)
+    if not data:
+        print('invalid authentication data')
+        return None
+
+    return data['Token']
 
 def main(*args, **kwargs):
     base_url = get_url_base(kwargs)
     b64_creds = base64_encode(kwargs['username'] + ":" + kwargs['password'])
-    assets = get_devices(base_url, b64_creds)
+    token = get_token(b64_creds)
+    assets = get_devices(base_url, token)
     
     # Format asset list for import into runZero
     import_assets = build_assets(assets)
