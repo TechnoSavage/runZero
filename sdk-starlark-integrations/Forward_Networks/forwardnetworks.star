@@ -25,9 +25,10 @@ load('json', json_encode='encode', json_decode='decode')
 load('net', 'ip_address')
 load('time', 'parse_time')
 load('uuid', 'new_uuid')
+load('time', 'parse_time')
 
-def build_assets(assets, networkId):
-    assets_import = []
+def build_devices(assets, networkId):
+    import_devices = []
     for asset in assets:
         asset_id = str(networkId + asset.get('name', new_uuid))
         addresses = asset.get('managementIps', [])
@@ -45,7 +46,7 @@ def build_assets(assets, networkId):
         # custom_attributes = {}
 
         # Build assets for import
-        assets_import.append(
+        import_devices.append(
             ImportAsset(
                 id=asset_id,
                 hostnames=[hostname],
@@ -56,7 +57,60 @@ def build_assets(assets, networkId):
                 networkInterfaces=[interface]
             )
         )
-    return assets_import
+    return import_devices
+
+def build_endpoints(assets, networkId):
+    import_endpoints = []
+    for asset in assets:
+        asset_id = str(networkId + asset.get('name', new_uuid))
+        addresses = asset.get('host', '')
+        hostname = asset.get('name', '')
+
+        # create the network interfaces
+        interface = build_network_interface(ips=addresses, mac=None)
+
+        # Retrieve and map custom attributes
+
+        createdAt = asset.get('createdAt', '')
+        if createdAt and createdAt != '':
+            createdAt = parse_time(createdAt).unix
+        updatedAt = asset.get('updatedAt', '')
+        if updatedAt and updatedAt != '':
+            updatedAt = parse_time(updatedAt).unix
+
+
+        custom_attributes = {
+            'port': str(asset.get('port', '')),
+            'protocol': asset.get('protocol', ''),
+            'profileId': asset.get('profileId', ''),
+            'credentialId': asset.get('credentialId', ''),
+            'jumpserverId': asset.get('jumpserverId', ''),
+            'fullCollectionLog': asset.get('fullCollectionLog', ''),
+            'largeRtt': asset.get('largeRtt', ''),
+            'collect': asset.get('collect', ''),
+            'note': asset.get('note', ''),
+            'createById': asset.get('createById', ''),
+            'createdAt': createdAt,
+            'createdBy': asset.get('createdBy', ''),
+            'updatedById': asset.get('updatedById', ''),
+            'updatedAt': updatedAt,
+            'updatedBy': asset.get('updatedBy', ''),
+
+        }
+
+        # Build assets for import
+        import_endpoints.append(
+            ImportAsset(
+                id=asset_id,
+                hostnames=[hostname],
+                model=model,
+                device_type=device_type,
+                os=os,
+                os_version=os_version,
+                networkInterfaces=[interface]
+            )
+        )
+    return import_endpoints
 
 def build_network_interface(ips, mac):
     ip4s = []
@@ -85,16 +139,30 @@ def get_devices(base_url, networkId, creds):
     devices = json_decode(response.body)            
     return devices
 
+def get_endpoints(base_url, networkId, creds):
+    url = base_url + '/api/networks/' + networkId + '/endpoints'
+    headers = {'Accept': 'application/json',
+               'Authorization': 'Basic ' + creds}
+    params = {}
+    response = http_get(url, headers=headers, params=params)
+    if response.status_code != 200:
+        print('failed to retrieve endpoints',  'status code: ' + str(response.status_code))
+    endpoints = json_decode(response.body)            
+    return endpoints
+
 def main(*args, **kwargs):
     base_url = get_url_base(kwargs)
     b64_creds = base64_encode(kwargs['username'] + ":" + kwargs['password'])
     networkId = kwargs['networkId']
-    assets = get_devices(base_url, networkId, b64_creds)
+    devices = get_devices(base_url, networkId, b64_creds)
+    endpoints = get_endpoints(base_url, networkId, b64_creds)
     
     # Format asset list for import into runZero
-    import_assets = build_assets(assets, networkId)
-    if not import_assets:
+    import_devices = build_devices(devices, networkId)
+    import_endpoints = build_endpoints(endpoints, networkId)
+    import_devices.extend(import_endpoints)
+    if not import_devices:
         print('no assets')
         return None
 
-    return import_assets
+    return import_devices
