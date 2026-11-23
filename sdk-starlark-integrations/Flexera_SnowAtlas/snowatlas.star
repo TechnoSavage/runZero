@@ -16,22 +16,23 @@ def build_assets(assets_json, token):
         manufacturer = asset.get('manufacturer', '')
         os = asset.get('operatingSystem', '')
         hardware = asset.get('model', '')
-        custom_attributes = {}
         
         # Map custom fields from Snow Atlas
-        portable = asset.get('isPortable', '')
-        virtual = asset.get('isVirtual', '')
-        server = asset.get('isServer', '')
-        vdi = asset.get('isVDI', '')
-        hostComputerId  = asset.get('hostComputerId', '')
-        mostFrequentUser = asset.get('mostFrequentUser', '')
-        mostRecentUser = asset.get('mostRecentUser', '')
-        domain = asset.get('domain', '')
-        lastScanDate = asset.get('lastScanDate', '')
-        status = asset.get('status', '')
-        organizationId = asset.get('organizationId', '')
-        processorCount = asset.get('processorCount', '')
-        processorCoreCount = asset.get('coreCount', '')
+        custom_attributes = {
+        portable: asset.get('isPortable', ''),
+        virtual: asset.get('isVirtual', ''),
+        server: asset.get('isServer', ''),
+        vdi: asset.get('isVDI', ''),
+        hostComputerId : asset.get('hostComputerId', ''),
+        mostFrequentUser: asset.get('mostFrequentUser', ''),
+        mostRecentUser: asset.get('mostRecentUser', ''),
+        domain: asset.get('domain', ''),
+        lastScanDate: asset.get('lastScanDate', ''),
+        status: asset.get('status', ''),
+        organizationId: asset.get('organizationId', ''),
+        processorCount: asset.get('processorCount', ''),
+        processorCoreCount: asset.get('coreCount', '')
+        }
 
         # Retrieve computer details and map to asset
         comp_details = get_comp_details(id, token)
@@ -189,11 +190,11 @@ def get_comp_apps(id, address, token):
 def get_token(client_id, client_secret):
     url = '{}/{}'.format(ATLAS_BASE_URL, '/idp/api/connect/token?')
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    params = {'grant_type': 'client_credentials',
+    payload = {'grant_type': 'client_credentials',
               'client_id': client_id,
               'client_secret': client_secret}
     
-    response = http_post(url, headers=headers, params=bytes(url_encode(params)))
+    response = http_post(url, headers=headers, body=bytes(url_encode(payload)))
     if response.status_code != 200:
         print('authentication failed: ', response.status_code)
         return None
@@ -215,9 +216,9 @@ def main(*args, **kwargs):
     computers = get_assets(token)
 
     # build asset import
-    assets_import = build_assets(computers, token)
-    if not assets_import:
+    import_assets = build_assets(computers, token)
+    if not import_assets:
         print('no assets')
         return None
 
-    return assets_import
+    return import_assets
