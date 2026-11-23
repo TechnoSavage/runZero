@@ -9,7 +9,7 @@ CONFIG = {
         {"key": "url", "label": "Forward Networks URL", "type": "url", "required": True},
         {"key": "username", "label": "username|access_key", "type": "secret", "required": True},
         {"key": "password", "label": "password|access_secret", "type": "secret", "required": True},
-        {"key": "networkId", "label": "network ID", "type": "secret", "required": True}
+        {"key": "networkId", "label": "network ID", "type": "int", "required": True}
     ],
     "includes": {
         "tls_": OPTIONS_TLS,
