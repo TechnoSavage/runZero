@@ -19,19 +19,19 @@ def build_assets(assets_json, token):
         
         # Map custom fields from Snow Atlas
         custom_attributes = {
-        portable: asset.get('isPortable', ''),
-        virtual: asset.get('isVirtual', ''),
-        server: asset.get('isServer', ''),
-        vdi: asset.get('isVDI', ''),
-        hostComputerId : asset.get('hostComputerId', ''),
-        mostFrequentUser: asset.get('mostFrequentUser', ''),
-        mostRecentUser: asset.get('mostRecentUser', ''),
-        domain: asset.get('domain', ''),
-        lastScanDate: asset.get('lastScanDate', ''),
-        status: asset.get('status', ''),
-        organizationId: asset.get('organizationId', ''),
-        processorCount: asset.get('processorCount', ''),
-        processorCoreCount: asset.get('coreCount', '')
+        'portable': asset.get('isPortable', ''),
+        'virtual': asset.get('isVirtual', ''),
+        'server': asset.get('isServer', ''),
+        'vdi': asset.get('isVDI', ''),
+        'hostComputerId': asset.get('hostComputerId', ''),
+        'mostFrequentUser': asset.get('mostFrequentUser', ''),
+        'mostRecentUser': asset.get('mostRecentUser', ''),
+        'domain': asset.get('domain', ''),
+        'lastScanDate': asset.get('lastScanDate', ''),
+        'status': asset.get('status', ''),
+        'organizationId': asset.get('organizationId', ''),
+        'processorCount': asset.get('processorCount', ''),
+        'processorCoreCount': asset.get('coreCount', '')
         }
 
         # Retrieve computer details and map to asset
